@@ -1,3 +1,5 @@
+package org.sciborgs1155.robot;
+
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -7,6 +9,7 @@ import io.github.oblarg.oblog.Logger;
 import io.github.oblarg.oblog.annotations.Log;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.DeferredCommand;
+import org.sciborgs1155.robot.Constants.OI;
 import org.sciborgs1155.robot.commands.Autos;
 
 /**

@@ -23,7 +23,8 @@ package org.sciborgs1155.robot;
 public final class Constants {
   public static final double PERIOD = 0.02;
 
-  public static class OperatorConstants {
-    public static final int kDriverControllerPort = 0;
+  public static class OI {
+    public static final int DRIVER = 1;
+    public static final int OPERATOR = 0;
   }
 }
