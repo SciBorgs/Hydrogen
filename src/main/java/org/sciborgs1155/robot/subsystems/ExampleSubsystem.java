@@ -6,8 +6,9 @@ package org.sciborgs1155.robot.subsystems;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.lang.AutoCloseable;
 
-public class ExampleSubsystem extends SubsystemBase {
+public class ExampleSubsystem extends SubsystemBase implements AutoCloseable {
   /** Creates a new ExampleSubsystem. */
   public ExampleSubsystem() {}
 
@@ -44,4 +45,6 @@ public class ExampleSubsystem extends SubsystemBase {
   public void simulationPeriodic() {
     // This method will be called once per scheduler run during simulation
   }
+
+  public void close() {}
 }
