@@ -5,19 +5,19 @@ import org.sciborgs1155.robot.testingUtil.BasicPackage;
 
 public class ExampleSubsystemTest {
 
-    ExampleSubsystem exampleSubsystem;
+  ExampleSubsystem exampleSubsystem;
 
-    @BeforeEach
-    void setup() {
-        BasicPackage.setupHAL();
-        exampleSubsystem = new ExampleSubsystem();
-    }
+  @BeforeEach
+  void setup() {
+    BasicPackage.setupHAL();
+    exampleSubsystem = new ExampleSubsystem();
+  }
 
-    @Test
-    void test() {}
+  @Test
+  void test() {}
 
-    @AfterEach
-    void reset() throws Exception {
-        BasicPackage.closeSubsystem(exampleSubsystem);
-    }
+  @AfterEach
+  void reset() throws Exception {
+    BasicPackage.closeSubsystem(exampleSubsystem);
+  }
 }
