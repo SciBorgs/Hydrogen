@@ -9,7 +9,7 @@ import io.github.oblarg.oblog.Logger;
 import io.github.oblarg.oblog.annotations.Log;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.DeferredCommand;
-import org.sciborgs1155.robot.Constants.OI;
+import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 
 /**
@@ -31,7 +31,7 @@ public class Robot extends CommandRobot implements Loggable {
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
-    super(Constants.PERIOD);
+    super(0.02);
 
     configureGameBehavior();
     configureBindings();
@@ -48,7 +48,7 @@ public class Robot extends CommandRobot implements Loggable {
 
     DataLogManager.start();
 
-    addPeriodic(Logger::updateEntries, Constants.PERIOD);
+    addPeriodic(Logger::updateEntries, 0.02);
 
     autonomous().onTrue(getAutonomousCommand());
   }
