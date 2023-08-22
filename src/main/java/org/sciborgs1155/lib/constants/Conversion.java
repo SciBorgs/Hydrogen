@@ -72,5 +72,3 @@ public record Conversion(double pulsesPerRev, double gearing, double units) {
     return new Conversion(pulsesPerRev, gearing, units);
   }
 }
-
-// testing
