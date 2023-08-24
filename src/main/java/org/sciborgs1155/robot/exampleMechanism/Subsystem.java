@@ -6,10 +6,31 @@ package org.sciborgs1155.robot.exampleMechanism;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import java.util.List;
+import org.sciborgs1155.lib.failure.Fallible;
+import org.sciborgs1155.lib.failure.HardwareFault;
+import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.EmptySubmech;
+import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.RealSubmech;
+import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.SimSubmech;
+import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.SubmechIO;
 
-public class ExampleSubsystem extends SubsystemBase implements AutoCloseable {
+public class Subsystem extends SubsystemBase implements Fallible, AutoCloseable {
+
+  public static Subsystem createEmpty() {
+    return new Subsystem(new EmptySubmech());
+  }
+
+  public static Subsystem create() {
+    return new Subsystem(Robot.isReal() ? new RealSubmech() : new SimSubmech());
+  }
+
+  private final SubmechIO mech;
+
   /** Creates a new ExampleSubsystem. */
-  public ExampleSubsystem() {}
+  public Subsystem(SubmechIO mech) {
+    this.mech = mech;
+  }
 
   /**
    * Example command factory method.
@@ -45,5 +66,15 @@ public class ExampleSubsystem extends SubsystemBase implements AutoCloseable {
     // This method will be called once per scheduler run during simulation
   }
 
-  public void close() {}
+  @Override
+  public List<HardwareFault> getFaults() {
+    // TODO Auto-generated method stub
+    return mech.getFaults();
+  }
+
+  @Override
+  public void close() throws Exception {
+    mech.close();
+    // close all hardware that is AutoClosable. Used for unit tests
+  }
 }

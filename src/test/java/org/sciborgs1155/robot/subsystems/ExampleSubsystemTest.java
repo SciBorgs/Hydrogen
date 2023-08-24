@@ -1,18 +1,18 @@
 package org.sciborgs1155.robot.subsystems;
 
 import org.junit.jupiter.api.*;
-import org.sciborgs1155.robot.exampleMechanism.ExampleSubsystem;
+import org.sciborgs1155.robot.exampleMechanism.Subsystem;
 import org.sciborgs1155.robot.testingUtil.BasicPackage;
 
 // TODO: add comments
 public class ExampleSubsystemTest {
 
-  ExampleSubsystem exampleSubsystem;
+  Subsystem exampleSubsystem;
 
   @BeforeEach
   void setup() {
     BasicPackage.setupHAL();
-    exampleSubsystem = new ExampleSubsystem();
+    exampleSubsystem = Subsystem.create();
   }
 
   @Test
