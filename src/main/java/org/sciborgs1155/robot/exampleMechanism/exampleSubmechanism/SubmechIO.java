@@ -6,9 +6,10 @@ import org.sciborgs1155.lib.failure.Fallible;
 
 public interface SubmechIO extends Fallible, Sendable, AutoCloseable {
 
+  public boolean condition();
+
   @Override
   default void initSendable(SendableBuilder builder) {
-    // TODO Auto-generated method stub
-
+    builder.addBooleanProperty("condition", this::condition, null);
   }
 }

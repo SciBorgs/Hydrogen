@@ -6,30 +6,29 @@ package org.sciborgs1155.robot.exampleMechanism;
 
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
 import java.util.List;
 import org.sciborgs1155.lib.failure.Fallible;
 import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Robot;
-import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.EmptySubmech;
-import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.RealSubmech;
-import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.SimSubmech;
-import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.SubmechIO;
+import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.*;
 
-public class Subsystem extends SubsystemBase implements Fallible, AutoCloseable {
+public class Subsystem extends SubsystemBase implements Loggable, Fallible, AutoCloseable {
 
-  public static Subsystem createEmpty() {
-    return new Subsystem(new EmptySubmech());
+  public static Subsystem createNone() {
+    return new Subsystem(new NoSubmech());
   }
 
   public static Subsystem create() {
     return new Subsystem(Robot.isReal() ? new RealSubmech() : new SimSubmech());
   }
 
-  private final SubmechIO mech;
+  @Log private final SubmechIO submech;
 
   /** Creates a new ExampleSubsystem. */
-  public Subsystem(SubmechIO mech) {
-    this.mech = mech;
+  public Subsystem(SubmechIO submech) {
+    this.submech = submech;
   }
 
   /**
@@ -53,7 +52,7 @@ public class Subsystem extends SubsystemBase implements Fallible, AutoCloseable 
    */
   public boolean exampleCondition() {
     // Query some boolean state, such as a digital sensor.
-    return false;
+    return submech.condition();
   }
 
   @Override
@@ -69,12 +68,12 @@ public class Subsystem extends SubsystemBase implements Fallible, AutoCloseable 
   @Override
   public List<HardwareFault> getFaults() {
     // TODO Auto-generated method stub
-    return mech.getFaults();
+    return submech.getFaults();
   }
 
   @Override
   public void close() throws Exception {
-    mech.close();
+    submech.close();
     // close all hardware that is AutoClosable. Used for unit tests
   }
 }

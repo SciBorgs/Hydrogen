@@ -1,11 +1,10 @@
-package org.sciborgs1155.robot.subsystems;
+package org.sciborgs1155.robot.exampleMechanism;
 
 import org.junit.jupiter.api.*;
-import org.sciborgs1155.robot.exampleMechanism.Subsystem;
 import org.sciborgs1155.robot.testingUtil.BasicPackage;
 
 // TODO: add comments
-public class ExampleSubsystemTest {
+public class SubsystemTest {
 
   Subsystem exampleSubsystem;
 
@@ -16,7 +15,9 @@ public class ExampleSubsystemTest {
   }
 
   @Test
-  void test() {}
+  void conditionTest() {
+    assert exampleSubsystem.exampleCondition();
+  }
 
   @AfterEach
   void reset() throws Exception {

@@ -3,9 +3,14 @@ package org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism;
 import java.util.List;
 import org.sciborgs1155.lib.failure.HardwareFault;
 
-public class EmptySubmech implements SubmechIO {
+public class NoSubmech implements SubmechIO {
 
-  public EmptySubmech() {}
+  public NoSubmech() {}
+
+  @Override
+  public boolean condition() {
+    return false;
+  }
 
   @Override
   public List<HardwareFault> getFaults() {

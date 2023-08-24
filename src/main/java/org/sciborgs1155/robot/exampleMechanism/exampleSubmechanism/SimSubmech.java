@@ -8,6 +8,11 @@ public class SimSubmech implements SubmechIO {
   public SimSubmech() {}
 
   @Override
+  public boolean condition() {
+    return true;
+  }
+
+  @Override
   public void close() throws Exception {
     // TODO Auto-generated method stub
   }

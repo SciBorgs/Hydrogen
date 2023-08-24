@@ -9,6 +9,12 @@ public class RealSubmech implements SubmechIO {
   public RealSubmech() {}
 
   @Override
+  public boolean condition() {
+    // TODO Auto-generated method stub
+    return true;
+  }
+
+  @Override
   public void close() throws Exception {
     // TODO Auto-generated method stub
 
