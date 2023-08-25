@@ -12,7 +12,7 @@ import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.DeferredCommand;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.exampleMechanism.Subsystem;
+import org.sciborgs1155.robot.exampleMechanism.ExampleSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -27,7 +27,7 @@ public class Robot extends CommandRobot implements Loggable {
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
-  @Log Subsystem mech = Subsystem.create();
+  @Log ExampleSubsystem mech = ExampleSubsystem.create();
 
   // COMMANDS
   @Log Autos autos = new Autos();

@@ -14,20 +14,20 @@ import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.*;
 
-public class Subsystem extends SubsystemBase implements Loggable, Fallible, AutoCloseable {
+public class ExampleSubsystem extends SubsystemBase implements Loggable, Fallible, AutoCloseable {
 
-  public static Subsystem createNone() {
-    return new Subsystem(new NoSubmech());
+  public static ExampleSubsystem createNone() {
+    return new ExampleSubsystem(new NoSubmech());
   }
 
-  public static Subsystem create() {
-    return new Subsystem(Robot.isReal() ? new RealSubmech() : new SimSubmech());
+  public static ExampleSubsystem create() {
+    return new ExampleSubsystem(Robot.isReal() ? new RealSubmech() : new SimSubmech());
   }
 
   @Log private final SubmechIO submech;
 
   /** Creates a new ExampleSubsystem. */
-  public Subsystem(SubmechIO submech) {
+  public ExampleSubsystem(SubmechIO submech) {
     this.submech = submech;
   }
 

@@ -4,14 +4,14 @@ import org.junit.jupiter.api.*;
 import org.sciborgs1155.robot.testingUtil.BasicPackage;
 
 // TODO: add comments
-public class SubsystemTest {
+public class ExampleSubsystemTest {
 
-  Subsystem exampleSubsystem;
+  ExampleSubsystem exampleSubsystem;
 
   @BeforeEach
   void setup() {
     BasicPackage.setupHAL();
-    exampleSubsystem = Subsystem.create();
+    exampleSubsystem = ExampleSubsystem.create();
   }
 
   @Test
