@@ -27,7 +27,7 @@ public class ExampleSubsystem extends SubsystemBase implements Loggable, Fallibl
   @Log private final SubmechIO submech;
 
   /** Creates a new ExampleSubsystem. */
-  public ExampleSubsystem(SubmechIO submech) {
+  private ExampleSubsystem(SubmechIO submech) {
     this.submech = submech;
   }
 
@@ -67,7 +67,6 @@ public class ExampleSubsystem extends SubsystemBase implements Loggable, Fallibl
 
   @Override
   public List<HardwareFault> getFaults() {
-    // TODO Auto-generated method stub
     return submech.getFaults();
   }
 

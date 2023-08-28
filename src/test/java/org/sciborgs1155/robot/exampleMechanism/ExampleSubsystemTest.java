@@ -20,7 +20,7 @@ public class ExampleSubsystemTest {
   }
 
   @AfterEach
-  void reset() throws Exception {
+  void destroy() throws Exception {
     BasicPackage.closeSubsystem(exampleSubsystem);
   }
 }
