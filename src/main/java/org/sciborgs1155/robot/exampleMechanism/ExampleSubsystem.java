@@ -4,6 +4,8 @@
 
 package org.sciborgs1155.robot.exampleMechanism;
 
+import static org.sciborgs1155.robot.exampleMechanism.ExampleConstants.*;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import io.github.oblarg.oblog.Loggable;
