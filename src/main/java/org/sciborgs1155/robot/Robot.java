@@ -3,6 +3,7 @@ package org.sciborgs1155.robot;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
@@ -11,6 +12,7 @@ import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.DeferredCommand;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.exampleMechanism.ExampleSubsystem;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -25,6 +27,7 @@ public class Robot extends CommandRobot implements Loggable {
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
+  @Log ExampleSubsystem mech = ExampleSubsystem.create();
 
   // COMMANDS
   @Log Autos autos = new Autos();
@@ -60,7 +63,10 @@ public class Robot extends CommandRobot implements Loggable {
   private void configureSubsystemDefaults() {}
 
   /** Configures trigger -> command bindings */
-  private void configureBindings() {}
+  private void configureBindings() {
+    // failing behavior
+    mech.onFailing(Commands.runOnce(() -> {}));
+  }
 
   /** The commamnd to be ran in autonomous */
   public Command getAutonomousCommand() {

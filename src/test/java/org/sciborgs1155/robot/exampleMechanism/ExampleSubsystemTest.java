@@ -1,7 +1,6 @@
-package org.sciborgs1155.robot.subsystems;
+package org.sciborgs1155.robot.exampleMechanism;
 
 import org.junit.jupiter.api.*;
-import org.sciborgs1155.robot.exampleMechanism.ExampleSubsystem;
 import org.sciborgs1155.robot.testingUtil.BasicPackage;
 
 // TODO: add comments
@@ -12,14 +11,16 @@ public class ExampleSubsystemTest {
   @BeforeEach
   void setup() {
     BasicPackage.setupHAL();
-    exampleSubsystem = new ExampleSubsystem();
+    exampleSubsystem = ExampleSubsystem.create();
   }
 
   @Test
-  void test() {}
+  void conditionTest() {
+    assert exampleSubsystem.exampleCondition();
+  }
 
   @AfterEach
-  void reset() throws Exception {
+  void destroy() throws Exception {
     BasicPackage.closeSubsystem(exampleSubsystem);
   }
 }

@@ -4,12 +4,34 @@
 
 package org.sciborgs1155.robot.exampleMechanism;
 
+import static org.sciborgs1155.robot.exampleMechanism.ExampleConstants.*;
+
 import edu.wpi.first.wpilibj2.command.CommandBase;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import io.github.oblarg.oblog.Loggable;
+import io.github.oblarg.oblog.annotations.Log;
+import java.util.List;
+import org.sciborgs1155.lib.failure.Fallible;
+import org.sciborgs1155.lib.failure.HardwareFault;
+import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.exampleMechanism.exampleSubmechanism.*;
 
-public class ExampleSubsystem extends SubsystemBase implements AutoCloseable {
+public class ExampleSubsystem extends SubsystemBase implements Loggable, Fallible, AutoCloseable {
+
+  public static ExampleSubsystem createNone() {
+    return new ExampleSubsystem(new NoSubmech());
+  }
+
+  public static ExampleSubsystem create() {
+    return new ExampleSubsystem(Robot.isReal() ? new RealSubmech() : new SimSubmech());
+  }
+
+  @Log private final SubmechIO submech;
+
   /** Creates a new ExampleSubsystem. */
-  public ExampleSubsystem() {}
+  private ExampleSubsystem(SubmechIO submech) {
+    this.submech = submech;
+  }
 
   /**
    * Example command factory method.
@@ -32,7 +54,7 @@ public class ExampleSubsystem extends SubsystemBase implements AutoCloseable {
    */
   public boolean exampleCondition() {
     // Query some boolean state, such as a digital sensor.
-    return false;
+    return submech.condition();
   }
 
   @Override
@@ -45,5 +67,14 @@ public class ExampleSubsystem extends SubsystemBase implements AutoCloseable {
     // This method will be called once per scheduler run during simulation
   }
 
-  public void close() {}
+  @Override
+  public List<HardwareFault> getFaults() {
+    return submech.getFaults();
+  }
+
+  @Override
+  public void close() throws Exception {
+    submech.close();
+    // close all hardware that is AutoClosable. Used for unit tests
+  }
 }
