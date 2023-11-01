@@ -1,26 +1,26 @@
-package org.sciborgs1155.robot.exampleMechanism;
+package org.sciborgs1155.robot.drive;
 
 import org.junit.jupiter.api.*;
 import org.sciborgs1155.robot.testingUtil.BasicPackage;
 
 // TODO: add comments
-public class ExampleSubsystemTest {
+public class DriveTest {
 
-  ExampleSubsystem exampleSubsystem;
+  Drive drive;
 
   @BeforeEach
   void setup() {
     BasicPackage.setupHAL();
-    exampleSubsystem = ExampleSubsystem.create();
+    drive = Drive.create();
   }
 
   @Test
   void conditionTest() {
-    assert exampleSubsystem.exampleCondition();
+    assert !drive.isFailing();
   }
 
   @AfterEach
   void destroy() throws Exception {
-    BasicPackage.closeSubsystem(exampleSubsystem);
+    BasicPackage.closeSubsystem(drive);
   }
 }

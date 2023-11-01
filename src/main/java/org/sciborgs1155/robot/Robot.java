@@ -2,17 +2,20 @@ package org.sciborgs1155.robot;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
+import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import io.github.oblarg.oblog.Loggable;
 import io.github.oblarg.oblog.Logger;
 import io.github.oblarg.oblog.annotations.Log;
+import java.util.List;
 import org.sciborgs1155.lib.CommandRobot;
-import org.sciborgs1155.lib.DeferredCommand;
+import org.sciborgs1155.lib.failure.Fallible;
+import org.sciborgs1155.lib.failure.FaultBuilder;
+import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.exampleMechanism.ExampleSubsystem;
+import org.sciborgs1155.robot.drive.Drive;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -20,21 +23,21 @@ import org.sciborgs1155.robot.exampleMechanism.ExampleSubsystem;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
-public class Robot extends CommandRobot implements Loggable {
+public class Robot extends CommandRobot implements Fallible, Loggable {
 
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
-  @Log ExampleSubsystem mech = ExampleSubsystem.create();
+  @Log Drive drive = Drive.create();
 
   // COMMANDS
   @Log Autos autos = new Autos();
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
-    super(0.02);
+    super(Constants.PERIOD);
 
     configureGameBehavior();
     configureBindings();
@@ -51,27 +54,35 @@ public class Robot extends CommandRobot implements Loggable {
 
     DataLogManager.start();
 
-    addPeriodic(Logger::updateEntries, 0.02);
+    addPeriodic(Logger::updateEntries, Constants.PERIOD);
 
-    autonomous().onTrue(getAutonomousCommand());
+    autonomous().whileTrue(new ProxyCommand(autos::get));
   }
 
   /**
    * Configures subsystem default commands. Default commands are scheduled when no other command is
    * running on a subsystem.
    */
-  private void configureSubsystemDefaults() {}
+  private void configureSubsystemDefaults() {
+    drive.setDefaultCommand(
+        drive
+            .drive(() -> -driver.getLeftY(), () -> -driver.getLeftX(), () -> -driver.getRightX())
+            .withName("teleop driving"));
+  }
 
   /** Configures trigger -> command bindings */
   private void configureBindings() {
-    // failing behavior
-    mech.onFailing(Commands.runOnce(() -> {}));
+    // DRIVER INPUT
+    driver.b().onTrue(drive.zeroHeading());
+    driver.leftBumper().onTrue(drive.setSpeedMultiplier(0.3)).onFalse(drive.setSpeedMultiplier(1));
+    driver.rightBumper().onTrue(drive.setSpeedMultiplier(0.3)).onFalse(drive.setSpeedMultiplier(1));
+
+    // FAILING BEHAVIOR
+    drive.onFailing(Commands.print("drive is failing!"));
   }
 
-  /** The commamnd to be ran in autonomous */
-  public Command getAutonomousCommand() {
-    return new DeferredCommand(autos::get)
-        .until(() -> !DriverStation.isAutonomous())
-        .withName("auto");
+  @Override
+  public List<HardwareFault> getFaults() {
+    return FaultBuilder.create().register(drive.getFaults()).build();
   }
 }
