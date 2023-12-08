@@ -5,6 +5,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.List;
+import monologue.Logged;
+import monologue.Monologue;
+import monologue.Monologue.LogBoth;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.failure.Fallible;
@@ -19,7 +22,7 @@ import org.sciborgs1155.robot.commands.Autos;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
-public class Robot extends CommandRobot implements Fallible {
+public class Robot extends CommandRobot implements Logged, Fallible {
 
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
@@ -28,15 +31,15 @@ public class Robot extends CommandRobot implements Fallible {
   // SUBSYSTEMS
 
   // COMMANDS
-  Autos autos = new Autos();
+  @LogBoth Autos autos = new Autos();
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
     super(Constants.PERIOD);
 
     configureGameBehavior();
-    configureBindings();
     configureSubsystemDefaults();
+    configureBindings();
   }
 
   /** Configures basic behavior during different parts of the game. */
@@ -45,11 +48,13 @@ public class Robot extends CommandRobot implements Fallible {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
 
+    // Configure logging with DataLogManager and Monologue
     DataLogManager.start();
+    Monologue.setupLogging(this, "/Robot");
+    addPeriodic(Monologue::update, kDefaultPeriod);
 
+    // Burn flash of all Spark Max at once with delays
     SparkUtils.safeBurnFlash();
-
-    autonomous().whileTrue(new ProxyCommand(autos::get));
   }
 
   /**
@@ -59,7 +64,9 @@ public class Robot extends CommandRobot implements Fallible {
   private void configureSubsystemDefaults() {}
 
   /** Configures trigger -> command bindings */
-  private void configureBindings() {}
+  private void configureBindings() {
+    autonomous().whileTrue(new ProxyCommand(autos::get));
+  }
 
   @Override
   public List<HardwareFault> getFaults() {
