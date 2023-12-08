@@ -1,12 +1,11 @@
-package org.sciborgs1155.robot.testingUtil;
+package org.sciborgs1155.lib;
 
 import edu.wpi.first.hal.HAL;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 
-public class BasicPackage {
-
+public class TestingUtil {
   /**
    * runs CommandScheduler repeatedly to fast forward subsystems and run commands
    *
