@@ -134,8 +134,8 @@ public interface Fallible extends Sendable {
    * @param faults A variable number of lists of faults.
    * @return A single list of faults.
    */
-  @SuppressWarnings("unchecked")
-  public default List<Fault> from(List<Fault>... faults) {
+  @SafeVarargs
+  public static List<Fault> from(List<Fault>... faults) {
     // calculate length to be allocated
     int len = 0;
     for (List<Fault> f : faults) {

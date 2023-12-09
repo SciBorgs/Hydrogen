@@ -68,6 +68,6 @@ public class Robot extends CommandRobot implements Logged, Fallible {
 
   @Override
   public List<Fault> getFaults() {
-    return from();
+    return Fallible.from();
   }
 }
