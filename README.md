@@ -3,6 +3,9 @@ The SciBorgs' base repository.
 
 WIP
 
+## Structure
+Our robot code is centered around [Robot.java](src/main/java/org/sciborgs1155/robot/Robot.java)
+
 ## Dependencies
 - [WPILib](https://docs.wpilib.org/)
 - [Spotless](https://github.com/diffplug/spotless/blob/main/plugin-gradle/README.md)

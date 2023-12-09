@@ -9,10 +9,8 @@ import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.LogBoth;
 import org.sciborgs1155.lib.CommandRobot;
+import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
-import org.sciborgs1155.lib.failure.Fallible;
-import org.sciborgs1155.lib.failure.FaultBuilder;
-import org.sciborgs1155.lib.failure.HardwareFault;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 
@@ -69,7 +67,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   }
 
   @Override
-  public List<HardwareFault> getFaults() {
-    return FaultBuilder.create().build();
+  public List<Fault> getFaults() {
+    return from();
   }
 }
