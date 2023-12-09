@@ -12,25 +12,89 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import java.util.ArrayList;
 import java.util.List;
 
+/** Functional interface to represent a hardware or software component that can fail. */
 @FunctionalInterface
 public interface Fallible extends Sendable {
 
+  /** An individual fault, containing necessary information. */
   public static record Fault(String description, FaultType type, double timestamp) {
     public Fault(String description, FaultType type) {
       this(description, type, Timer.getFPGATimestamp());
     }
   }
 
+  /**
+   * The type of fault, used for detecting whether the fallible is in a failure state and displaying
+   * to NetworkTables.
+   */
   public static enum FaultType {
     INFO,
     WARNING,
     ERROR,
   }
 
-  public default List<Fault> from(String label, FaultType type, boolean condition) {
-    return condition ? List.of(new Fault(label, type)) : List.of();
+  public static double DEFAULT_DEBOUNCE_TIME = 0.1;
+
+  /**
+   * Returns a list of all current faults.
+   *
+   * @return A list of all current faults.
+   */
+  public List<Fault> getFaults();
+
+  /**
+   * Returns whether the fallible is failing.
+   *
+   * @return Whether or not a fault with status {@code FaultType.ERROR} is present in {@link
+   *     #getFaults()}.
+   */
+  public default boolean isFailing() {
+    for (Fault fault : getFaults()) {
+      if (fault.type() == FaultType.ERROR) {
+        return true;
+      }
+    }
+    return false;
   }
 
+  /**
+   * Returns a trigger for when the fallible is failing.
+   *
+   * @return A trigger based on {@link #isFailing()}.
+   */
+  public default Trigger getTrigger() {
+    return new Trigger(this::isFailing);
+  }
+
+  /**
+   * Schedules a specified command when the fallible is failing.
+   *
+   * @param command The command to schedule.
+   * @see #getTrigger()
+   */
+  public default void onFailing(Command command) {
+    getTrigger().debounce(DEFAULT_DEBOUNCE_TIME).onTrue(command);
+  }
+
+  /**
+   * Creates a list of a single fault from necessary information or empty list based on the provided
+   * condition.
+   *
+   * @param description The fault's text.
+   * @param type The type of fault.
+   * @param condition The condition that defines failure.
+   * @return Either a list of one fault or an empty list.
+   */
+  public default List<Fault> from(String description, FaultType type, boolean condition) {
+    return condition ? List.of(new Fault(description, type)) : List.of();
+  }
+
+  /**
+   * WIP: Returns hardware faults from a {@link CANSparkMax}.
+   *
+   * @param sparkMax The SparkMax.
+   * @return A list of faults containing all reported REVLib errors and faults.
+   */
   public default List<Fault> from(CANSparkMax sparkMax) {
     List<Fault> faults = new ArrayList<>();
     REVLibError err = sparkMax.getLastError();
@@ -49,6 +113,12 @@ public interface Fallible extends Sendable {
     return faults;
   }
 
+  /**
+   * Returns hardware faults from a {@link DutyCycleEncoder}.
+   *
+   * @param encoder The DutyCycleEncoder.
+   * @return A list that is either empty or contains a fault for the encoder being disconnected.
+   */
   public default List<Fault> from(DutyCycleEncoder encoder) {
     return from(
         String.format("DutyCycleEncoder [%d]: Disconnected", encoder.getSourceChannel()),
@@ -56,12 +126,16 @@ public interface Fallible extends Sendable {
         !encoder.isConnected());
   }
 
-  public default List<Fault> from(Fault... faults) {
-    return from(List.of(faults));
-  }
-
-  @SafeVarargs
-  public static List<Fault> from(List<Fault>... faults) {
+  /**
+   * Merges several lists of hardware faults into one.
+   *
+   * <p>This makes building for {@link #getFaults()} much more ergonomic.
+   *
+   * @param faults A variable number of lists of faults.
+   * @return A single list of faults.
+   */
+  @SuppressWarnings("unchecked")
+  public default List<Fault> from(List<Fault>... faults) {
     // calculate length to be allocated
     int len = 0;
     for (List<Fault> f : faults) {
@@ -77,25 +151,12 @@ public interface Fallible extends Sendable {
     return allFaults;
   }
 
-  public List<Fault> getFaults();
-
-  public default boolean isFailing() {
-    for (Fault fault : getFaults()) {
-      if (fault.type() == FaultType.ERROR) {
-        return true;
-      }
-    }
-    return false;
-  }
-
-  public default Trigger getTrigger() {
-    return new Trigger(this::isFailing);
-  }
-
-  public default void onFailing(Command command) {
-    getTrigger().debounce(0.1).onTrue(command);
-  }
-
+  /**
+   * Returns an array of descriptions of all faults that match the specified type.
+   *
+   * @param type The type to filter for.
+   * @return An array of description strings.
+   */
   public default String[] getStrings(FaultType type) {
     return getFaults().stream()
         .filter(a -> a.type() == type)
