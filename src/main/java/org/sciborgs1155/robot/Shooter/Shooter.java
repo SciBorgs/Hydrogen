@@ -26,11 +26,11 @@ public class Shooter extends SubsystemBase {
 
   public Command shootCommand(double setpointRPS) {
             // Run the shooter flywheel at the desired setpoint using feedforward and feedback
+        return
             run(
                 () ->
                     motor.set(
-                            pidController.calculate(
-                                encoder.getRate(), setpointRPS)))
+                            pidController.calculate(encoder.getVelocity(), setpointRPS)))
             // Wait until the shooter has reached the setpoint, and then run the feeder
         .withName("Shoot");
   }
