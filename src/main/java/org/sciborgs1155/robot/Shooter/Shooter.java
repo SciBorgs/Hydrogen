@@ -6,12 +6,14 @@ import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class Shooter extends SubsystemBase {
-    CANSparkMax motor = new CANSparkMax(ShooterConstants.deviceID, MotorType.kBrushless);
-    RelativeEncoder encoder = motor.getEncoder();
+    private final CANSparkMax motor = new CANSparkMax(ShooterConstants.deviceID, MotorType.kBrushless);
+    private final RelativeEncoder encoder = motor.getEncoder();
     private final PIDController pidController = new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
+    private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
 
     public Shooter() {
         setDefaultCommand(
@@ -29,8 +31,8 @@ public class Shooter extends SubsystemBase {
             return run(
                 () ->
                     motor.set(
-                            pidController.calculate(
-                                encoder.getVelocity(), setpointRPS)))
+                            pidController.calculate(encoder.getVelocity(), setpointRPS)
+                                + feedForward.calculate(setpointRPS)))
             // Wait until the shooter has reached the setpoint, and then run the feeder
         .withName("Shoot");
   }
