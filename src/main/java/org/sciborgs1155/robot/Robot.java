@@ -13,6 +13,7 @@ import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.subsystems.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -27,6 +28,8 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
+  private final Intake intake = new Intake();
+  private final Hopper hopper = new Hopper();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
@@ -63,6 +66,10 @@ public class Robot extends CommandRobot implements Logged, Fallible {
 
   /** Configures trigger -> command bindings */
   private void configureBindings() {
+    operator.a().whileTrue(intake.intake());    
+    operator.b().whileTrue(intake.outtake());
+    
+    
     autonomous().whileTrue(new ProxyCommand(autos::get));
   }
 

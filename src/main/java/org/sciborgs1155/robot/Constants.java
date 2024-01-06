@@ -19,4 +19,6 @@ public class Constants {
   public static final double PERIOD = 0.02; // roborio tickrate (s)
   public static final double DEADBAND = 0.1;
   public static final int THROUGHBORE_PPR = 2048;
+  public static final double INTAKE_VOLTAGE = 0.3;
+  public static final double HOPPER_VOLTAGE = 0.3;
 }
