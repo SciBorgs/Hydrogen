@@ -5,13 +5,16 @@ import com.revrobotics.RelativeEncoder;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import monologue.Logged;
+import monologue.Monologue.LogBoth;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class Shooter extends SubsystemBase {
+public class Shooter extends SubsystemBase implements Logged {
     private final CANSparkMax motor = new CANSparkMax(ShooterConstants.deviceID, MotorType.kBrushless);
     private final RelativeEncoder encoder = motor.getEncoder();
+    @LogBoth
     private final PIDController pidController = new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
     private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
 
@@ -38,7 +41,9 @@ public class Shooter extends SubsystemBase {
   }
 
   public double getSpeed(double distance) {
-    return 
+    //auto function, siggy told me to
+    //random number
+    return 1;
   }
 }
 

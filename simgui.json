@@ -1,0 +1,53 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Robot/autos": "String Chooser",
+      "/Robot/shooter/pidController": "PIDController"
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "Robot": {
+        "open": true,
+        "shooter": {
+          "open": true,
+          "pidController": {
+            "open": true
+          }
+        }
+      }
+    }
+  },
+  "Plot": {
+    "Plot <0>": {
+      "plots": [
+        {
+          "axis": [
+            {
+              "autoFit": true
+            }
+          ],
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 338,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/shooter/pidController/setpoint"
+            }
+          ]
+        }
+      ]
+    }
+  }
+}
