@@ -47,3 +47,4 @@ public class Shooter extends SubsystemBase implements Logged {
   }
 }
 
+//inspiration from https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/rapidreactcommandbot/subsystems/Shooter.java
