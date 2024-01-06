@@ -36,5 +36,9 @@ public class Shooter extends SubsystemBase {
             // Wait until the shooter has reached the setpoint, and then run the feeder
         .withName("Shoot");
   }
+
+  public double getSpeed(double distance) {
+    return 
+  }
 }
 
