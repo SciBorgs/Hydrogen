@@ -1,5 +1,7 @@
 package org.sciborgs1155.robot;
 
+import static org.sciborgs1155.robot.Constants.*;
+
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
@@ -30,6 +32,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   // SUBSYSTEMS
   private final Intake intake = new Intake();
   private final Hopper hopper = new Hopper();
+  private final Drivetrain drivetrain = new Drivetrain();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
@@ -68,7 +71,14 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private void configureBindings() {
     operator.a().whileTrue(intake.intake());
     operator.b().whileTrue(intake.outtake());
-
+    // Documentation stated that max value for stick in any direction on a given axis is 1 (but this
+    // is not max voltage on motor)
+    // Therefore chose to multiply by v_max for motor.
+    driver
+        .leftStick()
+        .whileTrue(
+            drivetrain.go(
+                driver.getLeftX() * MOTOR_MAX_VOLTAGE, driver.getLeftY() * MOTOR_MAX_VOLTAGE));
     autonomous().whileTrue(new ProxyCommand(autos::get));
   }
 

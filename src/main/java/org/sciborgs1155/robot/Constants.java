@@ -21,4 +21,5 @@ public class Constants {
   public static final int THROUGHBORE_PPR = 2048;
   public static final double INTAKE_VOLTAGE = 0.3;
   public static final double HOPPER_VOLTAGE = 0.3;
+  public static final double MOTOR_MAX_VOLTAGE = 1;
 }
