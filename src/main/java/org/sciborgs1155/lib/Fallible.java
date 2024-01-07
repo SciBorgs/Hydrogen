@@ -1,7 +1,7 @@
 package org.sciborgs1155.lib;
 
+import com.revrobotics.CANSparkBase.FaultID;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.FaultID;
 import com.revrobotics.REVLibError;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;

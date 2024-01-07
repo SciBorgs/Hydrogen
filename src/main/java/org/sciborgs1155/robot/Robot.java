@@ -66,10 +66,9 @@ public class Robot extends CommandRobot implements Logged, Fallible {
 
   /** Configures trigger -> command bindings */
   private void configureBindings() {
-    operator.a().whileTrue(intake.intake());    
+    operator.a().whileTrue(intake.intake());
     operator.b().whileTrue(intake.outtake());
-    
-    
+
     autonomous().whileTrue(new ProxyCommand(autos::get));
   }
 
