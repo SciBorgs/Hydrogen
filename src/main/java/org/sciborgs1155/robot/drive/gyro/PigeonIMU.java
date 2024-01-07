@@ -6,19 +6,15 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 
 // PigeonIMU implementation
-public class Pigeon implements GyroIO {
+public class PigeonIMU implements GyroIO {
     private WPI_PigeonIMU pigeon;
 
-    public Pigeon(int deviceId) {
+    public PigeonIMU(int deviceId) {
         pigeon = new WPI_PigeonIMU(deviceId);
     }
 
     public double getRate() {
         return pigeon.getRate();
-    }
-
-    public Rotation3d getRotation3d() {
-        return new Rotation3d(getYaw(), getPitch(), getPitch());
     }
 
     public double getYaw() {

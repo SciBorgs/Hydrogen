@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
-import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -26,6 +25,8 @@ import monologue.Monologue.LogBoth;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.drive.gyro.GyroIO;
+import org.sciborgs1155.robot.drive.gyro.Navx;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
@@ -36,7 +37,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   private final List<ModuleIO> modules;
 
-  @LogBoth private final AHRS imu = new AHRS();
+  @LogBoth private final GyroIO gyro = new Navx();
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
 
@@ -96,7 +97,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    * @return A Rotation2d of our angle
    */
   public Rotation2d getHeading() {
-    return Robot.isReal() ? imu.getRotation2d() : Rotation2d.fromRadians(simulatedHeading);
+    return Robot.isReal() ? gyro.getRotation2d() : Rotation2d.fromRadians(simulatedHeading);
   }
 
   /**
@@ -167,12 +168,12 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Zeroes the heading of the robot. */
   public Command zeroHeading() {
-    return runOnce(imu::reset);
+    return runOnce(gyro::reset);
   }
 
   /** Returns the pitch of the drive gyro */
   public double getPitch() {
-    return imu.getPitch();
+    return gyro.getPitch();
   }
 
   private SwerveModuleState[] getModuleStates() {
