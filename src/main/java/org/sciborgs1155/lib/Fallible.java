@@ -1,7 +1,8 @@
 package org.sciborgs1155.lib;
 
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkBase.FaultID;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.FaultID;
 import com.revrobotics.REVLibError;
 import edu.wpi.first.util.sendable.Sendable;
 import edu.wpi.first.util.sendable.SendableBuilder;
@@ -95,16 +96,16 @@ public interface Fallible extends Sendable {
    * @param sparkMax The SparkMax.
    * @return A list of faults containing all reported REVLib errors and faults.
    */
-  public default List<Fault> from(CANSparkMax sparkMax) {
+  public default List<Fault> from(CANSparkBase spark) {
     List<Fault> faults = new ArrayList<>();
-    REVLibError err = sparkMax.getLastError();
-    int id = sparkMax.getDeviceId();
+    REVLibError err = spark.getLastError();
+    int id = spark.getDeviceId();
     if (err != REVLibError.kOk) {
       faults.add(
           new Fault(String.format("SparkMax [%d]: Error: %s", id, err.name()), FaultType.ERROR));
     }
     for (FaultID fault : FaultID.values()) {
-      if (sparkMax.getFault(fault)) {
+      if (spark.getFault(fault)) {
         faults.add(
             new Fault(
                 String.format("SparkMax [%d]: Fault: %s", id, fault.name()), FaultType.WARNING));

@@ -3,11 +3,12 @@ package org.sciborgs1155.lib;
 import static edu.wpi.first.units.Units.*;
 
 import com.revrobotics.AbsoluteEncoder;
+import com.revrobotics.CANSparkLowLevel;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-import com.revrobotics.CANSparkMaxLowLevel.PeriodicFrame;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkPIDController;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Per;
@@ -63,7 +64,7 @@ public class SparkUtils {
    * @param spark
    * @param frames
    */
-  public static void disableFrames(CANSparkMax spark, int... frames) {
+  public static void disableFrames(CANSparkLowLevel spark, int... frames) {
     for (int frame : frames) {
       spark.setPeriodicFramePeriod(PeriodicFrame.fromId(frame), 65535);
     }
@@ -126,7 +127,7 @@ public class SparkUtils {
    * @param max The maximum position input.
    */
   public static void enableContinuousPIDInput(
-      SparkMaxPIDController controller, double min, double max) {
+      SparkPIDController controller, double min, double max) {
     controller.setPositionPIDWrappingEnabled(true);
     controller.setPositionPIDWrappingMinInput(min);
     controller.setPositionPIDWrappingMaxInput(max);

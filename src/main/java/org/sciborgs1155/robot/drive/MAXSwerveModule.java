@@ -2,13 +2,13 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 
-import com.revrobotics.AbsoluteEncoder;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMax.ControlType;
-import com.revrobotics.CANSparkMax.IdleMode;
+import com.revrobotics.CANSparkBase;
+import com.revrobotics.CANSparkBase.ControlType;
+import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkMaxAbsoluteEncoder.Type;
-import com.revrobotics.SparkMaxPIDController;
+import com.revrobotics.SparkAbsoluteEncoder;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
+import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -24,14 +24,14 @@ import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
 /** Class to encapsulate a rev max swerve module */
 public class MAXSwerveModule implements ModuleIO {
 
-  private final CANSparkMax driveMotor; // Regular Neo
-  private final CANSparkMax turnMotor; // Neo 550
+  private final CANSparkBase driveMotor; // Regular Neo
+  private final CANSparkBase turnMotor; // Neo 550
 
   private final RelativeEncoder driveEncoder;
-  private final AbsoluteEncoder turningEncoder;
+  private final SparkAbsoluteEncoder turningEncoder;
 
-  private final SparkMaxPIDController driveFeedback;
-  private final SparkMaxPIDController turnFeedback;
+  private final SparkPIDController driveFeedback;
+  private final SparkPIDController turnFeedback;
 
   private final SimpleMotorFeedforward driveFeedforward =
       new SimpleMotorFeedforward(Driving.FF.S, Driving.FF.V, Driving.FF.A);
@@ -39,6 +39,7 @@ public class MAXSwerveModule implements ModuleIO {
   private final Rotation2d angularOffset;
 
   private SwerveModuleState setpoint = new SwerveModuleState();
+  private CANSparkBase sparkBase;
 
   /**
    * Constructs a SwerveModule for rev's MAX Swerve.
@@ -90,6 +91,8 @@ public class MAXSwerveModule implements ModuleIO {
 
     driveEncoder.setPosition(0);
     this.angularOffset = Rotation2d.fromRadians(angularOffset.in(Radians));
+
+    sparkBase.getPIDController();
   }
 
   /**
@@ -122,7 +125,7 @@ public class MAXSwerveModule implements ModuleIO {
             correctedDesiredState, Rotation2d.fromRadians(turningEncoder.getPosition()));
 
     double driveFF = driveFeedforward.calculate(setpoint.speedMetersPerSecond);
-    driveFeedback.setReference(setpoint.speedMetersPerSecond, ControlType.kVelocity, 0, driveFF);
+    driveFeedback.setReference(setpoint.speedMetersPerSecond, ControlType.kCurrent, 0, driveFF);
     turnFeedback.setReference(setpoint.angle.getRadians(), ControlType.kPosition);
   }
 
