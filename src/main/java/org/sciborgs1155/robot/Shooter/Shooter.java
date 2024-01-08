@@ -9,6 +9,9 @@ import monologue.Logged;
 import monologue.Monologue.LogBoth;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.math.system.plant.DCMotor;
+import edu.wpi.first.math.system.plant.LinearSystemId;
+import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class Shooter extends SubsystemBase implements Logged {
@@ -17,6 +20,10 @@ public class Shooter extends SubsystemBase implements Logged {
     @LogBoth
     private final PIDController pidController = new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
     private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
+    private final FlywheelSim flyWheelSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(ShooterConstants.kVVoltSecondsPerRotation, 1), DCMotor.getNEO(1), 1);
+  
+    @LogBoth
+    private double lastVelocity;
 
     public Shooter() {
         // setDefaultCommand(
@@ -28,7 +35,6 @@ public class Shooter extends SubsystemBase implements Logged {
         //     .andThen(run(() -> {}))
         //     .withName("Idle"));
   }
-
   public Command shootCommand(double setpointRPS) {
             // Run the shooter flywheel at the desired setpoint using feedforward and feedback
             return run(
@@ -44,6 +50,11 @@ public class Shooter extends SubsystemBase implements Logged {
     //auto function, siggy told me to
     //random number
     return 1;
+  }
+
+  @Override
+  public void periodic() {
+      lastVelocity = encoder.getVelocity();
   }
 }
 
