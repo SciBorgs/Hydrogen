@@ -28,14 +28,14 @@ public class Shooter extends SubsystemBase implements Logged {
     private final FlywheelSim flyWheelSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(ShooterConstants.kVVoltSecondsPerRotation, 1), DCMotor.getNEO(1), 1);
 
     public Shooter() {
-        // setDefaultCommand(
-        // runOnce(
-        //         () -> {
-        //           motor.disable();
-        //           //m_feederMotor.disable();
-        //         })
-        //     .andThen(run(() -> {}))
-        //     .withName("Idle"));
+        setDefaultCommand(
+        runOnce(
+                () -> {
+                  motor.disable();
+                  //m_feederMotor.disable();
+                })
+            .andThen(run(() -> {}))
+            .withName("Idle"));
   }
   public Command shootCommand(double setpointRPS) {
             // Run the shooter flywheel at the desired setpoint using feedforward and feedback
