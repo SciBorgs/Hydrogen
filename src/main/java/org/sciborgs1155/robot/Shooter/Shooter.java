@@ -19,14 +19,14 @@ public class Shooter extends SubsystemBase implements Logged {
     private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
 
     public Shooter() {
-        // setDefaultCommand(
-        // runOnce(
-        //         () -> {
-        //           motor.disable();
-        //           //m_feederMotor.disable();
-        //         })
-        //     .andThen(run(() -> {}))
-        //     .withName("Idle"));
+        setDefaultCommand(
+        runOnce(
+                () -> {
+                  motor.disable();
+                  //m_feederMotor.disable();
+                })
+            .andThen(run(() -> {}))
+            .withName("Idle"));
   }
 
   public Command shootCommand(double setpointRPS) {

@@ -70,7 +70,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
-    operator.x().whileTrue(shooter.shootCommand(1));
+    operator.x().onTrue(shooter.shootCommand(1));
   }
 
   @Override
