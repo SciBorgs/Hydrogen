@@ -4,13 +4,11 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import java.util.List;
 import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.LogBoth;
 import org.sciborgs1155.lib.CommandRobot;
-import org.sciborgs1155.lib.Fallible;
-import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.lib.FailureManagement;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 
@@ -20,7 +18,7 @@ import org.sciborgs1155.robot.commands.Autos;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
-public class Robot extends CommandRobot implements Logged, Fallible {
+public class Robot extends CommandRobot implements Logged {
 
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
@@ -50,9 +48,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
     DataLogManager.start();
     Monologue.setupLogging(this, "/Robot");
     addPeriodic(Monologue::update, kDefaultPeriod);
-
-    // Burn flash of all Spark Max at once with delays
-    SparkUtils.safeBurnFlash();
+    addPeriodic(() -> FailureManagement.getInstance().run(), 1);
   }
 
   /**
@@ -64,10 +60,5 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
-  }
-
-  @Override
-  public List<Fault> getFaults() {
-    return Fallible.from();
   }
 }
