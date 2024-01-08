@@ -26,6 +26,10 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
+  @LogBoth
+  private boolean xpressed() {
+    return operator.x().getAsBoolean();
+  }
 
   // SUBSYSTEMS
   private final Shooter shooter = new Shooter();
