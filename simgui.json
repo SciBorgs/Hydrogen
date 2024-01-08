@@ -104,6 +104,15 @@
                 1.0
               ],
               "id": "NT:/Robot/shooter/pidController/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/shooter/getVelocity"
             }
           ]
         }
