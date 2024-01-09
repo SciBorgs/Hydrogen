@@ -17,5 +17,4 @@ import edu.wpi.first.units.Time;
 public class Constants {
   public static final Measure<Time> PERIOD = Seconds.of(0.02); // roborio tickrate (s)
   public static final double DEADBAND = 0.1;
-  public static final int THROUGHBORE_PPR = 2048;
 }

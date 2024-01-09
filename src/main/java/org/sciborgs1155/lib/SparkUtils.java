@@ -1,5 +1,7 @@
 package org.sciborgs1155.lib;
 
+import static edu.wpi.first.units.Units.Rotations;
+
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.SparkPIDController;
@@ -17,6 +19,8 @@ public class SparkUtils {
 
   public static final Angle ANGLE_UNIT = Units.Rotations;
   public static final Time TIME_UNIT = Units.Minutes;
+  public static final Angle THROUGHBORE_PPR =
+      Units.derive(Rotations).splitInto(2048).named("Pulses Per Revolution").symbol("PPR").make();
 
   /** Represents a type of sensor that can be plugged into the spark */
   public static enum Sensor {
