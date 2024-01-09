@@ -1,7 +1,7 @@
 //"new" shooter here (basically doing the IO thingy)
 package org.sciborgs1155.robot.Shooter;
 
-import org.sciborgs1155.robot.Constants;
+// import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
 
 // import com.revrobotics.CANSparkMax;
@@ -25,8 +25,6 @@ public class NewShooter extends SubsystemBase implements Logged {
   private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
   @LogBoth
   private static double flywheelVelocity = 0;
-  
-  //lines 22-23,27-28 moved into Real and Sim Flywheel.java files
 
   public final FlywheelIO flywheel;
   public NewShooter(FlywheelIO flywheelIOtype) {

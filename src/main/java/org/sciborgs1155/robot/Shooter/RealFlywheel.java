@@ -1,12 +1,12 @@
 package org.sciborgs1155.robot.Shooter;
 
-import javax.management.relation.Relation;
+// import javax.management.relation.Relation;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+// import com.revrobotics.CANSparkMax;
+// import com.revrobotics.RelativeEncoder;
+// import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+// import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 
 public class RealFlywheel implements FlywheelIO {
     @Override
