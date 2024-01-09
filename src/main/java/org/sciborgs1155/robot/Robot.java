@@ -1,14 +1,18 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.*;
+
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.LogBoth;
 import org.sciborgs1155.lib.CommandRobot;
-import org.sciborgs1155.lib.FailureManagement;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 
@@ -44,11 +48,12 @@ public class Robot extends CommandRobot implements Logged {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
 
-    // Configure logging with DataLogManager and Monologue
+    // Configure logging with DataLogManager, Monologue, and FailureManagement
     DataLogManager.start();
     Monologue.setupLogging(this, "/Robot");
     addPeriodic(Monologue::update, kDefaultPeriod);
-    addPeriodic(() -> FailureManagement.getInstance().run(), 1);
+    FaultLogger.setupLogging();
+    addPeriodic(FaultLogger::update, 1);
   }
 
   /**
@@ -60,5 +65,8 @@ public class Robot extends CommandRobot implements Logged {
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
+    FaultLogger.failing(FaultType.ERROR)
+        .debounce(0.4)
+        .onTrue(Commands.print("ice cream machine broken"));
   }
 }
