@@ -8,6 +8,10 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
  */
 public class CommandRobot extends TimedRobot {
 
+  protected CommandRobot() {
+    this(kDefaultPeriod);
+  }
+
   protected CommandRobot(double period) {
     super(period);
   }
