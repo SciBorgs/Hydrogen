@@ -1,70 +1,79 @@
+//"new" shooter here (basically doing the IO thingy)
 package org.sciborgs1155.robot.Shooter;
 
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
 
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.RelativeEncoder;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+// import com.revrobotics.CANSparkMax;
+// import com.revrobotics.RelativeEncoder;
+// import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import monologue.Logged;
 import monologue.Monologue.LogBoth;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.system.plant.LinearSystemId;
-import edu.wpi.first.wpilibj.simulation.FlywheelSim;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
+// import edu.wpi.first.math.system.plant.DCMotor;
+// import edu.wpi.first.math.system.plant.LinearSystemId;
+// import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+// import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class Shooter extends SubsystemBase implements Logged {
-    private final CANSparkMax motor = new CANSparkMax(ShooterConstants.deviceID, MotorType.kBrushless);
-    private final RelativeEncoder encoder = motor.getEncoder();
+public class NewShooter extends SubsystemBase implements Logged {
     @LogBoth
     private final PIDController pidController = new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
     private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
     @LogBoth
-    private final FlywheelSim flyWheelSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(ShooterConstants.kVVoltSecondsPerRotation, 1), DCMotor.getNEO(1), 1);
-    
+    private static double flywheelVelocity = 0;
+   
     //lines 22-23,27-28 moved into Real and Sim Flywheel.java files
 
-    public Shooter() {
-        setDefaultCommand(
-        runOnce(
-                () -> {
-                  motor.disable();
-                  //m_feederMotor.disable();
-                })
-            .andThen(run(() -> {}))
-            .withName("Idle"));
+    public final FlywheelIO flywheel;
+    public NewShooter(FlywheelIO flywheelIOtype) {
+        flywheel = flywheelIOtype; //in theory, this sets a final flywheel to the correct type of object thing (like real fake no flywheels)
+        // setDefaultCommand(
+        // runOnce(
+        //         () -> {
+        //           motor.disable();
+        //           //m_feederMotor.disable();
+        //         })
+        //     .andThen(run(() -> {}))
+        //     .withName("Idle"));
   }
+
+  public static NewShooter createFromConfigure(){
+    //see if you are real
+    return Robot.isReal() ? new NewShooter(new RealFlywheel()) : new NewShooter(new SimFlywheel());
+  }
+
   public Command shootCommand(double setpointRPS) {
             // Run the shooter flywheel at the desired setpoint using feedforward and feedback
             return run(
                 () ->
-                    motor.setVoltage(
-                            pidController.calculate(getVelocity(), setpointRPS)
+                    flywheel.setVoltage(
+                            pidController.calculate(flywheel.getVelocity(), setpointRPS)
                                 + feedForward.calculate(setpointRPS)))
             // Wait until the shooter has reached the setpoint, and then run the feeder
         .withName("Shoot");
   }
 
   @LogBoth
-  public double getVelocity() {
-    return Robot.isReal() ? encoder.getVelocity() : flyWheelSim.getAngularVelocityRadPerSec(); //if else results moved into real and sim flywheels
+  public boolean reallife() {
+    return Robot.isReal(); //if else results moved into real and sim flywheels
   }
 
+  @LogBoth
   @Override
   public void periodic() {
-    
+    flywheelVelocity=flywheel.getVelocity();
   }
 
   @Override
   public void simulationPeriodic() {
-      flyWheelSim.setInputVoltage(motor.getAppliedOutput());
-      flyWheelSim.update(Constants.PERIOD);
-      System.out.println(motor.getAppliedOutput());
+    if (Robot.isReal()){} 
+      else{
+        flywheel.tick();
+    }
   }
 }
 

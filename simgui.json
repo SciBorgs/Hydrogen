@@ -43,7 +43,40 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 364,
+          "height": 269,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/shooter/pidController/setpoint"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/shooter/flywheelVelocity"
+            }
+          ]
+        }
+      ]
+    },
+    "Plot <1>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 201,
           "series": [
             {
               "color": [
@@ -61,30 +94,6 @@
         "visible": false
       }
     },
-    "Plot <1>": {
-      "plots": [
-        {
-          "backgroundColor": [
-            0.0,
-            0.0,
-            0.0,
-            0.8500000238418579
-          ],
-          "height": 0,
-          "series": [
-            {
-              "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
-                1.0
-              ],
-              "id": "NT:/Robot/shooter/pidController/setpoint"
-            }
-          ]
-        }
-      ]
-    },
     "Plot <2>": {
       "plots": [
         {
@@ -94,7 +103,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 338,
+          "height": 0,
           "series": [
             {
               "color": [
@@ -117,6 +126,11 @@
           ]
         }
       ]
+    },
+    "Plot <3>": {
+      "window": {
+        "visible": false
+      }
     }
   }
 }

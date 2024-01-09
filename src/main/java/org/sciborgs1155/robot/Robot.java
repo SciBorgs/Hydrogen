@@ -13,6 +13,7 @@ import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.Shooter.NewShooter;
 import org.sciborgs1155.robot.Shooter.Shooter;
 import org.sciborgs1155.robot.commands.Autos;
 
@@ -34,7 +35,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
 
   // SUBSYSTEMS
   @LogBoth
-  private final Shooter shooter = new Shooter();
+  private final NewShooter shooter = NewShooter.createFromConfigure();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
