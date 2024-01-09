@@ -1,0 +1,31 @@
+{
+  "NTProvider": {
+    "types": {
+      "/FMSInfo": "FMSInfo",
+      "/Robot/autos": "String Chooser",
+      "/SmartDashboard/PIDController[1]": "PIDController"
+    }
+  },
+  "NetworkTables": {
+    "transitory": {
+      "Robot": {
+        "open": true
+      },
+      "Shuffleboard": {
+        "open": true
+      },
+      "SmartDashboard": {
+        "Failures": {
+          "open": true,
+          "string[]##v_/SmartDashboard/Failures/warnings": {
+            "open": true
+          }
+        },
+        "open": true
+      }
+    }
+  },
+  "NetworkTables Info": {
+    "visible": true
+  }
+}
