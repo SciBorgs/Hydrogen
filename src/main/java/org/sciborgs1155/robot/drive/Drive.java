@@ -55,6 +55,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @LogBoth private double speedMultiplier = 1;
 
+  @LogBoth private Rotation2d lastRotation = new Rotation2d();
+
   public static Drive create() {
     return Robot.isReal()
         ? new Drive(
@@ -97,7 +99,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    * @return A Rotation2d of our angle
    */
   public Rotation2d getHeading() {
-    return Robot.isReal() ? gyro.getRotation2d() : Rotation2d.fromRadians(simulatedHeading);
+    return Robot.isReal() ? gyro.getRotation2d() : lastRotation;
   }
 
   /**
@@ -166,14 +168,13 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     modules.forEach(ModuleIO::resetEncoders);
   }
 
-  /** Zeroes the heading of the robot. */
-  public Command zeroHeading() {
-    return runOnce(gyro::reset);
+  public void resetLastRotation() {
+    lastRotation = new Rotation2d();
   }
 
-  /** Returns the pitch of the drive gyro */
-  public double getPitch() {
-    return gyro.getPitch();
+  /** Zeroes the heading of the robot. */
+  public Command zeroHeading() {
+    return runOnce(Robot.isReal() ? gyro::reset : this::resetLastRotation); // could be a lambda, idk i dont have intellisense so
   }
 
   private SwerveModuleState[] getModuleStates() {
@@ -205,13 +206,9 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     }
   }
 
-  // jank
-  private double simulatedHeading = 0.0;
-
   @Override
   public void simulationPeriodic() {
-    simulatedHeading +=
-        kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond * Constants.PERIOD;
+    lastRotation = lastRotation.rotateBy​(new Rotation2d(kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond * Constants.PERIOD));
   }
 
   /** Stops drivetrain */
