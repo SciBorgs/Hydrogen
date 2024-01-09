@@ -20,25 +20,25 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.wpilibj2.command.Command;
 
 public class NewShooter extends SubsystemBase implements Logged {
-    @LogBoth
-    private final PIDController pidController = new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
-    private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
-    @LogBoth
-    private static double flywheelVelocity = 0;
-   
-    //lines 22-23,27-28 moved into Real and Sim Flywheel.java files
+  @LogBoth
+  private final PIDController pidController = new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
+  private final SimpleMotorFeedforward feedForward = new SimpleMotorFeedforward(ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
+  @LogBoth
+  private static double flywheelVelocity = 0;
+  
+  //lines 22-23,27-28 moved into Real and Sim Flywheel.java files
 
-    public final FlywheelIO flywheel;
-    public NewShooter(FlywheelIO flywheelIOtype) {
-        flywheel = flywheelIOtype; //in theory, this sets a final flywheel to the correct type of object thing (like real fake no flywheels)
-        // setDefaultCommand(
-        // runOnce(
-        //         () -> {
-        //           motor.disable();
-        //           //m_feederMotor.disable();
-        //         })
-        //     .andThen(run(() -> {}))
-        //     .withName("Idle"));
+  public final FlywheelIO flywheel;
+  public NewShooter(FlywheelIO flywheelIOtype) {
+      flywheel = flywheelIOtype; //in theory, this sets a final flywheel to the correct type of object thing (like real fake no flywheels)
+      // setDefaultCommand(
+      // runOnce(
+      //         () -> {
+      //           motor.disable();
+      //           //m_feederMotor.disable();
+      //         })
+      //     .andThen(run(() -> {}))
+      //     .withName("Idle"));
   }
 
   public static NewShooter createFromConfigure(){
@@ -47,14 +47,14 @@ public class NewShooter extends SubsystemBase implements Logged {
   }
 
   public Command shootCommand(double setpointRPS) {
-            // Run the shooter flywheel at the desired setpoint using feedforward and feedback
-            return run(
-                () ->
-                    flywheel.setVoltage(
-                            pidController.calculate(flywheel.getVelocity(), setpointRPS)
-                                + feedForward.calculate(setpointRPS)))
-            // Wait until the shooter has reached the setpoint, and then run the feeder
-        .withName("Shoot");
+    // Run the shooter flywheel at the desired setpoint using feedforward and feedback
+    return run(
+      () ->
+        flywheel.setVoltage(
+          pidController.calculate(flywheel.getVelocity(), setpointRPS)
+            + feedForward.calculate(setpointRPS)))
+        // Wait until the shooter has reached the setpoint, and then run the feeder
+    .withName("Shoot");
   }
 
   @LogBoth

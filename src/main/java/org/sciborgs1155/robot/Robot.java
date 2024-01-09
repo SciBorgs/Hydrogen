@@ -2,6 +2,7 @@ package org.sciborgs1155.robot;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
@@ -74,6 +75,8 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
     operator.x().onTrue(shooter.shootCommand(1));
+    operator.b().onTrue(shooter.shootCommand(0));
+    operator.y().onTrue(shooter.shootCommand(2));
   }
 
   @Override
