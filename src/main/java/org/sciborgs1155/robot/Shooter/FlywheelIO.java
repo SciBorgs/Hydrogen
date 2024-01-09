@@ -9,3 +9,6 @@ public interface FlywheelIO {
     double getVelocity();
     void updateSyntax();
 }
+
+//IO real none sim ideas inspired by
+//https://github.com/SciBorgs/ChargedUp-2023/blob/main/src/main/java/org/sciborgs1155/robot/arm/
