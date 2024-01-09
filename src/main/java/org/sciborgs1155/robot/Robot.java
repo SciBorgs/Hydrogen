@@ -12,7 +12,6 @@ import monologue.Monologue;
 import monologue.Monologue.LogBoth;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 
@@ -63,8 +62,6 @@ public class Robot extends CommandRobot implements Logged {
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
-    FaultLogger.failing(FaultType.ERROR)
-        .debounce(0.4)
-        .onTrue(Commands.print("ice cream machine broken"));
+    FaultLogger.onFailing(f -> Commands.print(f.toString()));
   }
 }
