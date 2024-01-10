@@ -28,7 +28,7 @@ public class NewShooter extends SubsystemBase implements Logged {
 
   public final FlywheelIO flywheel;
   public NewShooter(FlywheelIO flywheelIOtype) {
-      flywheel = flywheelIOtype; //in theory, this sets a final flywheel to the correct type of object thing (like real fake no flywheels)
+      flywheel = flywheelIOtype; //in theory, this sets a final flywheel to the correct type of object thing (like real/fake/no flywheels)
       // setDefaultCommand(
       // runOnce(
       //         () -> {
@@ -68,12 +68,10 @@ public class NewShooter extends SubsystemBase implements Logged {
 
   @Override
   public void simulationPeriodic() {
-    if (Robot.isReal()){} 
-      else{
-        flywheel.tick();
-    }
+    if (!Robot.isReal()){flywheel.tick();};
   }
 }
 
 //inspiration from https://github.com/wpilibsuite/allwpilib/blob/main/wpilibjExamples/src/main/java/edu/wpi/first/wpilibj/examples/rapidreactcommandbot/subsystems/Shooter.java
 //IO inspiration by Asa and https://github.com/SciBorgs/ChargedUp-2023/blob/main/src/main/java/org/sciborgs1155/robot/arm/ 
+//More IO advice from Siggy

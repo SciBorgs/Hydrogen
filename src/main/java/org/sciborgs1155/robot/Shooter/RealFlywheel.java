@@ -1,20 +1,16 @@
 package org.sciborgs1155.robot.Shooter;
 
-// import javax.management.relation.Relation;
-
-// import com.revrobotics.CANSparkMax;
-// import com.revrobotics.RelativeEncoder;
-// import com.revrobotics.CANSparkMaxLowLevel.MotorType;
-
-// import edu.wpi.first.wpilibj.simulation.FlywheelSim;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
 
 public class RealFlywheel implements FlywheelIO {
+    public final CANSparkMax motor = new CANSparkMax(ShooterConstants.deviceID, MotorType.kBrushless);
+    public final RelativeEncoder encoder = motor.getEncoder();
+
     @Override
     public double getVelocity() {
         return encoder.getVelocity();
-    }
-    @Override
-    public void tick() {
     }
     @Override
     public void setVoltage(double voltage) {

@@ -2,9 +2,8 @@ package org.sciborgs1155.robot.Shooter;
 
 import org.sciborgs1155.robot.Constants;
 
-// import com.revrobotics.CANSparkMax;
-// import com.revrobotics.RelativeEncoder;
-// import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
@@ -14,7 +13,8 @@ import monologue.Monologue.LogBoth;
 public class SimFlywheel implements FlywheelIO{
     @LogBoth
     public final FlywheelSim flyWheelSim = new FlywheelSim(LinearSystemId.identifyVelocitySystem(ShooterConstants.kVVoltSecondsPerRotation, 1), DCMotor.getNEO(1), 1 );
-    
+    public final CANSparkMax motor = new CANSparkMax(ShooterConstants.deviceID, MotorType.kBrushless);
+
     @Override
     public double getVelocity() {
         return flyWheelSim.getAngularVelocityRadPerSec();

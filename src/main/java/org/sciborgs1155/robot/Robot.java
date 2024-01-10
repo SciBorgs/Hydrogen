@@ -12,8 +12,8 @@ import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Ports.OI;
-import org.sciborgs1155.robot.Shooter.NewShooter;
-import org.sciborgs1155.robot.Shooter.Shooter;
+import org.sciborgs1155.robot.Shooter.NewShooter; //dont delete, new shooter
+import org.sciborgs1155.robot.Shooter.Shooter; //dont delete, old shooter
 import org.sciborgs1155.robot.commands.Autos;
 
 /**
@@ -72,9 +72,9 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
-    operator.x().onTrue(shooter.shootCommand(1));
-    operator.b().onTrue(shooter.shootCommand(0));
-    operator.y().onTrue(shooter.shootCommand(2));
+    operator.x().onTrue(shooter.shootCommand(1)); //key c
+    operator.b().onTrue(shooter.shootCommand(0)); //key x
+    operator.y().onTrue(shooter.shootCommand(2)); //key v
   }
 
   @Override
