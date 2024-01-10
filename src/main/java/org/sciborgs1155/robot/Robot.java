@@ -4,6 +4,8 @@ import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import edu.wpi.first.wpilibj2.command.button.Trigger;
+
 import java.util.List;
 import monologue.Logged;
 import monologue.Monologue;
@@ -72,9 +74,12 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
-    operator.x().onTrue(shooter.shootCommand(1)); //key c
-    operator.b().onTrue(shooter.shootCommand(0)); //key x
-    operator.y().onTrue(shooter.shootCommand(2)); //key v
+    //operator.x().onTrue(shooter.shootCommand(1)); //key c
+    operator.x().onTrue(shooter.adjusttarget(1)); //key c            increase target by 1
+    operator.b().onTrue(shooter.adjusttarget(-1)); //key x                  decrease target by 1
+    operator.y().onTrue(shooter.shootTarget()); //key v                     aim at target
+    operator.a().onTrue(shooter.shootCommand(1)); //key z       aim for 1
+
   }
 
   @Override
