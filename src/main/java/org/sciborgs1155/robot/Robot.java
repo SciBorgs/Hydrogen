@@ -28,11 +28,6 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
-  @LogBoth
-  private boolean xpressed() {
-    return operator.x().getAsBoolean();
-  }
-
   // SUBSYSTEMS
   @LogBoth private final Shooter shooter = Shooter.createFromConfigure();
 
@@ -85,7 +80,6 @@ public class Robot extends CommandRobot implements Logged, Fallible {
     operator
         .y()
         .onTrue(shooter.shoot(() -> shooter.target)); // key v                     aim at target
-    operator.a().onTrue(shooter.shoot(() -> 1)); // key z       aim for 1
   }
 
   @Override

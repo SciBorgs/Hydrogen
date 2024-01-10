@@ -5,9 +5,9 @@ import monologue.Monologue.LogBoth;
 
 public interface FlywheelIO extends Logged {
   @LogBoth
-  double getVelocity();
+  public double velocity();
 
-  void setVoltage(double voltage);
+  public void setVoltage(double voltage);
 }
 
 // IO real none sim ideas inspired by Asa and

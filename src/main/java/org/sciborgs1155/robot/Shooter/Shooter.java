@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.shooter;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
@@ -15,12 +16,18 @@ public class Shooter extends SubsystemBase implements Logged {
   @LogBoth
   private final PIDController pidController =
       new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
+      
 
   private final SimpleMotorFeedforward feedForward =
       new SimpleMotorFeedforward(
           ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
 
   @LogBoth public double target;
+
+  @LogBoth
+  public boolean isAtGoal() {
+    return flywheel.velocity() == target;
+  }
 
   public Shooter(FlywheelIO flywheelIOtype) {
     flywheel =
@@ -38,10 +45,15 @@ public class Shooter extends SubsystemBase implements Logged {
     // Run the shooter flywheel at the desired setpoint using feedforward and feedback
     return run(() ->
             flywheel.setVoltage(
-                pidController.calculate(flywheel.getVelocity(), setpointRPS.getAsDouble())
+                pidController.calculate(flywheel.velocity(), setpointRPS.getAsDouble())
                     + feedForward.calculate(setpointRPS.getAsDouble())))
         // Wait until the shooter has reached the setpoint, and then run the feeder
         .withName("Shoot");
+  }
+
+  @Override
+  public void periodic() {
+      SmartDashboard.putNumber("flywheel velocity", flywheel.velocity());
   }
 }
 

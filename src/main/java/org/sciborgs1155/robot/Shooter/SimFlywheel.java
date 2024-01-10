@@ -15,7 +15,7 @@ public class SimFlywheel implements FlywheelIO {
           1);
 
   @Override
-  public double getVelocity() {
+  public double velocity() {
     return flyWheelSim.getAngularVelocityRadPerSec();
   }
 

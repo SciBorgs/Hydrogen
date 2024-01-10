@@ -9,7 +9,7 @@ public class RealFlywheel implements FlywheelIO {
   public final RelativeEncoder encoder = motor.getEncoder();
 
   @Override
-  public double getVelocity() {
+  public double velocity() {
     return encoder.getVelocity();
   }
 

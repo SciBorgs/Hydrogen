@@ -2,7 +2,7 @@ package org.sciborgs1155.robot.shooter;
 
 public class NoFlywheel implements FlywheelIO {
   @Override
-  public double getVelocity() {
+  public double velocity() {
     return 0.0;
   }
 
