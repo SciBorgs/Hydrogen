@@ -15,8 +15,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
-import java.util.List;
-import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
@@ -137,11 +135,6 @@ public class MAXSwerveModule implements ModuleIO {
   @Override
   public void resetEncoders() {
     driveEncoder.setPosition(0);
-  }
-
-  @Override
-  public List<Fault> getFaults() {
-    return Fallible.from(from(driveMotor), from(turnMotor));
   }
 
   @Override

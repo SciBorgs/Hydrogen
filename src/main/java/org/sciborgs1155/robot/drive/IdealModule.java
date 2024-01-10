@@ -2,7 +2,6 @@ package org.sciborgs1155.robot.drive;
 
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import java.util.List;
 import org.sciborgs1155.robot.Constants;
 
 /** Ideal swerve module, useful for debugging */
@@ -37,9 +36,4 @@ public class IdealModule implements ModuleIO {
 
   @Override
   public void close() {}
-
-  @Override
-  public List<Fault> getFaults() {
-    return List.of();
-  }
 }

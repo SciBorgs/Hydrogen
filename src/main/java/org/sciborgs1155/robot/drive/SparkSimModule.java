@@ -11,7 +11,6 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
-import java.util.List;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
@@ -91,9 +90,4 @@ public class SparkSimModule implements ModuleIO {
 
   @Override
   public void close() {}
-
-  @Override
-  public List<Fault> getFaults() {
-    return List.of();
-  }
 }
