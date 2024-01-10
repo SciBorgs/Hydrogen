@@ -17,7 +17,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
 
 /** Class to encapsulate a simulated rev max swerve module */
-public class SimModule implements ModuleIO {
+public class SparkSimModule implements ModuleIO {
 
   private final DCMotorSim drive =
       new DCMotorSim(
@@ -40,7 +40,7 @@ public class SimModule implements ModuleIO {
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
-  public SimModule() {
+  public SparkSimModule() {
     turnFeedback.enableContinuousInput(0, Turning.CONVERSION.in(Radians.per(Radians)));
   }
 

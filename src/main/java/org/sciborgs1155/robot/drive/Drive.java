@@ -61,7 +61,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
             new MAXSwerveModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1)),
             new MAXSwerveModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2)),
             new MAXSwerveModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)))
-        : new Drive(new SimModule(), new SimModule(), new SimModule(), new SimModule());
+        : new Drive(new SparkSimModule(), new SparkSimModule(), new SparkSimModule(), new SparkSimModule());
   }
 
   public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
