@@ -4,18 +4,20 @@ import static org.sciborgs1155.robot.Constants.*;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
-import edu.wpi.first.wpilibj2.command.ProxyCommand;
+import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.List;
 import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.LogBoth;
+import monologue.Monologue.LogFile;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.robot.Hopper.*;
+import org.sciborgs1155.robot.Intake.*;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
-import org.sciborgs1155.robot.subsystems.*;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -27,15 +29,19 @@ public class Robot extends CommandRobot implements Logged, Fallible {
 
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
-  private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
-  private final Intake intake = new Intake();
-  private final Hopper hopper = new Hopper();
-  private final Drivetrain drivetrain = new Drivetrain();
+  @LogFile private final Intake intake = new Intake();
+  @LogFile private final Hopper hopper = new Hopper();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
+
+  @LogBoth
+  boolean xIsPressed() {
+    return operator.x().getAsBoolean();
+  }
+  ;
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -65,25 +71,24 @@ public class Robot extends CommandRobot implements Logged, Fallible {
    * Configures subsystem default commands. Default commands are scheduled when no other command is
    * running on a subsystem.
    */
-  private void configureSubsystemDefaults() {}
+  private void configureSubsystemDefaults() {
+    hopper.setDefaultCommand(hopper.stop());
+    intake.setDefaultCommand(intake.stop());
+  }
 
   /** Configures trigger -> command bindings */
   private void configureBindings() {
-    operator.a().whileTrue(intake.intake());
-    operator.b().whileTrue(intake.outtake());
-    // Documentation stated that max value for stick in any direction on a given axis is 1 (but this
-    // is not max voltage on motor)
-    // Therefore chose to multiply by v_max for motor.
-    driver
-        .leftStick()
-        .whileTrue(
-            drivetrain.go(
-                driver.getLeftX() * MOTOR_MAX_VOLTAGE, driver.getLeftY() * MOTOR_MAX_VOLTAGE));
-    autonomous().whileTrue(new ProxyCommand(autos::get));
+    operator.x().whileTrue(hopper.forward());
+    operator.b().whileTrue(hopper.back());
   }
 
   @Override
   public List<Fault> getFaults() {
     return Fallible.from();
+  }
+
+  @Override
+  public void robotPeriodic() {
+    CommandScheduler.getInstance().run();
   }
 }
