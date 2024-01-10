@@ -1,11 +1,14 @@
-package org.sciborgs1155.robot.Shooter;
+package org.sciborgs1155.robot.shooter;
 
-public interface FlywheelIO {
-    default double getVelocity() {return 0;};
-    default void tick(){};
-    default void setVoltage(double voltage){};
-    default double getMotorAppliedOutput() {return 0;};
+import monologue.Logged;
+import monologue.Monologue.LogBoth;
+
+public interface FlywheelIO extends Logged {
+  @LogBoth
+  double getVelocity();
+
+  void setVoltage(double voltage);
 }
 
-//IO real none sim ideas inspired by Asa and 
-//https://github.com/SciBorgs/ChargedUp-2023/blob/main/src/main/java/org/sciborgs1155/robot/arm/
+// IO real none sim ideas inspired by Asa and
+// https://github.com/SciBorgs/ChargedUp-2023/blob/main/src/main/java/org/sciborgs1155/robot/arm/

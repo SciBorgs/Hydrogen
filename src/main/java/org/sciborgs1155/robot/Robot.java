@@ -5,8 +5,6 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import edu.wpi.first.wpilibj2.command.button.Trigger;
-
 import java.util.List;
 import monologue.Logged;
 import monologue.Monologue;
@@ -15,9 +13,8 @@ import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Ports.OI;
-import org.sciborgs1155.robot.Shooter.NewShooter; //dont delete, new shooter
-import org.sciborgs1155.robot.Shooter.OldShooter; //dont delete, old shooter
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.shooter.Shooter;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -30,14 +27,14 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
+
   @LogBoth
   private boolean xpressed() {
     return operator.x().getAsBoolean();
   }
 
   // SUBSYSTEMS
-  @LogBoth
-  private final NewShooter shooter = NewShooter.createFromConfigure();
+  @LogBoth private final Shooter shooter = Shooter.createFromConfigure();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
@@ -75,12 +72,20 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
-    //operator.x().onTrue(shooter.shootCommand(1)); //key c
-    operator.x().onTrue(Commands.runOnce(() -> shooter.adjust(1))); //key c            increase target by 1
-    operator.b().onTrue(Commands.runOnce(() -> shooter.adjust(-1))); //key x                  decrease target by 1
-    operator.y().onTrue(shooter.shootTarget()); //key v                     aim at target
-    operator.a().onTrue(shooter.shootCommand(1)); //key z       aim for 1
-
+    // operator.x().onTrue(shooter.shootCommand(1)); //key c
+    operator
+        .x()
+        .onTrue(
+            Commands.runOnce(() -> shooter.target += 1)); // key c            increase target by 1
+    operator
+        .b()
+        .onTrue(
+            Commands.runOnce(
+                () -> shooter.target -= 1)); // key x                  decrease target by 1
+    operator
+        .y()
+        .onTrue(shooter.shoot(() -> shooter.target)); // key v                     aim at target
+    operator.a().onTrue(shooter.shoot(() -> 1)); // key z       aim for 1
   }
 
   @Override
