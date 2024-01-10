@@ -2,6 +2,7 @@ package org.sciborgs1155.robot;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
@@ -15,7 +16,7 @@ import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.Shooter.NewShooter; //dont delete, new shooter
-import org.sciborgs1155.robot.Shooter.Shooter; //dont delete, old shooter
+import org.sciborgs1155.robot.Shooter.OldShooter; //dont delete, old shooter
 import org.sciborgs1155.robot.commands.Autos;
 
 /**
@@ -75,8 +76,8 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
     //operator.x().onTrue(shooter.shootCommand(1)); //key c
-    operator.x().onTrue(shooter.adjusttarget(1)); //key c            increase target by 1
-    operator.b().onTrue(shooter.adjusttarget(-1)); //key x                  decrease target by 1
+    operator.x().onTrue(Commands.runOnce(() -> shooter.adjust(1))); //key c            increase target by 1
+    operator.b().onTrue(Commands.runOnce(() -> shooter.adjust(-1))); //key x                  decrease target by 1
     operator.y().onTrue(shooter.shootTarget()); //key v                     aim at target
     operator.a().onTrue(shooter.shootCommand(1)); //key z       aim for 1
 

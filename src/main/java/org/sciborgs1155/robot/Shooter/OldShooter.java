@@ -18,7 +18,7 @@ import edu.wpi.first.wpilibj.simulation.FlywheelSim;
 // import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 
-public class Shooter extends SubsystemBase implements Logged {
+public class OldShooter extends SubsystemBase implements Logged {
     private final CANSparkMax motor = new CANSparkMax(ShooterConstants.deviceID, MotorType.kBrushless);
     private final RelativeEncoder encoder = motor.getEncoder();
     @LogBoth
@@ -29,7 +29,7 @@ public class Shooter extends SubsystemBase implements Logged {
     
     //lines 22-23,27-28 moved into Real and Sim Flywheel.java files
 
-    public Shooter() {
+    public OldShooter() {
         setDefaultCommand(
         runOnce(
                 () -> {

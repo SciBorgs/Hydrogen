@@ -65,9 +65,6 @@ public class NewShooter extends SubsystemBase implements Logged {
   @LogBoth
   public int target=0;
   public void adjust(double change){target+=change;};
-  public Command adjusttarget(double change){
-    return runOnce(()->adjust(change));
-  }
   public double getTarget(){return target;};
 
   public Command shootTarget() { 
