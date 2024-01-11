@@ -17,6 +17,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
+import java.util.List;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
@@ -140,8 +141,8 @@ public class MAXSwerveModule implements ModuleIO {
   }
 
   @Override
-  public SwerveModuleState getDesiredState() {
-    return setpoint;
+  public List<SwerveModuleState> getDesiredState() {
+    return List.of(setpoint);
   }
 
   @Override
@@ -153,5 +154,35 @@ public class MAXSwerveModule implements ModuleIO {
   public void close() {
     driveMotor.close();
     turnMotor.close();
+  }
+
+  @Override
+  public void setDriveVoltage(double driveVolts) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setDriveVoltage'");
+  }
+
+  @Override
+  public void setRotationVoltage(double rotationVolts) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setRotationVoltage'");
+  }
+
+  @Override
+  public double getDriveVoltage() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getDriveVoltage'");
+  }
+
+  @Override
+  public double getRotationVoltage() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getRotationVoltage'");
+  }
+
+  @Override
+  public Rotation2d getHeading() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getHeading'");
   }
 }

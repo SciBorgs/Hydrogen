@@ -4,10 +4,13 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
+import com.revrobotics.CANSparkBase.ControlType;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import java.util.List;
+import org.sciborgs1155.robot.drive.DriveConstants.*;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
 
 public class TalonSwerveModule implements ModuleIO {
@@ -78,14 +81,14 @@ public class TalonSwerveModule implements ModuleIO {
         SwerveModuleState.optimize(
             correctedDesiredState, Rotation2d.fromRadians(turnMotor.getPosition().getValue()));
 
-    double driveFF = driveFeedforward.calculate(setpoint.speedMetersPerSecond);
+    double driveFF = driveFeedForward.calculate(setpoint.speedMetersPerSecond);
     driveFeedback.setReference(setpoint.speedMetersPerSecond, ControlType.kCurrent, 0, driveFF);
     turnFeedback.setReference(setpoint.angle.getRadians(), ControlType.kPosition);
   }
 
   @Override
-  public SwerveModuleState getDesiredState() {
-    return setpoint;
+  public List<SwerveModuleState> getDesiredState() {
+    return List.of(setpoint);
   }
 
   @Override
@@ -98,5 +101,35 @@ public class TalonSwerveModule implements ModuleIO {
   public void close() throws Exception {
     driveMotor.close();
     turnMotor.close();
+  }
+
+  @Override
+  public void setDriveVoltage(double driveVolts) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setDriveVoltage'");
+  }
+
+  @Override
+  public void setRotationVoltage(double rotationVolts) {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'setRotationVoltage'");
+  }
+
+  @Override
+  public double getDriveVoltage() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getDriveVoltage'");
+  }
+
+  @Override
+  public double getRotationVoltage() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getRotationVoltage'");
+  }
+
+  @Override
+  public Rotation2d getHeading() {
+    // TODO Auto-generated method stub
+    throw new UnsupportedOperationException("Unimplemented method 'getHeading'");
   }
 }
