@@ -5,6 +5,8 @@ import static edu.wpi.first.units.Units.*;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.ControlType;
 import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkFlex;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
@@ -47,13 +49,15 @@ public class MAXSwerveModule implements ModuleIO {
    * @param angularOffset offset from drivetrain
    */
   public MAXSwerveModule(int drivePort, int turnPort, Measure<Angle> angularOffset) {
-    driveMotor = SparkUtils.create(drivePort);
+    driveMotor = new CANSparkFlex(drivePort, MotorType.kBrushless);
+    driveMotor.restoreFactoryDefaults();
     driveMotor.setInverted(false);
     driveMotor.setIdleMode(IdleMode.kBrake);
     driveMotor.setOpenLoopRampRate(0);
     driveMotor.setSmartCurrentLimit(50);
 
-    turnMotor = SparkUtils.create(turnPort);
+    turnMotor = new CANSparkFlex(turnPort, MotorType.kBrushless);
+    turnMotor.restoreFactoryDefaults();
     turnMotor.setInverted(false);
     turnMotor.setIdleMode(IdleMode.kBrake);
     turnMotor.setOpenLoopRampRate(0);
@@ -78,14 +82,22 @@ public class MAXSwerveModule implements ModuleIO {
     turnFeedback.setI(Turning.PID.I);
     turnFeedback.setD(Turning.PID.D);
 
-    SparkUtils.setConversion(driveEncoder, Driving.CONVERSION);
-    SparkUtils.setConversion(turningEncoder, Turning.CONVERSION);
+    // please someone make a method to get conversions and their units and numerators 💀 (its not
+    // gonna be me)
+    driveEncoder.setPositionConversionFactor(
+        Driving.CONVERSION.in(Driving.CONVERSION.unit().numerator().per(Rotations)));
+    driveEncoder.setVelocityConversionFactor(
+        Driving.CONVERSION
+            .per(Seconds.one())
+            .in(Driving.CONVERSION.unit().numerator().per(Rotations).per(Minute)));
+
+    turningEncoder.setPositionConversionFactor(
+        Turning.CONVERSION.in(Turning.CONVERSION.unit().numerator().per(Rotations)));
+    turningEncoder.setVelocityConversionFactor(
+        Turning.CONVERSION.in(Turning.CONVERSION.unit().numerator().per(Rotations)));
 
     SparkUtils.enableContinuousPIDInput(
         turnFeedback, 0, Turning.CONVERSION.in(Radians.per(Radians)));
-
-    SparkUtils.disableFrames(driveMotor, 4, 5, 6);
-    SparkUtils.disableFrames(turnMotor, 4, 6);
 
     driveEncoder.setPosition(0);
     this.angularOffset = Rotation2d.fromRadians(angularOffset.in(Radians));

@@ -138,7 +138,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    * @param speeds The desired chassis speeds.
    */
   public void drive(ChassisSpeeds speeds) {
-    speeds = ChassisSpeeds.discretize(speeds, Constants.PERIOD);
+    speeds = ChassisSpeeds.discretize(speeds, Constants.PERIOD.in(Seconds));
 
     setModuleStates(kinematics.toSwerveModuleStates(speeds));
   }
@@ -210,7 +210,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   @Override
   public void simulationPeriodic() {
     simulatedHeading +=
-        kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond * Constants.PERIOD;
+        kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond
+            * Constants.PERIOD.in(Seconds);
   }
 
   /** Stops drivetrain */
