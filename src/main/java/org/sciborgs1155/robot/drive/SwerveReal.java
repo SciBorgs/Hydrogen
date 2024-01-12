@@ -11,7 +11,7 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import java.util.List;
 import monologue.Annotations.Log;
 
-public class SwerveReal implements DriveIO {
+public class SwerveReal implements SwerveIO {
 
   @Log.NT private final ModuleIO frontLeft;
   @Log.NT private final ModuleIO frontRight;

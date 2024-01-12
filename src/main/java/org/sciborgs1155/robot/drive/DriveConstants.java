@@ -6,6 +6,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.Mass;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Velocity;
@@ -23,6 +24,13 @@ public final class DriveConstants {
   // Distance between centers of right and left wheels on robot
   public static final Measure<Distance> WHEEL_BASE = Meters.of(0.5715);
   // Distance between front and back wheels on robot
+
+  public static final Measure<Mass> MASS = Pounds.of(100);
+  public static final double MOI =
+      (1 / 12)
+          * MASS.in(Kilograms)
+          * (Math.pow(TRACK_WIDTH.in(Meters), 2) + Math.pow(WHEEL_BASE.in(Meters), 2));
+  // I despise the unit api
 
   public static final Translation2d[] MODULE_OFFSET = {
     new Translation2d(WHEEL_BASE.in(Meters) / 2, TRACK_WIDTH.in(Meters) / 2), // front left

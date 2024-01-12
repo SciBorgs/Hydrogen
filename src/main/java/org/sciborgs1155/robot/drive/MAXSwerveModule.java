@@ -53,14 +53,12 @@ public class MAXSwerveModule implements ModuleIO {
     driveMotor.restoreFactoryDefaults();
     driveMotor.setInverted(false);
     driveMotor.setIdleMode(IdleMode.kBrake);
-    driveMotor.setOpenLoopRampRate(0);
     driveMotor.setSmartCurrentLimit(50);
 
     turnMotor = new CANSparkFlex(turnPort, MotorType.kBrushless);
     turnMotor.restoreFactoryDefaults();
     turnMotor.setInverted(false);
     turnMotor.setIdleMode(IdleMode.kBrake);
-    turnMotor.setOpenLoopRampRate(0);
     turnMotor.setSmartCurrentLimit(20);
 
     driveEncoder = driveMotor.getEncoder();
@@ -98,6 +96,9 @@ public class MAXSwerveModule implements ModuleIO {
 
     SparkUtils.enableContinuousPIDInput(
         turnFeedback, 0, Turning.CONVERSION.in(Radians.per(Radians)));
+
+    driveMotor.burnFlash();
+    turnMotor.burnFlash();
 
     driveEncoder.setPosition(0);
     this.angularOffset = Rotation2d.fromRadians(angularOffset.in(Radians));
