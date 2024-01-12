@@ -21,29 +21,29 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.List;
 import java.util.function.DoubleSupplier;
+import monologue.Annotations.Log;
 import monologue.Logged;
-import monologue.Monologue.LogBoth;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
-  @LogBoth private final ModuleIO frontLeft;
-  @LogBoth private final ModuleIO frontRight;
-  @LogBoth private final ModuleIO rearLeft;
-  @LogBoth private final ModuleIO rearRight;
+  @monologue.Annotations.Log.NT private final ModuleIO frontLeft;
+  @Log.NT private final ModuleIO frontRight;
+  @Log.NT private final ModuleIO rearLeft;
+  @Log.NT private final ModuleIO rearRight;
 
   private final List<ModuleIO> modules;
 
-  @LogBoth private final AHRS imu = new AHRS();
+  @Log.NT private final AHRS imu = new AHRS();
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
 
   // Odometry and pose estimation
   private final SwerveDrivePoseEstimator odometry;
 
-  @LogBoth private final Field2d field2d = new Field2d();
+  @Log.NT private final Field2d field2d = new Field2d();
   private final FieldObject2d[] modules2d;
 
   // Rate limiting
@@ -52,7 +52,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   private final SlewRateLimiter yLimiter =
       new SlewRateLimiter(MAX_ACCEL.in(MetersPerSecondPerSecond));
 
-  @LogBoth private double speedMultiplier = 1;
+  @Log.NT private double speedMultiplier = 1;
 
   public static Drive create() {
     return Robot.isReal()

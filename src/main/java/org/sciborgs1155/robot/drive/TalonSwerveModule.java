@@ -142,18 +142,6 @@ public class TalonSwerveModule implements ModuleIO {
   }
 
   @Override
-  public void setDriveVoltage(double driveVolts) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setDriveVoltage'");
-  }
-
-  @Override
-  public void setRotationVoltage(double rotationVolts) {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'setRotationVoltage'");
-  }
-
-  @Override
   public double getDriveVoltage() {
     // TODO Auto-generated method stub
     throw new UnsupportedOperationException("Unimplemented method 'getDriveVoltage'");
