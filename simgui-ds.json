@@ -51,13 +51,14 @@
         {},
         {},
         {
+          "decKey": 68,
           "incKey": 69
         }
       ],
-      "axisCount": 0,
+      "axisCount": 6,
       "buttonCount": 4,
       "buttonKeys": [
-        68,
+        -1,
         83,
         65,
         87

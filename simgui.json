@@ -2,26 +2,15 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/LiveWindow/Ungrouped/DifferentialDrive[1]": "DifferentialDrive",
-      "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/Robot/autos": "String Chooser",
-      "/Robot/drive/field": "Field2d"
+      "/Robot/drive/field": "Field2d",
+      "/Robot/drive/gooberLeft": "PIDController"
     },
     "windows": {
       "/Robot/drive/field": {
         "window": {
           "visible": true
         }
-      }
-    }
-  },
-  "NetworkTables": {
-    "transitory": {
-      "Robot": {
-        "drive": {
-          "open": true
-        },
-        "open": true
       }
     }
   }

@@ -62,66 +62,57 @@ public class Robot extends CommandRobot implements Logged, Fallible {
    * running on a subsystem.
    */
   private void configureSubsystemDefaults() {
-    drive.setDefaultCommand(drive.setSpeeds(driver::getLeftY, driver::getRightY));
+    drive.setDefaultCommand(drive.setSpeeds(() -> -driver.getLeftY(), () -> -driver.getRightY()));
   }
 
   /** Configures trigger -> command bindings */
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
-    
-    driver.y().and(driver.x()).whileTrue(drive.move(Drive.Direction.FORWARD_LEFT, 5));
-    driver.y().and(driver.a()).whileTrue(drive.move(Drive.Direction.FORWARD_RIGHT, 5));
-    driver.b().and(driver.x()).whileTrue(drive.move(Drive.Direction.BACKWARD_LEFT, 5));
-    driver.b().and(driver.a()).whileTrue(drive.move(Drive.Direction.BACKWARD_RIGHT, 5));
 
-    driver.y().and(driver.x().negate()).and(driver.a().negate()).whileTrue(drive.move(Drive.Direction.FORWARD, 10));
-    driver.b().and(driver.x().negate()).and(driver.a().negate()).whileTrue(drive.move(Drive.Direction.BACKWARD, 10));
-    driver.a().and(driver.y().negate()).and(driver.b().negate()).whileTrue(drive.move(Drive.Direction.TURN_RIGHT, 10));
-    driver.x().and(driver.y().negate()).and(driver.b().negate()).whileTrue(drive.move(Drive.Direction.TURN_LEFT, 10));
+    // driver.y().and(driver.x()).whileTrue(drive.move(Drive.Direction.FORWARD_LEFT, 5));
+    // driver.y().and(driver.a()).whileTrue(drive.move(Drive.Direction.FORWARD_RIGHT, 5));
+    // driver.b().and(driver.x()).whileTrue(drive.move(Drive.Direction.BACKWARD_LEFT, 5));
+    // driver.b().and(driver.a()).whileTrue(drive.move(Drive.Direction.BACKWARD_RIGHT, 5));
 
-    while (yIsPressed() && xIsPressed()) {
-      drive.move(Drive.Direction.FORWARD_LEFT, 10);
-    }
-    while (yIsPressed() && aIsPressed()) {
-      drive.move(Drive.Direction.FORWARD_RIGHT, 10);
-    }
-    while (bIsPressed() && xIsPressed()) {
-      drive.move(Drive.Direction.BACKWARD_LEFT, 10);
-    }
-    while (bIsPressed() && aIsPressed()) {
-      drive.move(Drive.Direction.BACKWARD_RIGHT, 10);
-    }
-
-    while (yIsPressed() && !(aIsPressed() || xIsPressed())) {
-      drive.move(Drive.Direction.FORWARD, 10);
-    }
-    while (xIsPressed() && !(aIsPressed() || xIsPressed())) {
-      drive.move(Drive.Direction.TURN_LEFT, 10);
-    }
-    while (aIsPressed() && !(aIsPressed() || xIsPressed())) {
-      drive.move(Drive.Direction.TURN_RIGHT, 10);
-    }
-    while (bIsPressed() && !(aIsPressed() || xIsPressed())) {
-      drive.move(Drive.Direction.BACKWARD, 10);
-    }
-    
-    
-    driver.a().whileTrue(drive.move(Drive.Direction.TURN_RIGHT, 10));
-    driver.b().whileTrue(drive.move(Drive.Direction.BACKWARD, 10));
-    driver.x().whileTrue(drive.move(Drive.Direction.TURN_LEFT, 10));
-    driver.y().whileTrue(drive.move(Drive.Direction.FORWARD, 10));
+    // driver
+    //     .y()
+    //     .and(driver.x().negate())
+    //     .and(driver.a().negate())
+    //     .whileTrue(drive.move(Drive.Direction.FORWARD, 10));
+    // driver
+    //     .b()
+    //     .and(driver.x().negate())
+    //     .and(driver.a().negate())
+    //     .whileTrue(drive.move(Drive.Direction.BACKWARD, 10));
+    // driver
+    //     .a()
+    //     .and(driver.y().negate())
+    //     .and(driver.b().negate())
+    //     .whileTrue(drive.move(Drive.Direction.TURN_RIGHT, 10));
+    // driver
+    //     .x()
+    //     .and(driver.y().negate())
+    //     .and(driver.b().negate())
+    //     .whileTrue(drive.move(Drive.Direction.TURN_LEFT, 10));
   }
 
-  @LogBoth public boolean aIsPressed() {
+  @LogBoth
+  public boolean aIsPressed() {
     return driver.a().getAsBoolean();
   }
-  @LogBoth public boolean bIsPressed() {
+
+  @LogBoth
+  public boolean bIsPressed() {
     return driver.b().getAsBoolean();
   }
-  @LogBoth public boolean xIsPressed() {
+
+  @LogBoth
+  public boolean xIsPressed() {
     return driver.x().getAsBoolean();
   }
-  @LogBoth public boolean yIsPressed() {
+
+  @LogBoth
+  public boolean yIsPressed() {
     return driver.y().getAsBoolean();
   }
 
