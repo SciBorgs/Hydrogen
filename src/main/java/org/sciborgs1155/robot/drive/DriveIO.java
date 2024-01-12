@@ -4,7 +4,6 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import monologue.Logged;
 
-/** Generalized SwerveModule with closed loop control */
 public interface DriveIO extends AutoCloseable, Logged {
 
   public Pose2d getPose();
