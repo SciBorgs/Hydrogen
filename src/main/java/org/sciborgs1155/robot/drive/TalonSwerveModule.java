@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
-import static org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
@@ -18,6 +17,8 @@ import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Measure;
 import java.util.List;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
@@ -36,10 +37,10 @@ public class TalonSwerveModule implements ModuleIO {
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
-  public TalonSwerveModule(int drivePort, int turnPort, Rotation2d angularOffset) {
+  public TalonSwerveModule(int drivePort, int turnPort, Measure<Angle> angularOffset) {
     driveMotor = new TalonFX(drivePort);
     turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
-    this.angularOffset = angularOffset;
+    this.angularOffset = Rotation2d.fromRadians(angularOffset.in(Radians));
 
     turnEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
     turnFeedback = turnMotor.getPIDController();

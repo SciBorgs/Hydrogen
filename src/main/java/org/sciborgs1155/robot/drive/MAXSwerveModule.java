@@ -40,7 +40,6 @@ public class MAXSwerveModule implements ModuleIO {
   private final Rotation2d angularOffset;
 
   private SwerveModuleState setpoint = new SwerveModuleState();
-  private CANSparkBase sparkBase;
 
   /**
    * Constructs a SwerveModule for rev's MAX Swerve.
@@ -102,8 +101,6 @@ public class MAXSwerveModule implements ModuleIO {
 
     driveEncoder.setPosition(0);
     this.angularOffset = Rotation2d.fromRadians(angularOffset.in(Radians));
-
-    sparkBase.getPIDController();
   }
 
   /**

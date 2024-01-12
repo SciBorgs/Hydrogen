@@ -14,6 +14,4 @@ public interface DriveIO extends AutoCloseable, Logged {
   public Rotation2d getHeading();
 
   public void close() throws Exception;
-
-  public void stop();
 }

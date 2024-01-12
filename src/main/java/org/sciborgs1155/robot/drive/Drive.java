@@ -29,7 +29,7 @@ import org.sciborgs1155.robot.Robot;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
-  @monologue.Annotations.Log.NT private final ModuleIO frontLeft;
+  @Log.NT private final ModuleIO frontLeft;
   @Log.NT private final ModuleIO frontRight;
   @Log.NT private final ModuleIO rearLeft;
   @Log.NT private final ModuleIO rearRight;
