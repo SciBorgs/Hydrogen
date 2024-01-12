@@ -7,9 +7,9 @@ import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
+import monologue.Annotations.Log;
 import monologue.Logged;
 import monologue.Monologue;
-import monologue.Monologue.LogBoth;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.robot.Ports.OI;
@@ -30,7 +30,7 @@ public class Robot extends CommandRobot implements Logged {
   // SUBSYSTEMS
 
   // COMMANDS
-  @LogBoth Autos autos = new Autos();
+  @Log.NT Autos autos = new Autos();
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -47,8 +47,8 @@ public class Robot extends CommandRobot implements Logged {
 
     // Configure logging with DataLogManager, Monologue, and FailureManagement
     DataLogManager.start();
-    Monologue.setupLogging(this, "/Robot");
-    addPeriodic(Monologue::update, kDefaultPeriod);
+    Monologue.setupMonologue(this, "/Robot", false, true);
+    addPeriodic(Monologue::updateAll, kDefaultPeriod);
     FaultLogger.setupLogging();
     addPeriodic(FaultLogger::update, 1);
   }
