@@ -1,44 +1,55 @@
 package org.sciborgs1155.robot.drive;
 
+import static edu.wpi.first.units.Units.*;
+import static org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.*;
+
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.configs.TalonFXConfigurator;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkBase.ControlType;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.SparkAbsoluteEncoder;
+import com.revrobotics.SparkAbsoluteEncoder.Type;
+import com.revrobotics.SparkPIDController;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import java.util.List;
-import org.sciborgs1155.robot.drive.DriveConstants.*;
+import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
+import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
 
 public class TalonSwerveModule implements ModuleIO {
   private final TalonFX driveMotor;
+  private final CANSparkMax turnMotor;
 
-  // change to sparkmax (neo 550)
-  private final TalonFX turnMotor;
+  private final SparkAbsoluteEncoder turnEncoder;
+  private final SparkPIDController turnFeedback;
 
-  private final SimpleMotorFeedforward turnFeedForward =
-      new SimpleMotorFeedforward(Driving.FF.S, Driving.FF.V, Driving.FF.A);
-  private final SimpleMotorFeedforward driveFeedForward =
-      new SimpleMotorFeedforward(Driving.FF.S, Driving.FF.V, Driving.FF.A);
+  private final Rotation2d angularOffset;
+
+  private final PositionVoltage moveRequest = new PositionVoltage(0);
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
-  public TalonSwerveModule(int drivePort, int turnPort) {
+  public TalonSwerveModule(int drivePort, int turnPort, Rotation2d angularOffset) {
     driveMotor = new TalonFX(drivePort);
-    turnMotor = new TalonFX(turnPort);
+    turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
+    this.angularOffset = angularOffset;
 
-    driveMotor.getConfigurator().apply(new TalonFXConfiguration());
+    turnEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
+    turnFeedback = turnMotor.getPIDController();
 
     configureDrive(driveMotor.getConfigurator());
-    configureTurn(turnMotor.getConfigurator());
+    configureTurn();
 
     resetEncoders();
 
     driveMotor.getPosition().setUpdateFrequency(100);
-
     driveMotor.getVelocity().setUpdateFrequency(100);
   }
 
@@ -47,42 +58,70 @@ public class TalonSwerveModule implements ModuleIO {
     TalonFXConfiguration toApply = new TalonFXConfiguration();
     toApply.MotorOutput.NeutralMode = NeutralModeValue.Brake;
     toApply.CurrentLimits.SupplyCurrentLimit = 50;
+    toApply.ClosedLoopGeneral.ContinuousWrap = true;
+    toApply.Slot0.kP = Driving.PID.P;
+    toApply.Slot0.kI = Driving.PID.I;
+    toApply.Slot0.kD = Driving.PID.D;
+    toApply.Slot0.kS = Driving.FF.S;
+    toApply.Slot0.kV = Driving.FF.V;
+    toApply.Slot0.kA = Driving.FF.A;
     cfg.apply(toApply);
   }
 
-  private void configureTurn(TalonFXConfigurator cfg) {
-    TalonFXConfiguration toApply = new TalonFXConfiguration();
-    toApply.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    toApply.CurrentLimits.SupplyCurrentLimit = 20;
-    cfg.apply(toApply);
+  private void configureTurn() {
+    turnMotor.restoreFactoryDefaults();
+    turnMotor.setInverted(false);
+    turnMotor.setIdleMode(IdleMode.kBrake);
+    turnMotor.setOpenLoopRampRate(0);
+    turnMotor.setSmartCurrentLimit(20);
+
+    turnEncoder.setInverted(Turning.ENCODER_INVERTED);
+
+    turnEncoder.setPositionConversionFactor(
+        Turning.CONVERSION.in(Turning.CONVERSION.unit().numerator().per(Rotations)));
+    turnEncoder.setVelocityConversionFactor(
+        Turning.CONVERSION.in(Turning.CONVERSION.unit().numerator().per(Rotations)));
+
+    SparkUtils.enableContinuousPIDInput(
+        turnFeedback, 0, Turning.CONVERSION.in(Radians.per(Radians)));
+
+    turnFeedback.setFeedbackDevice(turnEncoder);
+
+    turnEncoder.setInverted(Turning.ENCODER_INVERTED);
+
+    turnFeedback.setP(Turning.PID.P);
+    turnFeedback.setI(Turning.PID.I);
+    turnFeedback.setD(Turning.PID.D);
   }
 
   @Override
   public SwerveModuleState getState() {
     return new SwerveModuleState(
         driveMotor.getVelocity().getValueAsDouble(),
-        Rotation2d.fromRotations(turnMotor.getPosition().getValueAsDouble()));
+        Rotation2d.fromRotations(turnEncoder.getPosition()).minus(angularOffset));
   }
 
   @Override
   public SwerveModulePosition getPosition() {
     return new SwerveModulePosition(
         driveMotor.getPosition().getValueAsDouble(),
-        Rotation2d.fromRotations(turnMotor.getPosition().getValue()));
+        Rotation2d.fromRotations(turnEncoder.getPosition()).minus(angularOffset));
   }
 
   @Override
   public void setDesiredState(SwerveModuleState desiredState) {
     SwerveModuleState correctedDesiredState = new SwerveModuleState();
     correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
+
+    // assumed we will have absolute encoders for each of the turn motors
     correctedDesiredState.angle = desiredState.angle.plus(angularOffset);
     // Optimize the reference state to avoid spinning further than 90 degrees
     setpoint =
         SwerveModuleState.optimize(
-            correctedDesiredState, Rotation2d.fromRadians(turnMotor.getPosition().getValue()));
+            correctedDesiredState, Rotation2d.fromRadians(turnEncoder.getPosition()));
 
-    double driveFF = driveFeedForward.calculate(setpoint.speedMetersPerSecond);
-    driveFeedback.setReference(setpoint.speedMetersPerSecond, ControlType.kCurrent, 0, driveFF);
+    // TODO update with control that is sure to be correct
+    driveMotor.setControl(moveRequest.withSlot(0).withVelocity(setpoint.speedMetersPerSecond));
     turnFeedback.setReference(setpoint.angle.getRadians(), ControlType.kPosition);
   }
 
@@ -94,7 +133,6 @@ public class TalonSwerveModule implements ModuleIO {
   @Override
   public void resetEncoders() {
     driveMotor.setPosition(0);
-    turnMotor.setPosition(0);
   }
 
   @Override
