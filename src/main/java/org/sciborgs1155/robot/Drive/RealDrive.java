@@ -3,7 +3,6 @@ package org.sciborgs1155.robot.Drive;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
@@ -22,9 +21,6 @@ public class RealDrive implements DriveIO {
 
   ADIS16448_IMU gyro = new ADIS16448_IMU();
 
-  PIDController leftPID = new PIDController(10, 5, 0);
-  PIDController rightPID = new PIDController(10, 5, 0);
-
   Pose2d pose = new Pose2d();
 
   DifferentialDriveOdometry odometry =
@@ -41,8 +37,8 @@ public class RealDrive implements DriveIO {
 
   @Override
   public void setSpeeds(double leftSpeed, double rightSpeed) {
-    frontLeft.setVoltage(leftPID.calculate(leftEncoder.getVelocity(), leftSpeed));
-    frontRight.setVoltage(rightPID.calculate(rightEncoder.getVelocity(), rightSpeed));
+    frontLeft.setVoltage(leftSpeed);
+    frontRight.setVoltage(rightSpeed);
   }
 
   public void periodic() {
@@ -56,5 +52,18 @@ public class RealDrive implements DriveIO {
 
   public double getY() {
     return pose.getY();
+  }
+
+  @Override
+  public double speed() {
+    return (leftEncoder.getVelocity() + rightEncoder.getVelocity()) / 2;
+  }
+
+  public double getLeftSpeed() {
+    return leftEncoder.getVelocity();
+  }
+
+  public double getRightSpeed() {
+    return rightEncoder.getVelocity();
   }
 }

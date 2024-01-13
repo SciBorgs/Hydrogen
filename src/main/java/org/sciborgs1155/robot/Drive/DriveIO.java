@@ -1,11 +1,19 @@
 package org.sciborgs1155.robot.Drive;
 
-public interface DriveIO {
-    public void setSpeeds(double leftSpeed, double rightSpeed);
+import monologue.Logged;
 
-    public void periodic();
+public interface DriveIO extends Logged {
+  public void setSpeeds(double leftSpeed, double rightSpeed);
 
-    public double getX();
-    public double getY();
+  public double speed();
 
+  public double getLeftSpeed();
+
+  public double getRightSpeed();
+
+  public void periodic();
+
+  public double getX();
+
+  public double getY();
 }
