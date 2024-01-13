@@ -141,22 +141,4 @@ public class TalonSwerveModule implements ModuleIO {
     driveMotor.close();
     turnMotor.close();
   }
-
-  @Override
-  public double getDriveVoltage() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getDriveVoltage'");
-  }
-
-  @Override
-  public double getRotationVoltage() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getRotationVoltage'");
-  }
-
-  @Override
-  public Rotation2d getHeading() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getHeading'");
-  }
 }

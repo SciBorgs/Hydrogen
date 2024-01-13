@@ -177,11 +177,11 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   private SwerveModuleState[] getModuleStates() {
-    return modules.stream().map(ModuleIO::getState).toArray(SwerveModuleState[]::new);
+    return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
   }
 
   private SwerveModulePosition[] getModulePositions() {
-    return modules.stream().map(ModuleIO::getPosition).toArray(SwerveModulePosition[]::new);
+    return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
   }
 
   /** Updates pose estimation based on provided {@link EstimatedRobotPose} */
@@ -200,7 +200,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
     for (int i = 0; i < modules2d.length; i++) {
       var module = modules.get(i);
-      var transform = new Transform2d(MODULE_OFFSET[i], module.getPosition().angle);
+      var transform = new Transform2d(MODULE_OFFSET[i], module.position().angle);
       modules2d[i].setPose(getPose().transformBy(transform));
     }
   }

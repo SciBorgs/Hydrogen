@@ -17,7 +17,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
-import java.util.List;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
@@ -80,22 +79,13 @@ public class MAXSwerveModule implements ModuleIO {
     turnFeedback.setI(Turning.PID.I);
     turnFeedback.setD(Turning.PID.D);
 
-    // please someone make a method to get conversions and their units and numerators 💀 (its not
-    // gonna be me)
-    driveEncoder.setPositionConversionFactor(
-        Driving.CONVERSION.in(Driving.CONVERSION.unit().numerator().per(Rotations)));
-    driveEncoder.setVelocityConversionFactor(
-        Driving.CONVERSION
-            .per(Seconds.one())
-            .in(Driving.CONVERSION.unit().numerator().per(Rotations).per(Minute)));
+    driveEncoder.setPositionConversionFactor(Driving.CONVERSION.in(Rotations));
+    driveEncoder.setVelocityConversionFactor(Driving.CONVERSION.per(Second).in(RPM));
 
-    turningEncoder.setPositionConversionFactor(
-        Turning.CONVERSION.in(Turning.CONVERSION.unit().numerator().per(Rotations)));
-    turningEncoder.setVelocityConversionFactor(
-        Turning.CONVERSION.in(Turning.CONVERSION.unit().numerator().per(Rotations)));
+    turningEncoder.setPositionConversionFactor(Turning.CONVERSION.in(Rotations));
+    turningEncoder.setVelocityConversionFactor(Turning.CONVERSION.per(Second).in(RPM));
 
-    SparkUtils.enableContinuousPIDInput(
-        turnFeedback, 0, Turning.CONVERSION.in(Radians.per(Radians)));
+    SparkUtils.enableContinuousPIDInput(turnFeedback, 0, Turning.CONVERSION.in(Rotations));
 
     driveMotor.burnFlash();
     turnMotor.burnFlash();
@@ -104,20 +94,15 @@ public class MAXSwerveModule implements ModuleIO {
     this.angularOffset = Rotation2d.fromRadians(angularOffset.in(Radians));
   }
 
-  /**
-   * Returns the current state of the module.
-   *
-   * @return The current state of the module.
-   */
   @Override
-  public SwerveModuleState getState() {
+  public SwerveModuleState state() {
     return new SwerveModuleState(
         driveEncoder.getVelocity(),
         Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset));
   }
 
   @Override
-  public SwerveModulePosition getPosition() {
+  public SwerveModulePosition position() {
     return new SwerveModulePosition(
         driveEncoder.getPosition(),
         Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset));
@@ -139,8 +124,8 @@ public class MAXSwerveModule implements ModuleIO {
   }
 
   @Override
-  public List<SwerveModuleState> getDesiredState() {
-    return List.of(setpoint);
+  public SwerveModuleState desiredState() {
+    return setpoint;
   }
 
   @Override
@@ -152,23 +137,5 @@ public class MAXSwerveModule implements ModuleIO {
   public void close() {
     driveMotor.close();
     turnMotor.close();
-  }
-
-  @Override
-  public double getDriveVoltage() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getDriveVoltage'");
-  }
-
-  @Override
-  public double getRotationVoltage() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getRotationVoltage'");
-  }
-
-  @Override
-  public Rotation2d getHeading() {
-    // TODO Auto-generated method stub
-    throw new UnsupportedOperationException("Unimplemented method 'getHeading'");
   }
 }

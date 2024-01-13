@@ -6,9 +6,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Mass;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Per;
 import edu.wpi.first.units.Velocity;
 import java.util.List;
 
@@ -24,13 +22,6 @@ public final class DriveConstants {
   // Distance between centers of right and left wheels on robot
   public static final Measure<Distance> WHEEL_BASE = Meters.of(0.5715);
   // Distance between front and back wheels on robot
-
-  public static final Measure<Mass> MASS = Pounds.of(100);
-  public static final double MOI =
-      (1 / 12)
-          * MASS.in(Kilograms)
-          * (Math.pow(TRACK_WIDTH.in(Meters), 2) + Math.pow(WHEEL_BASE.in(Meters), 2));
-  // I despise the unit api
 
   public static final Translation2d[] MODULE_OFFSET = {
     new Translation2d(WHEEL_BASE.in(Meters) / 2, TRACK_WIDTH.in(Meters) / 2), // front left
@@ -72,12 +63,9 @@ public final class DriveConstants {
     public static final class Driving {
       public static final Measure<Distance> CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
 
-      public static final Measure<Per<Angle, Angle>> GEARING =
-          Rotations.of(1.0 / 45.0 / 22.0 * 15.0 * 14.0).per(Rotations);
+      public static final Measure<Angle> GEARING = Rotations.of(1.0 / 45.0 / 22.0 * 15.0 * 14.0);
 
-      // cursed unit hack
-      public static final Measure<Per<Distance, Angle>> CONVERSION =
-          Meters.per(Radians).of(CIRCUMFERENCE.in(Meters) * GEARING.in(Radians.per(Radians)));
+      public static final Measure<Angle> CONVERSION = GEARING.times(CIRCUMFERENCE.in(Meters));
 
       public static final class PID {
         public static final double P = 0.11;
@@ -93,10 +81,9 @@ public final class DriveConstants {
     }
 
     public static final class Turning {
-      public static final Measure<Per<Angle, Angle>> MOTOR_GEARING =
-          Rotations.of(1.0 / 4.0 / 3.0).per(Rotations);
+      public static final Measure<Angle> MOTOR_GEARING = Rotations.of(1.0 / 4.0 / 3.0);
 
-      public static final Measure<Per<Angle, Angle>> CONVERSION = Radians.of(1).per(Rotations);
+      public static final Measure<Angle> CONVERSION = Radians.of(1);
 
       public static final boolean ENCODER_INVERTED = true;
 
