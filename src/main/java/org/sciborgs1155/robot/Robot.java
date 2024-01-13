@@ -68,9 +68,9 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
     // operator.x().onTrue(shooter.shootCommand(1)); //key c
-    operator.x().onTrue(Commands.runOnce(() -> shooter.target += 1)); // key c            increase target by 1
-    operator.b().onTrue(Commands.runOnce(() -> shooter.target -= 1)); // key x                  decrease target by 1
-    operator.y().onTrue(shooter.shoot(() -> shooter.target)); // key v                     aim at target
+    operator.x().onTrue(Commands.runOnce(() -> shooter.target += 1)); // key c              increase target by 1
+    operator.b().onTrue(Commands.runOnce(() -> shooter.target -= 1)); // key x              decrease target by 1
+    operator.y().onTrue(shooter.shoot(() -> shooter.target)); // key v                      aim at target
   }
 
   @Override
