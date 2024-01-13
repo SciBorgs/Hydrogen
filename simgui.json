@@ -2,30 +2,28 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
-      "/Robot/autos": "String Chooser"
+      "/Robot/autos": "String Chooser",
+      "/Robot/hopper/hopper/pid": "PIDController"
     }
   },
   "NetworkTables": {
     "transitory": {
-      "LiveWindow": {
-        "open": true
-      },
       "Robot": {
-        "autos": {
+        "hopper": {
+          "hopper": {
+            "open": true,
+            "pid": {
+              "open": true
+            }
+          },
           "open": true
         },
-        "hopper": {
+        "intake": {
           "open": true
         },
         "open": true
       }
     }
-  },
-  "NetworkTables Info": {
-    "Connections": {
-      "open": true
-    },
-    "visible": true
   },
   "Plot": {
     "Plot <0>": {
@@ -37,7 +35,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 336,
+          "height": 0,
           "series": [
             {
               "color": [
@@ -46,23 +44,11 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:/Robot/hopper/returnSpeed"
-            },
-            {
-              "color": [
-                0.8666667342185974,
-                0.5176470875740051,
-                0.32156863808631897,
-                1.0
-              ],
-              "id": "NT:/Robot/hopper/returnTargetSpeed"
+              "id": "NT:/Robot/hopper/currentSpeed"
             }
           ]
         }
-      ],
-      "window": {
-        "visible": false
-      }
+      ]
     },
     "Plot <1>": {
       "plots": [
@@ -82,7 +68,7 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:/Robot/hopper/speed"
+              "id": "NT:/Robot/hopper/targetSpeed"
             },
             {
               "color": [
@@ -91,7 +77,7 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:/Robot/hopper/targetSpeed"
+              "id": "NT:/Robot/hopper/voltage"
             }
           ]
         }
@@ -106,7 +92,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 281,
+          "height": 0,
           "series": [
             {
               "color": [
@@ -115,7 +101,7 @@
                 0.6901960968971252,
                 1.0
               ],
-              "id": "NT:/Robot/hopper/speed"
+              "id": "NT:/Robot/hopper/targetSpeed"
             },
             {
               "color": [
@@ -124,7 +110,7 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:/Robot/hopper/targetSpeed"
+              "id": "NT:/Robot/hopper/hopper/pid/setpoint"
             },
             {
               "color": [
@@ -134,10 +120,48 @@
                 1.0
               ],
               "id": "NT:/Robot/hopper/voltage"
+            },
+            {
+              "color": [
+                0.7686275243759155,
+                0.30588236451148987,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/hopper/currentSpeed"
             }
           ]
         }
       ]
+    },
+    "Plot <3>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 271
+        }
+      ]
+    },
+    "Plot <4>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 338
+        }
+      ],
+      "window": {
+        "visible": false
+      }
     }
   }
 }
