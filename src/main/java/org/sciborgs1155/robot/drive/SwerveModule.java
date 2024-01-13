@@ -1,10 +1,9 @@
 package org.sciborgs1155.robot.drive;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import monologue.Annotations.Log;
 import monologue.Logged;
@@ -41,6 +40,19 @@ public class SwerveModule implements Logged, AutoCloseable {
 
     setpoint = new SwerveModuleState();
   }
+
+  public SwerveModuleState state() {
+    return new SwerveModuleState(
+        module.getDriveVelocity(),
+        Rotation2d.fromRadians(module.getTurnPosition()).minus(angularOffset));
+  }
+
+  public SwerveModulePosition position() {
+    return new SwerveModulePosition(
+        module.getDrivePosition(),
+        Rotation2d.fromRadians(module.getTurnPosition()).minus(angularOffset));
+  }
+  ;
 
   public void setDesiredState(SwerveModuleState desiredState) {
     SwerveModuleState correctedDesiredState = new SwerveModuleState();

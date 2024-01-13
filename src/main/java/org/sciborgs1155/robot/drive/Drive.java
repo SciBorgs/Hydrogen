@@ -29,14 +29,14 @@ import org.sciborgs1155.robot.Robot;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
-  @Log.NT private final ModuleIO frontLeft;
-  @Log.NT private final ModuleIO frontRight;
-  @Log.NT private final ModuleIO rearLeft;
-  @Log.NT private final ModuleIO rearRight;
+  private final SwerveModule frontLeft;
+  private final SwerveModule frontRight;
+  private final SwerveModule rearLeft;
+  private final SwerveModule rearRight;
 
-  private final List<ModuleIO> modules;
+  private final List<SwerveModule> modules;
 
-  @Log.NT private final AHRS imu = new AHRS();
+  private final AHRS imu = new AHRS();
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
 
@@ -57,21 +57,20 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public static Drive create() {
     return Robot.isReal()
         ? new Drive(
-            new SwerveModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0)),
-            new SwerveModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1)),
-            new SwerveModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2)),
-            new SwerveModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)))
-        : new Drive(
-            new SparkSimModule(), new SparkSimModule(), new SparkSimModule(), new SparkSimModule());
+            new FlexModule(FRONT_LEFT_TURNING, FRONT_LEFT_DRIVE),
+            new FlexModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING),
+            new FlexModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING),
+            new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING))
+        : new Drive(null, null, null, null);
   }
 
   public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
-    this.frontLeft = frontLeft;
-    this.frontRight = frontRight;
-    this.rearLeft = rearLeft;
-    this.rearRight = rearRight;
+    this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0).in(Radians));
+    this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1).in(Radians));
+    this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2).in(Radians));
+    this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3).in(Radians));
 
-    modules = List.of(frontLeft, frontRight, rearLeft, rearRight);
+    modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
 
     odometry =
@@ -147,7 +146,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   /**
    * Sets the swerve ModuleStates.
    *
-   * @param desiredStates The desired ModuleIO states.
+   * @param desiredStates The desired SwerveModule states.
    */
   public void setModuleStates(SwerveModuleState[] desiredStates) {
     if (desiredStates.length != modules.size()) {
@@ -163,7 +162,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Resets the drive encoders to currently read a position of 0. */
   public void resetEncoders() {
-    modules.forEach(ModuleIO::resetEncoders);
+    modules.forEach(SwerveModule::resetEncoders);
   }
 
   /** Zeroes the heading of the robot. */
@@ -177,11 +176,11 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   private SwerveModuleState[] getModuleStates() {
-    return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    return modules.stream().map(SwerveModule::state).toArray(SwerveModuleState[]::new);
   }
 
   private SwerveModulePosition[] getModulePositions() {
-    return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
+    return modules.stream().map(SwerveModule::position).toArray(SwerveModulePosition[]::new);
   }
 
   /** Updates pose estimation based on provided {@link EstimatedRobotPose} */
