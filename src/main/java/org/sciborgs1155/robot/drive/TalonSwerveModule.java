@@ -11,7 +11,8 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
-import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
+import edu.wpi.first.math.geometry.Rotation2d;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class TalonSwerveModule implements ModuleIO {
   private final TalonFX driveMotor;
@@ -73,8 +74,8 @@ public class TalonSwerveModule implements ModuleIO {
     return driveMotor.getVelocity().getValueAsDouble();
   }
 
-  public double getTurnPosition() {
-    return turnEncoder.getPosition();
+  public Rotation2d getRotation() {
+    return Rotation2d.fromRadians(turnEncoder.getPosition());
   }
 
   public double getTurnVelocity() {

@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Rotations;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-import com.revrobotics.SparkPIDController;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Units;
@@ -108,20 +107,5 @@ public class SparkUtils {
    */
   public static void configureFollowerFrameStrategy(CANSparkBase spark) {
     configureFrameStrategy(spark, Set.of(), Set.of(), false);
-  }
-
-  /**
-   * Enables and sets the minimum and maximum bounds for input wrapping on an onboard Spark Max PID
-   * controller.
-   *
-   * @param controller The onboard PID controller object.
-   * @param min The minimum position input.
-   * @param max The maximum position input.
-   */
-  public static void enableContinuousPIDInput(
-      SparkPIDController controller, double min, double max) {
-    controller.setPositionPIDWrappingEnabled(true);
-    controller.setPositionPIDWrappingMinInput(min);
-    controller.setPositionPIDWrappingMaxInput(max);
   }
 }

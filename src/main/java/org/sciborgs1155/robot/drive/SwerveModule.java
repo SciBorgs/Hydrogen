@@ -1,5 +1,7 @@
 package org.sciborgs1155.robot.drive;
 
+import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.*;
+
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -7,19 +9,15 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import monologue.Annotations.Log;
 import monologue.Logged;
-import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
-import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
 
-/** Class to encapsulate a swerve module controlled by a Talon or Flex controller */
+/** Class to encapsulate a REV Max Swerve module */
 public class SwerveModule implements Logged, AutoCloseable {
   private final ModuleIO module;
 
-  private final PIDController drivePID;
-  private final PIDController turnPID;
+  @Log.NT private final PIDController driveFeedback;
+  @Log.NT private final PIDController turnFeedback;
 
   private final SimpleMotorFeedforward driveFeedforward;
-
-  private final Rotation2d angularOffset;
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
@@ -29,45 +27,55 @@ public class SwerveModule implements Logged, AutoCloseable {
    * @param module talon OR flex swerve module
    * @param angularOffset offset from drivetrain
    */
-  public SwerveModule(ModuleIO module, double angularOffset) {
+  public SwerveModule(ModuleIO module, Rotation2d angularOffset) {
     this.module = module;
-    drivePID = new PIDController(Driving.PID.P, Driving.PID.I, Driving.PID.D);
-    turnPID = new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);
+    driveFeedback = new PIDController(Driving.PID.P, Driving.PID.I, Driving.PID.D);
+    turnFeedback = new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);
+    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
 
     driveFeedforward = new SimpleMotorFeedforward(Driving.FF.S, Driving.FF.V, Driving.FF.A);
-
-    this.angularOffset = Rotation2d.fromRadians(angularOffset);
 
     setpoint = new SwerveModuleState();
   }
 
+  /**
+   * Returns the current state of the module.
+   *
+   * @return The current state of the module.
+   */
+  @Log.NT
   public SwerveModuleState state() {
-    return new SwerveModuleState(
-        module.getDriveVelocity(),
-        Rotation2d.fromRadians(module.getTurnPosition()).minus(angularOffset));
+    return new SwerveModuleState(module.getDriveVelocity(), module.getRotation());
   }
 
+  /**
+   * Returns the current position of the module.
+   *
+   * @return The current position of the module.
+   */
+  @Log.NT
   public SwerveModulePosition position() {
-    return new SwerveModulePosition(
-        module.getDrivePosition(),
-        Rotation2d.fromRadians(module.getTurnPosition()).minus(angularOffset));
+    return new SwerveModulePosition(module.getDrivePosition(), module.getRotation());
   }
-  ;
 
+  /**
+   * Updates controllers based on an optimized desired state and actuates the module accordingly.
+   *
+   * <p>This method should be called periodically.
+   *
+   * @param desiredState The desired state of the module.
+   */
   public void setDesiredState(SwerveModuleState desiredState) {
-    SwerveModuleState correctedDesiredState = new SwerveModuleState();
-    correctedDesiredState.speedMetersPerSecond = desiredState.speedMetersPerSecond;
-    correctedDesiredState.angle = desiredState.angle.plus(angularOffset);
     // Optimize the reference state to avoid spinning further than 90 degrees
-    setpoint =
-        SwerveModuleState.optimize(
-            correctedDesiredState, Rotation2d.fromRadians(module.getTurnPosition()));
+    setpoint = SwerveModuleState.optimize(desiredState, module.getRotation());
 
     double driveFF = driveFeedforward.calculate(setpoint.speedMetersPerSecond);
-    double driveVoltage = driveFF + drivePID.calculate(setpoint.speedMetersPerSecond);
+    double driveVoltage =
+        driveFF + driveFeedback.calculate(module.getDriveVelocity(), setpoint.speedMetersPerSecond);
     module.setDriveVoltage(driveVoltage);
 
-    double turnVoltage = turnPID.calculate(setpoint.angle.getRadians());
+    double turnVoltage =
+        turnFeedback.calculate(module.getRotation().getRadians(), setpoint.angle.getRadians());
     module.setTurnVoltage(turnVoltage);
   }
 

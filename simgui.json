@@ -3,12 +3,42 @@
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Robot/autos": "String Chooser",
+      "/Robot/drive/field2d": "Field2d",
+      "/Robot/drive/frontLeft/driveFeedback": "PIDController",
+      "/Robot/drive/frontLeft/turnFeedback": "PIDController",
+      "/Robot/drive/frontRight/driveFeedback": "PIDController",
+      "/Robot/drive/frontRight/turnFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[0]/driveFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[0]/turnFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[1]/driveFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[1]/turnFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[2]/driveFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[2]/turnFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[3]/driveFeedback": "PIDController",
+      "/Robot/drive/modules/SwerveModule[3]/turnFeedback": "PIDController",
+      "/Robot/drive/rearLeft/driveFeedback": "PIDController",
+      "/Robot/drive/rearLeft/turnFeedback": "PIDController",
+      "/Robot/drive/rearRight/driveFeedback": "PIDController",
+      "/Robot/drive/rearRight/turnFeedback": "PIDController",
       "/SmartDashboard/PIDController[1]": "PIDController"
+    },
+    "windows": {
+      "/Robot/drive/field2d": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
     "transitory": {
       "Robot": {
+        "drive": {
+          "modules": {
+            "open": true
+          },
+          "open": true
+        },
         "open": true
       },
       "Shuffleboard": {

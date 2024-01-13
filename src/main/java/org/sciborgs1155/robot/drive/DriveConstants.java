@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.pathplanner.lib.path.PathConstraints;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Distance;
@@ -32,12 +33,12 @@ public final class DriveConstants {
 
   // angular offsets of the modules, since we use absolute encoders
   // ignored (used as 0) in simulation because the simulated robot doesn't have offsets
-  public static final List<Measure<Angle>> ANGULAR_OFFSETS =
+  public static final List<Rotation2d> ANGULAR_OFFSETS =
       List.of(
-          Radians.of(-Math.PI / 2), // front left
-          Radians.of(0), // front right
-          Radians.of(Math.PI), // rear left
-          Radians.of(Math.PI / 2) // rear right
+          Rotation2d.fromRadians(-Math.PI / 2), // front left
+          Rotation2d.fromRadians(0), // front right
+          Rotation2d.fromRadians(Math.PI), // rear left
+          Rotation2d.fromRadians(Math.PI / 2) // rear right
           );
 
   public static final class Translation {
@@ -59,7 +60,7 @@ public final class DriveConstants {
           MAX_ANGULAR_SPEED.in(RadiansPerSecond),
           MAX_ANGULAR_ACCEL.in(RadiansPerSecond.per(Second)));
 
-  public static final class SwerveModule {
+  public static final class ModuleConstants {
     public static final class Driving {
       public static final Measure<Distance> CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
 
@@ -68,9 +69,9 @@ public final class DriveConstants {
       public static final Measure<Angle> CONVERSION = GEARING.times(CIRCUMFERENCE.in(Meters));
 
       public static final class PID {
-        public static final double P = 0.11;
+        public static final double P = 0.2;
         public static final double I = 0.0;
-        public static final double D = 0.06;
+        public static final double D = 0.0;
       }
 
       public static final class FF {
@@ -88,9 +89,9 @@ public final class DriveConstants {
       public static final boolean ENCODER_INVERTED = true;
 
       public static final class PID {
-        public static final double P = 2.0;
+        public static final double P = 0.8;
         public static final double I = 0.0;
-        public static final double D = 0.1;
+        public static final double D = 0.0;
       }
 
       // system constants only used in simulation

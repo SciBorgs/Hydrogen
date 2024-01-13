@@ -21,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.List;
 import java.util.function.DoubleSupplier;
+import monologue.Annotations.IgnoreLogged;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
@@ -34,7 +35,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   private final SwerveModule rearLeft;
   private final SwerveModule rearRight;
 
-  private final List<SwerveModule> modules;
+  @IgnoreLogged private final List<SwerveModule> modules;
 
   private final AHRS imu = new AHRS();
 
@@ -57,18 +58,18 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public static Drive create() {
     return Robot.isReal()
         ? new Drive(
-            new FlexModule(FRONT_LEFT_TURNING, FRONT_LEFT_DRIVE),
-            new FlexModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING),
-            new FlexModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING),
-            new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING))
-        : new Drive(null, null, null, null);
+            new FlexModule(FRONT_LEFT_TURNING, FRONT_LEFT_DRIVE, ANGULAR_OFFSETS.get(0)),
+            new FlexModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1)),
+            new FlexModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2)),
+            new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)))
+        : new Drive(new SimModule(), new SimModule(), new SimModule(), new SimModule());
   }
 
   public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
-    this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0).in(Radians));
-    this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1).in(Radians));
-    this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2).in(Radians));
-    this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3).in(Radians));
+    this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0));
+    this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1));
+    this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2));
+    this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3));
 
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
@@ -86,6 +87,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    *
    * @return The pose.
    */
+  @Log.NT
   public Pose2d getPose() {
     return odometry.getEstimatedPosition();
   }
