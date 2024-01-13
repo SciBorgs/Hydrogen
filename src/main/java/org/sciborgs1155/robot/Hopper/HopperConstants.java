@@ -6,7 +6,4 @@ public class HopperConstants {
   public static final double kp = 5;
   public static final double ki = 0;
   public static final double kd = 2;
-  public static final double kS = 0;
-  public static final double kV = 0;
-  public static final double kA = 0;
 }

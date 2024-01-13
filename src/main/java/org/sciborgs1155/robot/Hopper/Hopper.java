@@ -15,19 +15,14 @@ public class Hopper extends SubsystemBase implements Logged {
   final PIDController pid = new PIDController(kp, ki, kd);
   public final HopperIO hopper = Robot.isReal() ? new RealHopper(pid) : new SimHopper(pid);
 
-  @LogBoth private double targetSpeed = 0;
+  @LogBoth public double targetSpeed = 0;
 
   @LogBoth
-  private double currentSpeed() {
+  public double currentSpeed() {
     return hopper.getSpeed();
   }
 
   @LogBoth private boolean isAtTarget = hopper.atTargetSpeed();
-
-  @LogBoth
-  private double voltage() {
-    return hopper.setVoltageToReach(targetSpeed);
-  }
 
   @Override
   public void periodic() {

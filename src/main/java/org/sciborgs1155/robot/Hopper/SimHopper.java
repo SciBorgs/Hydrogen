@@ -26,10 +26,8 @@ public class SimHopper implements HopperIO {
   }
 
   @Override
-  public double setVoltageToReach(double targetSpeed) {
-    double voltage = pid.calculate(getSpeed(), targetSpeed);
-    motor.setInputVoltage(voltage);
-    return voltage;
+  public void setVoltageToReach(double targetSpeed) {
+    motor.setInputVoltage(pid.calculate(getSpeed(), targetSpeed));
   }
 
   @Override

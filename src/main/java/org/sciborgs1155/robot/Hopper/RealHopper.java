@@ -1,7 +1,5 @@
 package org.sciborgs1155.robot.Hopper;
 
-import static org.sciborgs1155.robot.Hopper.HopperConstants.*;
-
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
@@ -22,17 +20,12 @@ public class RealHopper implements HopperIO {
   }
 
   @Override
-  public double setVoltageToReach(double targetSpeed) {
-    double voltage = pid.calculate(encoder.getVelocity(), targetSpeed);
+  public void setVoltageToReach(double targetSpeed) {
     motor.setVoltage(pid.calculate(encoder.getVelocity(), targetSpeed));
-    return voltage;
   }
 
   @Override
   public boolean atTargetSpeed() {
     return pid.atSetpoint();
   }
-
-  @Override
-  public void updateState() {}
 }
