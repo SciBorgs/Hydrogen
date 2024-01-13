@@ -21,4 +21,8 @@ public class RealFlywheel implements FlywheelIO {
   public double getMotorAppliedOutput() {
     return motor.getAppliedOutput();
   }
+  @Override
+  public void close() throws Exception {
+      motor.close();
+  }
 }

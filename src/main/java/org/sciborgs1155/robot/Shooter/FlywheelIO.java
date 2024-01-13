@@ -3,11 +3,12 @@ package org.sciborgs1155.robot.shooter;
 import monologue.Logged;
 import monologue.Monologue.LogBoth;
 
-public interface FlywheelIO extends Logged {
+public interface FlywheelIO extends Logged, AutoCloseable {
   @LogBoth
   public double velocity();
 
   public void setVoltage(double voltage);
+
 }
 
 // IO real none sim ideas inspired by Asa and

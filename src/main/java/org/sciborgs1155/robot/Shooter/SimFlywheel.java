@@ -25,4 +25,6 @@ public class SimFlywheel implements FlywheelIO {
     flyWheelSim.update(Constants.PERIOD);
     System.out.println(voltage);
   }
+  @Override
+  public void close() throws Exception {}
 }

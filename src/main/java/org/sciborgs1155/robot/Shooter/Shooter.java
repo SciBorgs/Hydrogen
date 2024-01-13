@@ -10,7 +10,7 @@ import monologue.Logged;
 import monologue.Monologue.LogBoth;
 import org.sciborgs1155.robot.Robot;
 
-public class Shooter extends SubsystemBase implements Logged {
+public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
   private final FlywheelIO flywheel;
 
   @LogBoth
@@ -54,6 +54,10 @@ public class Shooter extends SubsystemBase implements Logged {
   @Override
   public void periodic() {
       SmartDashboard.putNumber("flywheel velocity", flywheel.velocity());
+  }
+  @Override
+  public void close() throws Exception {
+      flywheel.close();
   }
 }
 

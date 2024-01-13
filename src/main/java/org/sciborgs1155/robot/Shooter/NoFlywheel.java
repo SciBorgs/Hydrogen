@@ -8,4 +8,7 @@ public class NoFlywheel implements FlywheelIO {
 
   @Override
   public void setVoltage(double voltage) {}
+
+  @Override
+  public void close() throws Exception {}
 }
