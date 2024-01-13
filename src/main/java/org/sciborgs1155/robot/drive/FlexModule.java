@@ -9,8 +9,13 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
-import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
-import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
+import edu.wpi.first.math.geometry.Rotation2d;
+import java.util.Set;
+import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.lib.SparkUtils.Data;
+import org.sciborgs1155.lib.SparkUtils.Sensor;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class FlexModule implements ModuleIO {
 
@@ -20,13 +25,15 @@ public class FlexModule implements ModuleIO {
   private final RelativeEncoder driveEncoder;
   private final SparkAbsoluteEncoder turningEncoder;
 
+  private final Rotation2d angularOffset;
+
   /**
    * Constructs a SwerveModule for rev's MAX Swerve.
    *
    * @param drivePort drive motor port
    * @param turnPort turning motor port
    */
-  public FlexModule(int drivePort, int turnPort) {
+  public FlexModule(int drivePort, int turnPort, Rotation2d angularOffset) {
     driveMotor = new CANSparkFlex(drivePort, MotorType.kBrushless);
     driveMotor.restoreFactoryDefaults();
     driveMotor.setInverted(false);
@@ -40,20 +47,25 @@ public class FlexModule implements ModuleIO {
     turnMotor.setSmartCurrentLimit(20);
 
     driveEncoder = driveMotor.getEncoder();
-    turningEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
-
-    turningEncoder.setInverted(Turning.ENCODER_INVERTED);
-
     driveEncoder.setPositionConversionFactor(Driving.CONVERSION.in(Rotations));
     driveEncoder.setVelocityConversionFactor(Driving.CONVERSION.per(Second).in(RPM));
 
+    turningEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
+    turningEncoder.setInverted(Turning.ENCODER_INVERTED);
     turningEncoder.setPositionConversionFactor(Turning.CONVERSION.in(Rotations));
     turningEncoder.setVelocityConversionFactor(Turning.CONVERSION.per(Second).in(RPM));
+
+    SparkUtils.configureFrameStrategy(
+        driveMotor, Set.of(Data.POSITION, Data.VELOCITY), Set.of(Sensor.INTEGRATED), false);
+    SparkUtils.configureFrameStrategy(
+        turnMotor, Set.of(Data.POSITION), Set.of(Sensor.DUTY_CYCLE), false);
 
     driveMotor.burnFlash();
     turnMotor.burnFlash();
 
     resetEncoders();
+
+    this.angularOffset = angularOffset;
   }
 
   @Override
@@ -77,13 +89,8 @@ public class FlexModule implements ModuleIO {
   }
 
   @Override
-  public double getTurnPosition() {
-    return turningEncoder.getPosition();
-  }
-
-  @Override
-  public double getTurnVelocity() {
-    return turningEncoder.getVelocity();
+  public Rotation2d getRotation() {
+    return Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset);
   }
 
   @Override

@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.drive;
 
+import edu.wpi.first.math.geometry.Rotation2d;
 import monologue.Logged;
 
 /** Generalized SwerveModule with closed loop control */
@@ -12,9 +13,7 @@ public interface ModuleIO extends AutoCloseable, Logged {
 
   public double getDriveVelocity();
 
-  public double getTurnPosition();
-
-  public double getTurnVelocity();
+  public Rotation2d getRotation();
 
   public void resetEncoders();
 
