@@ -19,6 +19,7 @@ import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import monologue.Annotations.Log;
@@ -46,6 +47,9 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   @Log.NT private final Field2d field2d = new Field2d();
   private final FieldObject2d[] modules2d;
 
+  private final SysIdRoutine DriveSysIdRoutine;
+  private final SysIdRoutine TurnSysIdRoutine;
+
   // Rate limiting
   private final SlewRateLimiter xLimiter =
       new SlewRateLimiter(MAX_ACCEL.in(MetersPerSecondPerSecond));
@@ -72,6 +76,18 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
+
+    DriveSysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(),
+            new SysIdRoutine.Mechanism(
+                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))), null, this));
+
+    TurnSysIdRoutine =
+        new SysIdRoutine(
+            new SysIdRoutine.Config(),
+            new SysIdRoutine.Mechanism(
+                volts -> modules.forEach(m -> m.setTurnVoltage(volts.in(Volts))), null, this));
 
     odometry =
         new SwerveDrivePoseEstimator(kinematics, getHeading(), getModulePositions(), new Pose2d());
@@ -112,6 +128,22 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   private static double scale(double input) {
     input = MathUtil.applyDeadband(input, Constants.DEADBAND);
     return Math.copySign(input * input, input);
+  }
+
+  public Command DriveSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return DriveSysIdRoutine.quasistatic(direction);
+  }
+
+  public Command DriveSysIdDynamic(SysIdRoutine.Direction direction) {
+    return DriveSysIdRoutine.dynamic(direction);
+  }
+
+  public Command TurnSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return TurnSysIdRoutine.quasistatic(direction);
+  }
+
+  public Command TurnSysIdDynamic(SysIdRoutine.Direction direction) {
+    return TurnSysIdRoutine.dynamic(direction);
   }
 
   /** Drives the robot based on a {@link DoubleSupplier} for x y and omega velocities */

@@ -76,6 +76,14 @@ public class SwerveModule implements Logged, AutoCloseable {
     return setpoint;
   }
 
+  public void setDriveVoltage(double voltage) {
+    module.setDriveVoltage(voltage);
+  }
+
+  public void setTurnVoltage(double voltage) {
+    module.setTurnVoltage(voltage);
+  }
+
   public void resetEncoders() {
     module.resetEncoders();
   }
