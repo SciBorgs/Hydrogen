@@ -26,7 +26,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
 
   @LogBoth
   public boolean isAtGoal() {
-    return flywheel.velocity() == target;
+    return pidController.atSetpoint();
   }
 
   public Shooter(FlywheelIO flywheelIOtype) {
@@ -36,9 +36,13 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
     setDefaultCommand(shoot(() -> 0.1));
   }
 
-  public static Shooter createFromConfigure() {
+  public static Shooter create() {
     // see if you are real
     return Robot.isReal() ? new Shooter(new RealFlywheel()) : new Shooter(new SimFlywheel());
+  }
+  
+  public double getVelocity() {
+    return flywheel.velocity();
   }
 
   public Command shoot(DoubleSupplier setpointRPS) {

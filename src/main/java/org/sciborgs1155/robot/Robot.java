@@ -29,7 +29,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
-  @LogBoth private final Shooter shooter = Shooter.createFromConfigure();
+  @LogBoth private final Shooter shooter = Shooter.create();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
