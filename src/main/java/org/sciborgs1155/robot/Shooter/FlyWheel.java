@@ -23,7 +23,7 @@ public class FlyWheel extends SubsystemBase implements Logged {
 
   @LogBoth
   public double getShooterSpeed() {
-    return flywheel.getAngularSpeed();
+    return flywheel.getSpeed();
   }
 
   public boolean isAtTargetSpeed() {

@@ -16,14 +16,13 @@ public class SimFlyWheel implements FlyWheelIO {
   }
 
   @Override
-  public double getAngularSpeed() {
-    return motor.getAngularVelocityRadPerSec();
+  public double getSpeed() {
+    return motor.getAngularVelocityRadPerSec() * FLYWHEEL_RADIUS;
   }
 
   @Override
   public double launchWithSpeed(double launchSpeed) {
-    double angularSpeed = launchSpeed / FLYWHEEL_RADIUS;
-    double voltage = pid.calculate(getAngularSpeed(), angularSpeed);
+    double voltage = pid.calculate(getSpeed(), launchSpeed);
     motor.setInputVoltage(voltage);
     return voltage;
   }

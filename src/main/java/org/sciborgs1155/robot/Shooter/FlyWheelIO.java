@@ -7,7 +7,7 @@ public interface FlyWheelIO {
    */
   public double launchWithSpeed(double launchSpeed);
 
-  public double getAngularSpeed();
+  public double getSpeed();
 
   public boolean isAtTargetSpeed();
 

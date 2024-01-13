@@ -18,14 +18,13 @@ public class RealFlyWheel implements FlyWheelIO {
   RelativeEncoder encoder = motor.getEncoder();
 
   @Override
-  public double getAngularSpeed() {
-    return encoder.getVelocity() * RPM_TO_RAD_PER_S;
+  public double getSpeed() {
+    return encoder.getVelocity() * RPM_TO_RAD_PER_S * FLYWHEEL_RADIUS;
   }
 
   @Override
   public double launchWithSpeed(double launchSpeed) {
-    double angularSpeed = launchSpeed / FLYWHEEL_RADIUS;
-    double voltage = pid.calculate(getAngularSpeed(), angularSpeed);
+    double voltage = pid.calculate(getSpeed(), launchSpeed);
     motor.setVoltage(voltage);
     return voltage;
   }
