@@ -23,17 +23,21 @@ public class SimModule implements ModuleIO {
           LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A),
           DCMotor.getNeo550(1),
           Turning.MOTOR_GEARING.in(Rotations));
+  private double driveVoltage;
+  private double turnVoltage;
 
   @Override
   public void setDriveVoltage(double voltage) {
     drive.setInputVoltage(voltage);
     drive.update(Constants.PERIOD.in(Seconds));
+    driveVoltage = voltage;
   }
 
   @Override
   public void setTurnVoltage(double voltage) {
     turn.setInputVoltage(voltage);
     turn.update(Constants.PERIOD.in(Seconds));
+    turnVoltage = voltage;
   }
 
   @Override
@@ -59,4 +63,19 @@ public class SimModule implements ModuleIO {
 
   @Override
   public void close() {}
+
+  @Override
+  public double getTurnVelocity() {
+    return turn.getAngularVelocityRadPerSec();
+  }
+
+  @Override
+  public double getDriveVoltage() {
+    return driveVoltage;
+  }
+
+  @Override
+  public double getTurnVoltage() {
+    return turnVoltage;
+  }
 }

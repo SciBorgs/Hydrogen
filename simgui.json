@@ -1,4 +1,11 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
@@ -8,50 +15,22 @@
       "/Robot/drive/frontLeft/turnFeedback": "PIDController",
       "/Robot/drive/frontRight/driveFeedback": "PIDController",
       "/Robot/drive/frontRight/turnFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[0]/driveFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[0]/turnFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[1]/driveFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[1]/turnFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[2]/driveFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[2]/turnFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[3]/driveFeedback": "PIDController",
-      "/Robot/drive/modules/SwerveModule[3]/turnFeedback": "PIDController",
       "/Robot/drive/rearLeft/driveFeedback": "PIDController",
       "/Robot/drive/rearLeft/turnFeedback": "PIDController",
       "/Robot/drive/rearRight/driveFeedback": "PIDController",
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
-      "/SmartDashboard/PIDController[1]": "PIDController"
+      "/SmartDashboard/drive quasistatic forward": "Command"
     },
     "windows": {
       "/Robot/drive/field2d": {
         "window": {
           "visible": true
         }
-      }
-    }
-  },
-  "NetworkTables": {
-    "transitory": {
-      "Robot": {
-        "drive": {
-          "modules": {
-            "open": true
-          },
-          "open": true
-        },
-        "open": true
       },
-      "Shuffleboard": {
-        "open": true
-      },
-      "SmartDashboard": {
-        "Failures": {
-          "open": true,
-          "string[]##v_/SmartDashboard/Failures/warnings": {
-            "open": true
-          }
-        },
-        "open": true
+      "/SmartDashboard/drive quasistatic forward": {
+        "window": {
+          "visible": true
+        }
       }
     }
   },

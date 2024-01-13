@@ -56,9 +56,15 @@ public class FlexModule implements ModuleIO {
     turningEncoder.setVelocityConversionFactor(Turning.CONVERSION.per(Second).in(RPM));
 
     SparkUtils.configureFrameStrategy(
-        driveMotor, Set.of(Data.POSITION, Data.VELOCITY), Set.of(Sensor.INTEGRATED), false);
+        driveMotor,
+        Set.of(Data.POSITION, Data.VELOCITY, Data.VOLTAGE),
+        Set.of(Sensor.INTEGRATED),
+        false);
     SparkUtils.configureFrameStrategy(
-        turnMotor, Set.of(Data.POSITION), Set.of(Sensor.DUTY_CYCLE), false);
+        turnMotor,
+        Set.of(Data.POSITION, Data.VELOCITY, Data.VOLTAGE),
+        Set.of(Sensor.DUTY_CYCLE),
+        false);
 
     driveMotor.burnFlash();
     turnMotor.burnFlash();
@@ -102,5 +108,20 @@ public class FlexModule implements ModuleIO {
   public void close() {
     driveMotor.close();
     turnMotor.close();
+  }
+
+  @Override
+  public double getTurnVelocity() {
+    return turningEncoder.getVelocity();
+  }
+
+  @Override
+  public double getDriveVoltage() {
+    return driveMotor.getBusVoltage();
+  }
+
+  @Override
+  public double getTurnVoltage() {
+    return turnMotor.getBusVoltage();
   }
 }

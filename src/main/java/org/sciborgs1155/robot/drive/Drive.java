@@ -17,9 +17,12 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
+import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import monologue.Annotations.IgnoreLogged;
@@ -70,10 +73,10 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
-    this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0));
-    this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1));
-    this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2));
-    this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3));
+    this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0), " frontLeft");
+    this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1), "frontRight");
+    this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2), "rearLeft");
+    this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3), " rearRight");
 
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
@@ -82,13 +85,29 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
         new SysIdRoutine(
             new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(
-                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))), null, this));
+                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))),
+                log ->
+                    modules.forEach(
+                        m ->
+                            log.motor(m.name)
+                                .linearPosition(m.distance())
+                                .linearVelocity(m.driveVelocity())
+                                .voltage(m.getDriveVoltage())),
+                this));
 
     TurnSysIdRoutine =
         new SysIdRoutine(
             new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(
-                volts -> modules.forEach(m -> m.setTurnVoltage(volts.in(Volts))), null, this));
+                volts -> modules.forEach(m -> m.setTurnVoltage(volts.in(Volts))),
+                log ->
+                    modules.forEach(
+                        m ->
+                            log.motor(m.name)
+                                .angularPosition(m.getTurnAngle())
+                                .angularVelocity(m.getTurnVelocity())
+                                .voltage(m.getTurnVoltage())),
+                this));
 
     odometry =
         new SwerveDrivePoseEstimator(kinematics, getHeading(), getModulePositions(), new Pose2d());
@@ -96,6 +115,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     for (int i = 0; i < modules2d.length; i++) {
       modules2d[i] = field2d.getObject("module-" + i);
     }
+
+    SmartDashboard.putData("drive quasistatic forward", driveSysIdQuasistatic(Direction.kForward));
   }
 
   /**
@@ -132,20 +153,63 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return Math.copySign(input * input, input);
   }
 
-  public Command DriveSysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return DriveSysIdRoutine.quasistatic(direction);
+  /**
+   * Locks the drive motors.
+   *
+   * @return Sets the drive speed to 0.
+   */
+  private Command lockDriveMotors() {
+    return Commands.run(() -> modules.forEach(m -> m.updateDriveSpeed(0)));
   }
 
-  public Command DriveSysIdDynamic(SysIdRoutine.Direction direction) {
-    return DriveSysIdRoutine.dynamic(direction);
+  /**
+   * Locks the turn motors.
+   *
+   * @return Sets the turn speed to 0.
+   */
+  private Command lockTurnMotors() {
+    return Commands.run(
+        () -> modules.forEach(m -> m.updateTurnRotation(Rotation2d.fromDegrees(0))));
   }
 
-  public Command TurnSysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return TurnSysIdRoutine.quasistatic(direction);
+  /**
+   * Runs the drive quasistatic SysId while locking turn motors.
+   *
+   * @param direction The direction of motion.
+   * @return
+   */
+  public Command driveSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return DriveSysIdRoutine.quasistatic(direction).deadlineWith(lockTurnMotors());
   }
 
-  public Command TurnSysIdDynamic(SysIdRoutine.Direction direction) {
-    return TurnSysIdRoutine.dynamic(direction);
+  /**
+   * Runs the drive dynamic SysId while locking turn motors
+   *
+   * @param direction The direction of motion.
+   * @return
+   */
+  public Command driveSysIdDynamic(SysIdRoutine.Direction direction) {
+    return DriveSysIdRoutine.dynamic(direction).deadlineWith(lockTurnMotors());
+  }
+
+  /**
+   * Runs the turn quasistatic SysId while locking drive motors.
+   *
+   * @param direction The direction of motion.
+   * @return
+   */
+  public Command turnSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return TurnSysIdRoutine.quasistatic(direction).deadlineWith(lockDriveMotors());
+  }
+
+  /**
+   * Runs the turn dynamic SysId while locking drive motors
+   *
+   * @param direction The direction of motion.
+   * @return
+   */
+  public Command turnSysIdDynamic(SysIdRoutine.Direction direction) {
+    return TurnSysIdRoutine.dynamic(direction).deadlineWith(lockDriveMotors());
   }
 
   /** Drives the robot based on a {@link DoubleSupplier} for x y and omega velocities */
@@ -190,7 +254,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_SPEED.in(MetersPerSecond));
 
     for (int i = 0; i < modules.size(); i++) {
-      modules.get(i).setDesiredState(desiredStates[i]);
+      modules.get(i).updateDesiredState(desiredStates[i]);
     }
   }
 
