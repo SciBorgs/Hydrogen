@@ -1,27 +1,23 @@
 package org.sciborgs1155.robot.drive;
 
-import edu.wpi.first.math.kinematics.SwerveModulePosition;
-import edu.wpi.first.math.kinematics.SwerveModuleState;
-import monologue.Annotations.Log;
 import monologue.Logged;
 
 /** Generalized SwerveModule with closed loop control */
 public interface ModuleIO extends AutoCloseable, Logged {
-  /** Returns the current state of the module. */
-  @Log.NT
-  public SwerveModuleState state();
+  public void setDriveVoltage(double voltage);
 
-  /** Returns the current position of the module. */
-  @Log.NT
-  public SwerveModulePosition position();
+  public void setTurnVoltage(double voltage);
 
-  /** Sets the desired state for the module. */
-  public void setDesiredState(SwerveModuleState desiredState);
+  public double getDrivePosition();
 
-  /** Returns the desired state for the module. */
-  @Log.NT
-  public SwerveModuleState desiredState();
+  public double getDriveVelocity();
 
-  /** Zeroes all the drive encoders. */
+  public double getTurnPosition();
+
+  public double getTurnVelocity();
+
   public void resetEncoders();
+
+  @Override
+  public void close();
 }

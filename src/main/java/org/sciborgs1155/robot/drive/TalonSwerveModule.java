@@ -19,7 +19,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.Angle;
 import edu.wpi.first.units.Measure;
-import java.util.List;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.SwerveModule.Turning;
@@ -96,14 +95,14 @@ public class TalonSwerveModule implements ModuleIO {
   }
 
   @Override
-  public SwerveModuleState getState() {
+  public SwerveModuleState state() {
     return new SwerveModuleState(
         driveMotor.getVelocity().getValueAsDouble(),
         Rotation2d.fromRotations(turnEncoder.getPosition()).minus(angularOffset));
   }
 
   @Override
-  public SwerveModulePosition getPosition() {
+  public SwerveModulePosition position() {
     return new SwerveModulePosition(
         driveMotor.getPosition().getValueAsDouble(),
         Rotation2d.fromRotations(turnEncoder.getPosition()).minus(angularOffset));
@@ -126,9 +125,17 @@ public class TalonSwerveModule implements ModuleIO {
     turnFeedback.setReference(setpoint.angle.getRadians(), ControlType.kPosition);
   }
 
+  public void setDriveVoltage(double voltage) {
+    driveMotor.setVoltage(voltage);
+  }
+
+  public void setTurnVoltage(double voltage) {
+    turnMotor.setVoltage(voltage);
+  }
+
   @Override
-  public List<SwerveModuleState> getDesiredState() {
-    return List.of(setpoint);
+  public SwerveModuleState desiredState() {
+    return setpoint;
   }
 
   @Override
