@@ -1,4 +1,4 @@
-package org.sciborgs1155.robot.shooter;
+package org.sciborgs1155.robot.Shooter;
 
 import monologue.Logged;
 import monologue.Monologue.LogBoth;
