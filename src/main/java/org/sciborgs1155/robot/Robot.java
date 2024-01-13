@@ -12,6 +12,7 @@ import monologue.Monologue.LogFile;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.robot.Drive.Drive;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 
@@ -62,7 +63,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
    * running on a subsystem.
    */
   private void configureSubsystemDefaults() {
-    drive.setDefaultCommand(drive.setSpeeds(() -> -driver.getLeftY(), () -> -driver.getRightY()));
+    drive.setDefaultCommand(drive.setSpeeds(() -> - driver.getLeftY(), () -> - driver.getRightY()));
   }
 
   /** Configures trigger -> command bindings */

@@ -1,0 +1,60 @@
+package org.sciborgs1155.robot.Drive;
+
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+import com.revrobotics.RelativeEncoder;
+import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
+import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
+import edu.wpi.first.wpilibj.ADIS16448_IMU;
+
+public class RealDrive implements DriveIO {
+
+  CANSparkMax frontLeft = new CANSparkMax(1, MotorType.kBrushless);
+  CANSparkMax rearLeft = new CANSparkMax(2, MotorType.kBrushless);
+
+  CANSparkMax frontRight = new CANSparkMax(3, MotorType.kBrushless);
+  CANSparkMax rearRight = new CANSparkMax(4, MotorType.kBrushless);
+
+  RelativeEncoder leftEncoder = frontLeft.getEncoder();
+  RelativeEncoder rightEncoder = frontRight.getEncoder();
+
+  ADIS16448_IMU gyro = new ADIS16448_IMU();
+
+  PIDController leftPID = new PIDController(10, 5, 0);
+  PIDController rightPID = new PIDController(10, 5, 0);
+
+  Pose2d pose = new Pose2d();
+
+  DifferentialDriveOdometry odometry =
+      new DifferentialDriveOdometry(
+          Rotation2d.fromDegrees(gyro.getAngle()),
+          leftEncoder.getPosition(),
+          rightEncoder.getPosition());
+
+  public RealDrive() {
+    frontLeft.setInverted(true);
+    rearLeft.follow(frontLeft);
+    rearRight.follow(frontRight);
+  }
+
+  @Override
+  public void setSpeeds(double leftSpeed, double rightSpeed) {
+    frontLeft.setVoltage(leftPID.calculate(leftEncoder.getVelocity(), leftSpeed));
+    frontRight.setVoltage(rightPID.calculate(rightEncoder.getVelocity(), rightSpeed));
+  }
+
+  public void periodic() {
+    Rotation2d gyroAngle = Rotation2d.fromDegrees(gyro.getGyroAngleX());
+    pose = odometry.update(gyroAngle, leftEncoder.getPosition(), rightEncoder.getPosition());
+  }
+
+  public double getX() {
+    return pose.getX();
+  }
+
+  public double getY() {
+    return pose.getY();
+  }
+}
