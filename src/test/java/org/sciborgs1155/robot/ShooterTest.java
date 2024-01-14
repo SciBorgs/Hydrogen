@@ -27,14 +27,6 @@ public class ShooterTest {
     assertEquals(PROJECTILE_LAUNCH_SPEED, flywheel.getShooterSpeed(), DELTA);
   }
 
-  /*@Test
-  public void testLauncherBase() {
-    run(launcher.setAngle(Math.PI / 4));
-    fastForward(500);
-    assertEquals(Math.PI/4 , launcher.getCurrentAngle());
-    }*/
-
-  // setAngle() relies on WPILib Ultrasonic Sensors, which do not seem to provide a way to set the
-  // initial measurement in simulation.
-
+  // No testing for LauncherBase because there is no physical object the sensor is attached to, so
+  // its measured value will never change even after methods are called.
 }

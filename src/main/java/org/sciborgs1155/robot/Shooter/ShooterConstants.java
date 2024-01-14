@@ -7,6 +7,5 @@ public class ShooterConstants {
   public static final double ki = 0;
   public static final double kd = 0.3;
   public static final double PROJECTILE_LAUNCH_SPEED = 5;
-  public static final double ENCODER_RADIUS = 0.5;
   public static final double DISTANCE_FROM_SENSOR_TO_FIXED_BASE_EDGE = 0.3;
 }
