@@ -9,6 +9,8 @@ import java.util.List;
 import monologue.Logged;
 import monologue.Monologue;
 import monologue.Monologue.LogBoth;
+import monologue.Monologue.LogFile;
+
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.Fallible;
 import org.sciborgs1155.lib.SparkUtils;
@@ -29,7 +31,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
-  @LogBoth private final Shooter shooter = Shooter.create();
+  @LogFile private final Shooter shooter = Shooter.create();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
