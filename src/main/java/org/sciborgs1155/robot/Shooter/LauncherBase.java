@@ -24,6 +24,11 @@ public class LauncherBase extends SubsystemBase implements Logged {
     return launcher.getAngleRelativeToHorizontal();
   }
 
+  @LogBoth
+  public boolean isAtTarget() {
+    return pid.atSetpoint();
+  }
+
   @Override
   public void periodic() {
     launcher.setVoltageToReachAngle(targetAngle);
