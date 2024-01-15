@@ -34,6 +34,7 @@ import org.sciborgs1155.robot.Robot;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
+  // Modules
   private final SwerveModule frontLeft;
   private final SwerveModule frontRight;
   private final SwerveModule rearLeft;
@@ -51,9 +52,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   @Log.NT private final Field2d field2d = new Field2d();
   private final FieldObject2d[] modules2d;
 
-  private final SysIdRoutine DriveSysIdRoutine;
-  private final SysIdRoutine TurnSysIdRoutine;
-
   // Rate limiting
   private final SlewRateLimiter xLimiter =
       new SlewRateLimiter(MAX_ACCEL.in(MetersPerSecondPerSecond));
@@ -62,6 +60,14 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @Log.NT private double speedMultiplier = 1;
 
+  // SysId
+  private final SysIdRoutine driveRoutine;
+  private final SysIdRoutine turnRoutine;
+
+  /**
+   * A factory to create a new drive subsystem based on whether the robot is being ran in simulation
+   * or not.
+   */
   public static Drive create() {
     return Robot.isReal()
         ? new Drive(
@@ -72,16 +78,17 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
         : new Drive(new SimModule(), new SimModule(), new SimModule(), new SimModule());
   }
 
+  /** A swerve drive subsystem containing four {@link ModuleIO} modules. */
   public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
-    this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0), " frontLeft");
-    this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1), "frontRight");
-    this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2), "rearLeft");
-    this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3), " rearRight");
+    this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0), " FL");
+    this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1), "FR");
+    this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2), "RL");
+    this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3), " RR");
 
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
 
-    DriveSysIdRoutine =
+    driveRoutine =
         new SysIdRoutine(
             new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(
@@ -95,7 +102,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                                 .voltage(m.getDriveVoltage())),
                 this));
 
-    TurnSysIdRoutine =
+    turnRoutine =
         new SysIdRoutine(
             new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(
@@ -112,8 +119,9 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     odometry =
         new SwerveDrivePoseEstimator(kinematics, getHeading(), getModulePositions(), new Pose2d());
 
-    for (int i = 0; i < modules2d.length; i++) {
-      modules2d[i] = field2d.getObject("module-" + i);
+    for (int i = 0; i < modules.size(); i++) {
+      var module = modules.get(i);
+      modules2d[i] = field2d.getObject("module-" + module.name);
     }
 
     SmartDashboard.putData("drive quasistatic forward", driveSysIdQuasistatic(Direction.kForward));
@@ -130,9 +138,9 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /**
-   * Returns the heading of the robot, based on our pigeon
+   * Returns the heading of the robot, based on our pigeon.
    *
-   * @return A Rotation2d of our angle
+   * @return A Rotation2d of our angle.
    */
   public Rotation2d getHeading() {
     return Robot.isReal() ? imu.getRotation2d() : Rotation2d.fromRadians(simulatedHeading);
@@ -154,77 +162,34 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /**
-   * Locks the drive motors.
+   * Drives the robot based on a {@link DoubleSupplier} for field relativex y and omega speeds.
    *
-   * @return Sets the drive speed to 0.
+   * @param vx A supplier for the speed of the robot (-1 to 1) along the x axis (perpendicular to
+   *     the alliance side).
+   * @param vy A supplier for the speed of the robot (-1 to 1) along the y axis (parallel to the
+   *     alliance side).
+   * @param vOmega A supplier for the angular speed of the robot (-1 to 1).
+   * @return The driving command.
    */
-  private Command lockDriveMotors() {
-    return Commands.run(() -> modules.forEach(m -> m.updateDriveSpeed(0)));
-  }
-
-  /**
-   * Locks the turn motors.
-   *
-   * @return Sets the turn speed to 0.
-   */
-  private Command lockTurnMotors() {
-    return Commands.run(
-        () -> modules.forEach(m -> m.updateTurnRotation(Rotation2d.fromDegrees(0))));
-  }
-
-  /**
-   * Runs the drive quasistatic SysId while locking turn motors.
-   *
-   * @param direction The direction of motion.
-   * @return
-   */
-  public Command driveSysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return DriveSysIdRoutine.quasistatic(direction).deadlineWith(lockTurnMotors());
-  }
-
-  /**
-   * Runs the drive dynamic SysId while locking turn motors
-   *
-   * @param direction The direction of motion.
-   * @return
-   */
-  public Command driveSysIdDynamic(SysIdRoutine.Direction direction) {
-    return DriveSysIdRoutine.dynamic(direction).deadlineWith(lockTurnMotors());
-  }
-
-  /**
-   * Runs the turn quasistatic SysId while locking drive motors.
-   *
-   * @param direction The direction of motion.
-   * @return
-   */
-  public Command turnSysIdQuasistatic(SysIdRoutine.Direction direction) {
-    return TurnSysIdRoutine.quasistatic(direction).deadlineWith(lockDriveMotors());
-  }
-
-  /**
-   * Runs the turn dynamic SysId while locking drive motors
-   *
-   * @param direction The direction of motion.
-   * @return
-   */
-  public Command turnSysIdDynamic(SysIdRoutine.Direction direction) {
-    return TurnSysIdRoutine.dynamic(direction).deadlineWith(lockDriveMotors());
-  }
-
-  /** Drives the robot based on a {@link DoubleSupplier} for x y and omega velocities */
   public Command drive(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier vOmega) {
     return run(
         () ->
             drive(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
                     xLimiter.calculate(
-                        scale(vx.getAsDouble()) * MAX_SPEED.in(MetersPerSecond) * speedMultiplier),
+                        MAX_SPEED
+                            .times(scale(vx.getAsDouble()))
+                            .times(speedMultiplier)
+                            .in(MetersPerSecond)),
                     yLimiter.calculate(
-                        scale(vy.getAsDouble()) * MAX_SPEED.in(MetersPerSecond) * speedMultiplier),
-                    scale(vOmega.getAsDouble())
-                        * MAX_ANGULAR_SPEED.in(RadiansPerSecond)
-                        * speedMultiplier,
+                        MAX_SPEED
+                            .times(scale(vy.getAsDouble()))
+                            .times(speedMultiplier)
+                            .in(MetersPerSecond)),
+                    MAX_ANGULAR_SPEED
+                        .times(scale(vOmega.getAsDouble()))
+                        .times(speedMultiplier)
+                        .in(RadiansPerSecond),
                     getHeading())));
   }
 
@@ -236,9 +201,9 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    * @param speeds The desired chassis speeds.
    */
   public void drive(ChassisSpeeds speeds) {
-    speeds = ChassisSpeeds.discretize(speeds, Constants.PERIOD.in(Seconds));
-
-    setModuleStates(kinematics.toSwerveModuleStates(speeds));
+    setModuleStates(
+        kinematics.toSwerveModuleStates(
+            ChassisSpeeds.discretize(speeds, Constants.PERIOD.in(Seconds))));
   }
 
   /**
@@ -273,10 +238,12 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return imu.getPitch();
   }
 
+  /** Returns the module states. */
   private SwerveModuleState[] getModuleStates() {
     return modules.stream().map(SwerveModule::state).toArray(SwerveModuleState[]::new);
   }
 
+  /** Returns the module positions */
   private SwerveModulePosition[] getModulePositions() {
     return modules.stream().map(SwerveModule::position).toArray(SwerveModulePosition[]::new);
   }
@@ -327,6 +294,37 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   /** Sets a new speed multiplier for the robot, this affects max cartesian and angular speeds */
   public Command setSpeedMultiplier(double multiplier) {
     return runOnce(() -> speedMultiplier = multiplier);
+  }
+
+  /** Locks the drive motors. */
+  private Command lockDriveMotors() {
+    return Commands.run(() -> modules.forEach(m -> m.updateDriveSpeed(0)));
+  }
+
+  /** Locks the turn motors. */
+  private Command lockTurnMotors() {
+    return Commands.run(
+        () -> modules.forEach(m -> m.updateTurnRotation(Rotation2d.fromDegrees(0))));
+  }
+
+  /** Runs the drive quasistatic SysId while locking turn motors. */
+  public Command driveSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return driveRoutine.quasistatic(direction).deadlineWith(lockTurnMotors());
+  }
+
+  /** Runs the drive dynamic SysId while locking turn motors. */
+  public Command driveSysIdDynamic(SysIdRoutine.Direction direction) {
+    return driveRoutine.dynamic(direction).deadlineWith(lockTurnMotors());
+  }
+
+  /** Runs the turn quasistatic SysId while locking drive motors. */
+  public Command turnSysIdQuasistatic(SysIdRoutine.Direction direction) {
+    return turnRoutine.quasistatic(direction).deadlineWith(lockDriveMotors());
+  }
+
+  /** Runs the turn dynamic SysId while locking drive motors. */
+  public Command turnSysIdDynamic(SysIdRoutine.Direction direction) {
+    return turnRoutine.dynamic(direction).deadlineWith(lockDriveMotors());
   }
 
   public void close() throws Exception {

@@ -6,6 +6,7 @@ import com.pathplanner.lib.path.PathConstraints;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.Angle;
+import edu.wpi.first.units.Current;
 import edu.wpi.first.units.Distance;
 import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.Velocity;
@@ -19,16 +20,16 @@ public final class DriveConstants {
   public static final Measure<Velocity<Velocity<Angle>>> MAX_ANGULAR_ACCEL =
       RadiansPerSecond.per(Second).of(2 * Math.PI);
 
-  public static final Measure<Distance> TRACK_WIDTH = Meters.of(0.5715);
   // Distance between centers of right and left wheels on robot
-  public static final Measure<Distance> WHEEL_BASE = Meters.of(0.5715);
+  public static final Measure<Distance> TRACK_WIDTH = Meters.of(0.5715);
   // Distance between front and back wheels on robot
+  public static final Measure<Distance> WHEEL_BASE = Meters.of(0.5715);
 
   public static final Translation2d[] MODULE_OFFSET = {
-    new Translation2d(WHEEL_BASE.in(Meters) / 2, TRACK_WIDTH.in(Meters) / 2), // front left
-    new Translation2d(WHEEL_BASE.in(Meters) / 2, -TRACK_WIDTH.in(Meters) / 2), // front right
-    new Translation2d(-WHEEL_BASE.in(Meters) / 2, TRACK_WIDTH.in(Meters) / 2), // rear left
-    new Translation2d(-WHEEL_BASE.in(Meters) / 2, -TRACK_WIDTH.in(Meters) / 2) // rear right
+    new Translation2d(WHEEL_BASE.divide(2), TRACK_WIDTH.divide(2)), // front left
+    new Translation2d(WHEEL_BASE.divide(2), TRACK_WIDTH.divide(-2)), // front right
+    new Translation2d(WHEEL_BASE.divide(-2), TRACK_WIDTH.divide(2)), // rear left
+    new Translation2d(WHEEL_BASE.divide(-2), TRACK_WIDTH.divide(-2)) // rear right
   };
 
   // angular offsets of the modules, since we use absolute encoders
@@ -62,7 +63,7 @@ public final class DriveConstants {
 
   public static final class ModuleConstants {
     public static final class Driving {
-      // Possible : 12T, 13T, or 14T.
+      // Possible pinion configurations : 12T, 13T, or 14T.
       public static final int PINION_TEETH = 14;
 
       public static final Measure<Distance> CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
@@ -74,6 +75,8 @@ public final class DriveConstants {
       public static final Measure<Angle> POSITION_FACTOR =
           Rotations.of(GEARING).times(CIRCUMFERENCE.in(Meters));
       public static final Measure<Velocity<Angle>> VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
+
+      public static final Measure<Current> CURRENT_LIMIT = Amps.of(50);
 
       public static final class PID {
         public static final double P = 0.2;
@@ -96,6 +99,8 @@ public final class DriveConstants {
       public static final Measure<Velocity<Angle>> VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
       public static final boolean ENCODER_INVERTED = true;
+
+      public static final Measure<Current> CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
         public static final double P = 0.8;
