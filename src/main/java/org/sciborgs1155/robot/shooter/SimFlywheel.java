@@ -23,7 +23,6 @@ public class SimFlywheel implements FlywheelIO {
   public void setVoltage(double voltage) {
     flyWheelSim.setInputVoltage(voltage);
     flyWheelSim.update(Constants.PERIOD);
-    System.out.println(voltage);
   }
   @Override
   public void close() throws Exception {}

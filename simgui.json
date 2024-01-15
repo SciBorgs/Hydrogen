@@ -19,7 +19,10 @@
       "Robot": {
         "open": true,
         "shooter": {
-          "open": true
+          "open": true,
+          "pidController": {
+            "open": true
+          }
         }
       },
       "SmartDashboard": {
@@ -106,16 +109,16 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 332,
+          "height": 576,
           "series": [
             {
               "color": [
-                0.2980392277240753,
-                0.44705885648727417,
-                0.6901960968971252,
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
                 1.0
               ],
-              "id": "NT:/Robot/shooter/target"
+              "id": "NT:/Robot/shooter/getVelocity"
             },
             {
               "color": [
@@ -124,11 +127,14 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:/SmartDashboard/flywheel velocity"
+              "id": "NT:/Robot/shooter/pidController/setpoint"
             }
           ]
         }
-      ]
+      ],
+      "window": {
+        "name": "ShooterPlot"
+      }
     }
   }
 }

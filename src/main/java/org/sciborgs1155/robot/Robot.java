@@ -31,7 +31,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
-  @LogFile private final Shooter shooter = Shooter.create();
+  @LogFile private final Shooter shooter = new Shooter();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
@@ -70,9 +70,9 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
     // operator.x().onTrue(shooter.shootCommand(1)); //key c
-    operator.x().onTrue(Commands.runOnce(() -> shooter.target += 1)); // key c              increase target by 1
-    operator.b().onTrue(Commands.runOnce(() -> shooter.target -= 1)); // key x              decrease target by 1
-    operator.y().onTrue(shooter.shoot(() -> shooter.target)); // key v                      aim at target
+    operator.x().onTrue(shooter.changeTargetRPS(() -> 1)); // key c              increase target by 1
+    operator.b().onTrue(shooter.changeTargetRPS(() -> -1)); // key x              decrease target by 1
+    operator.y().onTrue(shooter.shoot(shooter::getTargetRPS)); // key v                      aim at target
   }
 
   @Override

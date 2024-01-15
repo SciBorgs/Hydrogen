@@ -14,12 +14,10 @@ import static org.sciborgs1155.lib.TestingUtil.*;
 
 public class TestShooter {
     Shooter shooter;
-    final double delta = 5e-2;
-
     @BeforeEach
     public void doBefore() {
         setupHAL();
-        shooter = Shooter.create();
+        shooter = new Shooter();
     }
 
     @ParameterizedTest

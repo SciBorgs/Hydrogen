@@ -8,39 +8,36 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import monologue.Logged;
 import monologue.Monologue.LogBoth;
+import monologue.Monologue.LogFile;
+import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
+
 import org.sciborgs1155.robot.Robot;
 
 public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
-  private final FlywheelIO flywheel;
+  @LogFile private final FlywheelIO flywheel = Robot.isReal() ? new RealFlywheel() : new SimFlywheel();
 
   @LogBoth
   private final PIDController pidController =
-      new PIDController(ShooterConstants.kp, ShooterConstants.ki, ShooterConstants.kd);
+      new PIDController(kp, ki, kd);
       
 
   private final SimpleMotorFeedforward feedForward =
       new SimpleMotorFeedforward(
-          ShooterConstants.kSVolts, ShooterConstants.kVVoltSecondsPerRotation);
+          kSVolts, kVVoltSecondsPerRotation);
 
-  @LogBoth public double target;
+  @LogBoth private double targetRPS;
 
   @LogBoth
   public boolean isAtGoal() {
     return pidController.atSetpoint();
   }
 
-  public Shooter(FlywheelIO flywheelIOtype) {
-    flywheel =
-        flywheelIOtype; // in theory, this sets a final flywheel to the correct type of object thing
-    // (like real/fake/no flywheels)
-    setDefaultCommand(shoot(() -> 0.1));
-  }
-
-  public static Shooter create() {
-    // see if you are real
-    return Robot.isReal() ? new Shooter(new RealFlywheel()) : new Shooter(new SimFlywheel());
+  public Shooter() {
+    //"flywheel should always me moving" - asa
+    setDefaultCommand(shoot(() -> 0.000001));
   }
   
+  @LogBoth
   public double getVelocity() {
     return flywheel.velocity();
   }
@@ -55,10 +52,17 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
         .withName("Shoot");
   }
 
-  @Override
-  public void periodic() {
-      SmartDashboard.putNumber("flywheel velocity", flywheel.velocity());
+  public Command changeTargetRPS(DoubleSupplier change) {
+    System.out.println(targetRPS + change.getAsDouble());
+    return runOnce(
+      () -> targetRPS += change.getAsDouble()
+    );
   }
+
+  public double getTargetRPS() {
+      return targetRPS;
+  }
+
   @Override
   public void close() throws Exception {
       flywheel.close();
