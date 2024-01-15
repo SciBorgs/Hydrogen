@@ -13,38 +13,37 @@ public class Intake extends SubsystemBase implements Logged {
 
   final PIDController pid = new PIDController(kp, kd, ki);
 
-  public final IntakeIO intake = Robot.isReal() ? new RealIntake(pid) : new SimIntake(pid);
-  @LogBoth public double targetSpeed = 0;
+  public final IntakeIO intake = Robot.isReal() ? new RealIntake() : new SimIntake();
+  @LogBoth public double targetSpeed = pid.getSetpoint();
 
   @LogBoth
   public double speed() {
-    return intake.getIntakeSpeed();
+    return intake.getSpeed();
   }
 
   @Override
   public void periodic() {
-    intake.setVoltageToReachSpeed(targetSpeed);
-    intake.updateState();
+    intake.setVoltage(pid.calculate(intake.getSpeed(), targetSpeed));
   }
 
   public Command intake() {
     return runOnce(
         () -> {
-          targetSpeed = INTAKE_SPEED;
+          pid.setSetpoint(INTAKE_SPEED);
         });
   }
 
   public Command stop() {
     return runOnce(
         () -> {
-          targetSpeed = 0;
+          pid.setSetpoint(0);
         });
   }
 
   public Command outtake() {
     return runOnce(
         () -> {
-          targetSpeed = -1 * INTAKE_SPEED;
+          pid.setSetpoint(-INTAKE_SPEED);
         });
   }
 }

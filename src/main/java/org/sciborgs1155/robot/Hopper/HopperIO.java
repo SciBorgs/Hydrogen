@@ -6,10 +6,5 @@ public interface HopperIO extends Logged {
 
   public double getSpeed();
 
-  public void setVoltageToReach(double targetSpeed);
-
-  public boolean atTargetSpeed();
-
-  public default void updateState() {}
-  ;
+  public void setVoltage(double voltage);
 }

@@ -4,12 +4,7 @@ import monologue.Logged;
 
 public interface IntakeIO extends Logged {
 
-  public double getIntakeSpeed();
+  public double getSpeed();
 
-  public void setVoltageToReachSpeed(double targetTranslationalSpeed);
-
-  public boolean atTargetSpeed();
-
-  public default void updateState() {}
-  ;
+  public void setVoltage(double voltage);
 }

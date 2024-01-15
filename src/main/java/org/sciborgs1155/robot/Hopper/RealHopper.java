@@ -1,31 +1,22 @@
 package org.sciborgs1155.robot.Hopper;
 
+import static org.sciborgs1155.robot.Hopper.HopperConstants.*;
+
 import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import edu.wpi.first.math.controller.PIDController;
 
 public class RealHopper implements HopperIO {
   CANSparkMax motor = new CANSparkMax(5, MotorType.kBrushless);
   RelativeEncoder encoder = motor.getEncoder();
-  PIDController pid;
-
-  public RealHopper(PIDController pid) {
-    this.pid = pid;
-  }
 
   @Override
   public double getSpeed() {
-    return motor.getEncoder().getVelocity();
+    return motor.getEncoder().getVelocity() * WHEEL_RADIUS;
   }
 
   @Override
-  public void setVoltageToReach(double targetSpeed) {
-    motor.setVoltage(pid.calculate(encoder.getVelocity(), targetSpeed));
-  }
-
-  @Override
-  public boolean atTargetSpeed() {
-    return pid.atSetpoint();
+  public void setVoltage(double voltage) {
+    motor.setVoltage(voltage);
   }
 }

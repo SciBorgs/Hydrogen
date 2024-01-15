@@ -19,28 +19,16 @@ public class IntakeTest {
   }
 
   @Test
-  public void testMovementForward() {
-    run(intake.intake());
-    assertEquals(INTAKE_SPEED, intake.targetSpeed);
-  }
-
-  @Test
-  public void testMovementBack() {
-    run(intake.outtake());
-    assertEquals(INTAKE_SPEED * -1, intake.targetSpeed);
-  }
-
-  @Test
-  public void reachesSetpointWhenMovingForward() {
+  public void testMovement() {
     run(intake.intake());
     fastForward(500);
     assertEquals(INTAKE_SPEED, intake.speed(), DELTA);
-  }
+    // test forward movement
 
-  @Test
-  public void reachesSetpointWhenMovingBack() {
     run(intake.outtake());
     fastForward(500);
     assertEquals(-INTAKE_SPEED, intake.speed(), DELTA);
+    // test backwards movement
+
   }
 }

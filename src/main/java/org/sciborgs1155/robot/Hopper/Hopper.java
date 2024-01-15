@@ -13,27 +13,26 @@ import org.sciborgs1155.robot.Robot;
 public class Hopper extends SubsystemBase implements Logged {
 
   final PIDController pid = new PIDController(kp, ki, kd);
-  public final HopperIO hopper = Robot.isReal() ? new RealHopper(pid) : new SimHopper(pid);
+  public final HopperIO hopper = Robot.isReal() ? new RealHopper() : new SimHopper();
 
-  @LogBoth public double targetSpeed = 0;
+  @LogBoth public double targetSpeed = pid.getSetpoint();
 
   @LogBoth
-  public double currentSpeed() {
+  public double speed() {
     return hopper.getSpeed();
   }
 
-  @LogBoth private boolean isAtTarget = hopper.atTargetSpeed();
+  @LogBoth private boolean isAtTarget = pid.atSetpoint();
 
   @Override
   public void periodic() {
-    hopper.setVoltageToReach(targetSpeed);
-    hopper.updateState();
+    hopper.setVoltage(pid.calculate(hopper.getSpeed(), targetSpeed));
   }
 
   public Command forward() {
     return runOnce(
             () -> {
-              targetSpeed = MOTOR_MAX_SPEED;
+              pid.setSetpoint(MOTOR_MAX_SPEED);
             })
         .andThen(Commands.idle());
   }
@@ -41,7 +40,7 @@ public class Hopper extends SubsystemBase implements Logged {
   public Command back() {
     return runOnce(
             () -> {
-              targetSpeed = -1 * MOTOR_MAX_SPEED;
+              pid.setSetpoint(-MOTOR_MAX_SPEED);
             })
         .andThen(Commands.idle());
   }
@@ -49,7 +48,7 @@ public class Hopper extends SubsystemBase implements Logged {
   public Command stop() {
     return runOnce(
         () -> {
-          targetSpeed = 0;
+          pid.setSetpoint(0);
         });
   }
 }

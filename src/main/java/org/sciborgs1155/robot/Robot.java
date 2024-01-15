@@ -17,8 +17,6 @@ import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Hopper.*;
 import org.sciborgs1155.robot.Intake.*;
 import org.sciborgs1155.robot.Ports.OI;
-import org.sciborgs1155.robot.Shooter.FlyWheel;
-import org.sciborgs1155.robot.Shooter.LauncherBase;
 import org.sciborgs1155.robot.commands.Autos;
 
 /**
@@ -35,8 +33,6 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   // SUBSYSTEMS
   @LogFile private final Intake intake = new Intake();
   @LogFile private final Hopper hopper = new Hopper();
-  @LogFile private final FlyWheel flywheel = new FlyWheel();
-  @LogFile private final LauncherBase launcher = new LauncherBase();
 
   // COMMANDS
   @LogBoth Autos autos = new Autos();
@@ -78,7 +74,6 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   private void configureSubsystemDefaults() {
     hopper.setDefaultCommand(hopper.stop());
     intake.setDefaultCommand(intake.stop());
-    flywheel.setDefaultCommand(flywheel.stop());
   }
 
   /** Configures trigger -> command bindings */
@@ -88,15 +83,7 @@ public class Robot extends CommandRobot implements Logged, Fallible {
   // variables angle and speed
 
   private void configureBindings() {
-    operator
-        .x()
-        .whileTrue(
-            launcher
-                .setAngle(launchAngle)
-                .until(launcher::isAtTarget)
-                .andThen(
-                    flywheel.launch().until(flywheel::isAtTargetSpeed).andThen(hopper.forward())));
-    operator.b().whileTrue(flywheel.stop().andThen(hopper.stop()));
+    operator.x().whileTrue(hopper.forward());
   }
 
   @Override
