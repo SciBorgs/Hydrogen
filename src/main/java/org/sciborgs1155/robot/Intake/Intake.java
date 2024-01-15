@@ -12,6 +12,7 @@ import org.sciborgs1155.robot.Robot;
 public class Intake extends SubsystemBase implements Logged {
 
   final PIDController pid = new PIDController(kp, kd, ki);
+
   public final IntakeIO intake = Robot.isReal() ? new RealIntake(pid) : new SimIntake(pid);
   @LogBoth public double targetSpeed = 0;
 
