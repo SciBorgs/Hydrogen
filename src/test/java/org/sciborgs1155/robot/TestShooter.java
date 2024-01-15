@@ -14,8 +14,10 @@ import static org.sciborgs1155.lib.TestingUtil.*;
 
 public class TestShooter {
     Shooter shooter;
+    double DELTA = 5e-1;
+
     @BeforeEach
-    public void doBefore() {
+    public void executeMethodPreliminaryToAnyAndAllRelevantTestMethodsWithTheAimOfNotOnlySettingUpHalAsAPreresiquiteToTestingButAlsoResettingTheShooterInstanceAsToPreventStatespaceBetweenTestsInterferingWithAndConfoundingExperimentalData() {
         setupHAL();
         shooter = new Shooter();
     }
@@ -25,6 +27,6 @@ public class TestShooter {
     public void testVelocity(double v) {
         run(shooter.shoot(() -> v));
         fastForward();
-        assert(shooter.isAtGoal());
+        assertEquals(v, shooter.getVelocity(), DELTA);
     }
 }

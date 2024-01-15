@@ -53,7 +53,6 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   public Command changeTargetRPS(DoubleSupplier change) {
-    System.out.println(targetRPS + change.getAsDouble());
     return runOnce(
       () -> targetRPS += change.getAsDouble()
     );
