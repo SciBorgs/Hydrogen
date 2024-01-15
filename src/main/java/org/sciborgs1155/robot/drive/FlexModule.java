@@ -47,13 +47,13 @@ public class FlexModule implements ModuleIO {
     turnMotor.setSmartCurrentLimit(20);
 
     driveEncoder = driveMotor.getEncoder();
-    driveEncoder.setPositionConversionFactor(Driving.CONVERSION.in(Rotations));
-    driveEncoder.setVelocityConversionFactor(Driving.CONVERSION.per(Second).in(RPM));
+    driveEncoder.setPositionConversionFactor(Driving.POSITION_FACTOR.in(Radians));
+    driveEncoder.setVelocityConversionFactor(Driving.VELOCITY_FACTOR.in(RadiansPerSecond));
 
     turningEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
     turningEncoder.setInverted(Turning.ENCODER_INVERTED);
-    turningEncoder.setPositionConversionFactor(Turning.CONVERSION.in(Rotations));
-    turningEncoder.setVelocityConversionFactor(Turning.CONVERSION.per(Second).in(RPM));
+    turningEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians));
+    turningEncoder.setVelocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond));
 
     SparkUtils.configureFrameStrategy(
         driveMotor,

@@ -52,8 +52,8 @@ public class TalonSwerveModule implements ModuleIO {
 
     turnEncoder.setInverted(Turning.ENCODER_INVERTED);
 
-    turnEncoder.setPositionConversionFactor(Turning.CONVERSION.in(Rotations));
-    turnEncoder.setVelocityConversionFactor(Turning.CONVERSION.in(Rotations));
+    turnEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians));
+    turnEncoder.setVelocityConversionFactor(Turning.POSITION_FACTOR.in(Radians));
 
     turnEncoder.setInverted(Turning.ENCODER_INVERTED);
   }

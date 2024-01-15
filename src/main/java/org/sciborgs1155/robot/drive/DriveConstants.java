@@ -62,11 +62,18 @@ public final class DriveConstants {
 
   public static final class ModuleConstants {
     public static final class Driving {
+      // Possible : 12T, 13T, or 14T.
+      public static final int PINION_TEETH = 14;
+
       public static final Measure<Distance> CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
 
-      public static final Measure<Angle> GEARING = Rotations.of(1.0 / 45.0 / 22.0 * 15.0 * 14.0);
+      // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15 teeth on the
+      // bevel pinion
+      public static final double GEARING = 1.0 / 45.0 / 22.0 * 15.0 * 14.0;
 
-      public static final Measure<Angle> CONVERSION = GEARING.times(CIRCUMFERENCE.in(Meters));
+      public static final Measure<Angle> POSITION_FACTOR =
+          Rotations.of(GEARING).times(CIRCUMFERENCE.in(Meters));
+      public static final Measure<Velocity<Angle>> VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
       public static final class PID {
         public static final double P = 0.2;
@@ -81,10 +88,12 @@ public final class DriveConstants {
       }
     }
 
-    public static final class Turning {
-      public static final Measure<Angle> MOTOR_GEARING = Rotations.of(1.0 / 4.0 / 3.0);
+    static final class Turning {
+      public static final double MOTOR_GEARING = 1.0 / 4.0 / 3.0;
+      public static final double ENCODER_GEARING = 1;
 
-      public static final Measure<Angle> CONVERSION = Radians.of(1);
+      public static final Measure<Angle> POSITION_FACTOR = Rotations.of(ENCODER_GEARING);
+      public static final Measure<Velocity<Angle>> VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
       public static final boolean ENCODER_INVERTED = true;
 

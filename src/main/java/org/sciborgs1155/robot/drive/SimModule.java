@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.drive;
 
-import static edu.wpi.first.units.Units.Rotations;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.*;
 
@@ -17,12 +16,12 @@ public class SimModule implements ModuleIO {
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(Driving.FF.V, Driving.FF.A),
           DCMotor.getNeo550(1),
-          Driving.GEARING.in(Rotations));
+          Driving.GEARING);
   private final DCMotorSim turn =
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A),
           DCMotor.getNeo550(1),
-          Turning.MOTOR_GEARING.in(Rotations));
+          Turning.MOTOR_GEARING);
   private double driveVoltage;
   private double turnVoltage;
 
