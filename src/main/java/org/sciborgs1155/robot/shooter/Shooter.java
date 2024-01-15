@@ -25,7 +25,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
       new SimpleMotorFeedforward(
           kSVolts, kVVoltSecondsPerRotation);
 
-  @LogBoth private double targetRPS;
+  private double targetRPS;
 
   @LogBoth
   public boolean isAtGoal() {
@@ -58,7 +58,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
       () -> targetRPS += change.getAsDouble()
     );
   }
-
+  @LogBoth
   public double getTargetRPS() {
       return targetRPS;
   }
