@@ -127,7 +127,7 @@
                 0.32156863808631897,
                 1.0
               ],
-              "id": "NT:/Robot/shooter/pidController/setpoint"
+              "id": "NT:/Robot/shooter/getTargetRPS"
             }
           ]
         }
