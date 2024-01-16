@@ -9,10 +9,13 @@ import edu.wpi.first.math.geometry.Pose2d;
 import java.util.Optional;
 
 import org.photonvision.EstimatedRobotPose;
+import org.photonvision.PhotonCamera;
 import org.photonvision.PhotonPoseEstimator;
 import org.photonvision.targeting.PhotonTrackedTarget;
 
 public interface CameraIO {
   
   Optional<EstimatedRobotPose> update();
+  PhotonCamera fetchCamera();
+  PhotonPoseEstimator fetchPoseEstimator();
 }

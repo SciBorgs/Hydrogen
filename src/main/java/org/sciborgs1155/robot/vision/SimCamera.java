@@ -17,8 +17,7 @@ import org.photonvision.simulation.PhotonCameraSim;
 import org.photonvision.simulation.SimCameraProperties;
 import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonTrackedTarget;
-import org.sciborgs1155.robot.Constants;
-
+import org.sciborgs1155.robot.vision.VisionConstants;
 public class SimCamera implements CameraIO {
     private final PhotonPoseEstimator photonEstimator;
     private PhotonCameraSim cameraSim;
@@ -29,14 +28,14 @@ public class SimCamera implements CameraIO {
       camera = new PhotonCamera(null); 
 
       visionSim = new VisionSystemSim("main");
-      visionSim.addAprilTags(Constants.TAG_LAYOUT);//Sets up tag layout for simulation
+      visionSim.addAprilTags(VisionConstants.TAG_LAYOUT);//Sets up tag layout for simulation
 
       //Setting up PhotonPoseEstimator
       photonEstimator =
             new PhotonPoseEstimator(
-                    Constants.TAG_LAYOUT, 
+                    VisionConstants.TAG_LAYOUT, 
                     PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR, 
-                    camera, Constants.ROBOT_TO_CAM);
+                    camera, VisionConstants.ROBOT_TO_CAM);
 
       photonEstimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
 
@@ -49,7 +48,7 @@ public class SimCamera implements CameraIO {
       cameraProp.setLatencyStdDevMs(15);
       cameraSim = new PhotonCameraSim(camera, cameraProp);
             // Add the simulated camera to view the targets on this simulated field.
-      visionSim.addCamera(cameraSim, Constants.ROBOT_TO_CAM);
+      visionSim.addCamera(cameraSim, Const ants.ROBOT_TO_CAM);
 
       cameraSim.enableDrawWireframe(true);
  

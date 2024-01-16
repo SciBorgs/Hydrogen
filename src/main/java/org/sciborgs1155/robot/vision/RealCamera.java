@@ -41,7 +41,12 @@ public class RealCamera implements CameraIO {
     var visionEst = photonEstimator.update();      
     return visionEst; 
   };
-
+  @Override public PhotonCamera fetchCamera(){
+    return camera;
+  }
+  @Override public PhotonPoseEstimator fetchPoseEstimator(){
+    return photonEstimator;
+  }
 
 
 }
