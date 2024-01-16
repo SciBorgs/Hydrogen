@@ -44,17 +44,16 @@ public class Robot extends CommandRobot implements Logged {
 
   /** Configures basic behavior during different parts of the game. */
   private void configureGameBehavior() {
-    if (isSimulation()) {
-      DriverStation.silenceJoystickConnectionWarning(true);
-    }
-
     // Configure logging with DataLogManager, Monologue, FailureManagement, and URCL
     DataLogManager.start();
     Monologue.setupMonologue(this, "/Robot", false, true);
     addPeriodic(Monologue::updateAll, kDefaultPeriod);
     FaultLogger.setupLogging();
     addPeriodic(FaultLogger::update, 1);
-    URCL.start();
+    if (isSimulation()) {
+      URCL.start();
+      DriverStation.silenceJoystickConnectionWarning(true);
+    }
   }
 
   /**
