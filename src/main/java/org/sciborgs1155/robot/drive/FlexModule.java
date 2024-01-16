@@ -7,6 +7,7 @@ import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
 import com.revrobotics.CANSparkFlex;
 import com.revrobotics.CANSparkLowLevel.MotorType;
+import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
@@ -41,7 +42,7 @@ public class FlexModule implements ModuleIO {
     driveMotor.setIdleMode(IdleMode.kBrake);
     driveMotor.setSmartCurrentLimit((int) Driving.CURRENT_LIMIT.in(Amps));
 
-    turnMotor = new CANSparkFlex(turnPort, MotorType.kBrushless);
+    turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
     turnMotor.restoreFactoryDefaults();
     turnMotor.setInverted(false);
     turnMotor.setIdleMode(IdleMode.kBrake);

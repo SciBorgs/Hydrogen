@@ -71,7 +71,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public static Drive create() {
     return Robot.isReal()
         ? new Drive(
-            new FlexModule(FRONT_LEFT_TURNING, FRONT_LEFT_DRIVE, ANGULAR_OFFSETS.get(0)),
+            new FlexModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0)),
             new FlexModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1)),
             new FlexModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2)),
             new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)))
@@ -223,11 +223,13 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /** Returns the module states. */
+  @Log.NT
   private SwerveModuleState[] getModuleStates() {
     return modules.stream().map(SwerveModule::state).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module positions */
+  @Log.NT
   private SwerveModulePosition[] getModulePositions() {
     return modules.stream().map(SwerveModule::position).toArray(SwerveModulePosition[]::new);
   }
