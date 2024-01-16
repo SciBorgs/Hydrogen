@@ -18,7 +18,7 @@ public class SwerveTest {
 
   @Test
   public void reachSetpoint() {
-    run(drive.drive(() -> 2, () -> 2, () -> 2));
+    run(drive.drive(() -> 1, () -> 1, () -> 1));
     fastForward();
   }
 }
