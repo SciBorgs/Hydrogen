@@ -1,10 +1,10 @@
 package org.sciborgs1155.robot.shooter;
 
 import monologue.Logged;
-import monologue.Monologue.LogBoth;
+import monologue.Annotations.Log;
 
 public interface FlywheelIO extends Logged, AutoCloseable {
-  @LogBoth
+  @Log
   public double velocity();
 
   public void setVoltage(double voltage);

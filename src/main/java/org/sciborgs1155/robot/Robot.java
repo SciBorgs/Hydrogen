@@ -1,19 +1,18 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.*;
+
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.ProxyCommand;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
-import java.util.List;
+import monologue.Annotations.Log;
 import monologue.Logged;
 import monologue.Monologue;
-import monologue.Monologue.LogBoth;
-import monologue.Monologue.LogFile;
 
 import org.sciborgs1155.lib.CommandRobot;
-import org.sciborgs1155.lib.Fallible;
-import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.shooter.Shooter;
@@ -24,22 +23,20 @@ import org.sciborgs1155.robot.shooter.Shooter;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
-public class Robot extends CommandRobot implements Logged, Fallible {
+public class Robot extends CommandRobot implements Logged {
 
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
-  @LogFile private final Shooter shooter = new Shooter();
+  @Log.File private final Shooter shooter = new Shooter();
 
   // COMMANDS
-  @LogBoth Autos autos = new Autos();
+  @Log.NT Autos autos = new Autos();
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
-    super(Constants.PERIOD);
-
     configureGameBehavior();
     configureSubsystemDefaults();
     configureBindings();
@@ -51,13 +48,12 @@ public class Robot extends CommandRobot implements Logged, Fallible {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
 
-    // Configure logging with DataLogManager and Monologue
+    // Configure logging with DataLogManager, Monologue, and FailureManagement
     DataLogManager.start();
-    Monologue.setupLogging(this, "/Robot");
-    addPeriodic(Monologue::update, kDefaultPeriod);
-
-    // Burn flash of all Spark Max at once with delays
-    SparkUtils.safeBurnFlash();
+    Monologue.setupMonologue(this, "/Robot", false, true);
+    addPeriodic(Monologue::updateAll, kDefaultPeriod);
+    FaultLogger.setupLogging();
+    addPeriodic(FaultLogger::update, 1);
   }
 
   /**
@@ -73,10 +69,6 @@ public class Robot extends CommandRobot implements Logged, Fallible {
     operator.x().onTrue(shooter.changeTargetRPS(() -> 1)); // key c              increase target by 1
     operator.b().onTrue(shooter.changeTargetRPS(() -> -1)); // key x              decrease target by 1
     operator.y().onTrue(shooter.shoot(shooter::getTargetRPS)); // key v                      aim at target
-  }
-
-  @Override
-  public List<Fault> getFaults() {
-    return Fallible.from();
+    FaultLogger.onFailing(f -> Commands.print(f.toString()));
   }
 }

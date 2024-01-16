@@ -6,17 +6,16 @@ import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
 import monologue.Logged;
-import monologue.Monologue.LogBoth;
-import monologue.Monologue.LogFile;
+import monologue.Annotations.Log;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
 import static org.sciborgs1155.lib.SparkUtils.*;
 
 import org.sciborgs1155.robot.Robot;
 
 public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
-  @LogFile private final FlywheelIO flywheel = Robot.isReal() ? new RealFlywheel() : new SimFlywheel();
+  @Log.File private final FlywheelIO flywheel = Robot.isReal() ? new RealFlywheel() : new SimFlywheel();
 
-  @LogBoth
+  @Log
   private final PIDController pidController =
       new PIDController(kp, ki, kd);
       
@@ -27,7 +26,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
 
   private double targetRPS;
 
-  @LogBoth
+  @Log
   public boolean isAtGoal() {
     return pidController.atSetpoint();
   }
@@ -37,7 +36,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
     setDefaultCommand(shoot(() -> 0.000001));
   }
   
-  @LogBoth
+  @Log
   public double getVelocity() {
     return flywheel.velocity();
   }
@@ -57,7 +56,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
       () -> targetRPS += change.getAsDouble()
     );
   }
-  @LogBoth
+  @Log
   public double getTargetRPS() {
       return targetRPS;
   }
