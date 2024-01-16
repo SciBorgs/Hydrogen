@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
+import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.COUPLING_RATIO;
 
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -86,7 +87,10 @@ public class FlexModule implements ModuleIO {
 
   @Override
   public double getDrivePosition() {
-    return driveEncoder.getPosition();
+    double driveRot = driveEncoder.getPosition();
+    // account for rotation of turn motor on rotation of drive motor
+    driveRot -= turningEncoder.getPosition() * COUPLING_RATIO;
+    return driveRot;
   }
 
   @Override

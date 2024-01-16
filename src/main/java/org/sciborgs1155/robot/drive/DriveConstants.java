@@ -62,6 +62,8 @@ public final class DriveConstants {
           MAX_ANGULAR_ACCEL.in(RadiansPerSecond.per(Second)));
 
   public static final class ModuleConstants {
+    public static final double COUPLING_RATIO = 0;
+
     public static final class Driving {
       // Possible pinion configurations : 12T, 13T, or 14T.
       public static final int PINION_TEETH = 14;
