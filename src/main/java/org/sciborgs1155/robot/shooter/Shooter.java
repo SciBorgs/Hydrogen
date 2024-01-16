@@ -2,7 +2,6 @@ package org.sciborgs1155.robot.shooter;
 
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
-import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.DoubleSupplier;
@@ -10,6 +9,7 @@ import monologue.Logged;
 import monologue.Monologue.LogBoth;
 import monologue.Monologue.LogFile;
 import static org.sciborgs1155.robot.shooter.ShooterConstants.*;
+import static org.sciborgs1155.lib.SparkUtils.*;
 
 import org.sciborgs1155.robot.Robot;
 
