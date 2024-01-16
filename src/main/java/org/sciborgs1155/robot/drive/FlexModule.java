@@ -109,19 +109,4 @@ public class FlexModule implements ModuleIO {
     driveMotor.close();
     turnMotor.close();
   }
-
-  @Override
-  public double getTurnVelocity() {
-    return turningEncoder.getVelocity();
-  }
-
-  @Override
-  public double getDriveVoltage() {
-    return driveMotor.getBusVoltage();
-  }
-
-  @Override
-  public double getTurnVoltage() {
-    return turnMotor.getBusVoltage();
-  }
 }

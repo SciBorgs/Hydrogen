@@ -58,40 +58,32 @@ public class TalonSwerveModule implements ModuleIO {
     turnEncoder.setInverted(Turning.ENCODER_INVERTED);
   }
 
+  @Override
   public void setDriveVoltage(double voltage) {
     driveMotor.setVoltage(voltage);
   }
 
+  @Override
   public void setTurnVoltage(double voltage) {
     turnMotor.setVoltage(voltage);
   }
 
+  @Override
   public double getDrivePosition() {
     return driveMotor.getPosition().getValueAsDouble();
   }
 
+  @Override
   public double getDriveVelocity() {
     return driveMotor.getVelocity().getValueAsDouble();
   }
 
+  @Override
   public Rotation2d getRotation() {
     return Rotation2d.fromRadians(turnEncoder.getPosition());
   }
 
-  public double getTurnVelocity() {
-    return turnEncoder.getVelocity();
-  }
-
   @Override
-  public double getDriveVoltage() {
-    return driveMotor.getMotorVoltage().getValueAsDouble();
-  }
-
-  @Override
-  public double getTurnVoltage() {
-    return turnMotor.getBusVoltage();
-  }
-
   public void resetEncoders() {
     driveMotor.setPosition(0);
   }

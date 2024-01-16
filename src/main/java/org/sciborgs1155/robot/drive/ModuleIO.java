@@ -15,12 +15,6 @@ public interface ModuleIO extends AutoCloseable, Logged {
 
   public Rotation2d getRotation();
 
-  public double getTurnVelocity();
-
-  public double getDriveVoltage();
-
-  public double getTurnVoltage();
-
   public void resetEncoders();
 
   @Override

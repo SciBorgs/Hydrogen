@@ -92,29 +92,13 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
         new SysIdRoutine(
             new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(
-                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))),
-                log ->
-                    modules.forEach(
-                        m ->
-                            log.motor(m.name)
-                                .linearPosition(m.distance())
-                                .linearVelocity(m.driveVelocity())
-                                .voltage(m.getDriveVoltage())),
-                this));
+                volts -> modules.forEach(m -> m.setDriveVoltage(volts.in(Volts))), null, this));
 
     turnRoutine =
         new SysIdRoutine(
             new SysIdRoutine.Config(),
             new SysIdRoutine.Mechanism(
-                volts -> modules.forEach(m -> m.setTurnVoltage(volts.in(Volts))),
-                log ->
-                    modules.forEach(
-                        m ->
-                            log.motor(m.name)
-                                .angularPosition(m.getTurnAngle())
-                                .angularVelocity(m.getTurnVelocity())
-                                .voltage(m.getTurnVoltage())),
-                this));
+                volts -> modules.forEach(m -> m.setTurnVoltage(volts.in(Volts))), null, this));
 
     odometry =
         new SwerveDrivePoseEstimator(kinematics, getHeading(), getModulePositions(), new Pose2d());

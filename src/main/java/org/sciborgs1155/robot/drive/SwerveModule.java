@@ -8,12 +8,6 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Distance;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.MutableMeasure;
-import edu.wpi.first.units.Velocity;
-import edu.wpi.first.units.Voltage;
 import monologue.Annotations.Log;
 import monologue.Logged;
 
@@ -27,15 +21,6 @@ public class SwerveModule implements Logged, AutoCloseable {
   private final SimpleMotorFeedforward driveFeedforward;
 
   private SwerveModuleState setpoint = new SwerveModuleState();
-
-  // i hate the unit api
-  private final MutableMeasure<Distance> distance = MutableMeasure.zero(Meters);
-  private final MutableMeasure<Velocity<Distance>> velocity = MutableMeasure.zero(MetersPerSecond);
-  private final MutableMeasure<Voltage> driveVoltage = MutableMeasure.zero(Volts);
-  private final MutableMeasure<Angle> turnAngle = MutableMeasure.zero(Radians);
-  private final MutableMeasure<Velocity<Angle>> turnVelocity =
-      MutableMeasure.zero(RadiansPerSecond);
-  private final MutableMeasure<Voltage> turnVoltage = MutableMeasure.zero(Volts);
 
   public final String name;
 
@@ -120,30 +105,6 @@ public class SwerveModule implements Logged, AutoCloseable {
   @Log.NT
   public SwerveModuleState desiredState() {
     return setpoint;
-  }
-
-  public Measure<Distance> distance() {
-    return distance.mut_replace(module.getDrivePosition(), Meters);
-  }
-
-  public Measure<Velocity<Distance>> driveVelocity() {
-    return velocity.mut_replace(module.getDriveVelocity(), MetersPerSecond);
-  }
-
-  public Measure<Voltage> getDriveVoltage() {
-    return driveVoltage.mut_replace(module.getDriveVoltage(), Volts);
-  }
-
-  public Measure<Angle> getTurnAngle() {
-    return turnAngle.mut_replace(module.getRotation().getRadians(), Radians);
-  }
-
-  public Measure<Velocity<Angle>> getTurnVelocity() {
-    return turnVelocity.mut_replace(module.getTurnVelocity(), RadiansPerSecond);
-  }
-
-  public Measure<Voltage> getTurnVoltage() {
-    return turnVoltage.mut_replace(module.getTurnVoltage(), Volts);
   }
 
   public void setDriveVoltage(double voltage) {
