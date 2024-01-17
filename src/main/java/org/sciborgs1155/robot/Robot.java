@@ -68,10 +68,7 @@ public class Robot extends CommandRobot implements Logged {
   private void configureBindings() {
     autonomous().whileTrue(new ProxyCommand(autos::get));
     // operator.x().onTrue(shooter.shootCommand(1)); //key c
-    operator.x().onTrue(shooter.changeTargetRPS(() -> 1)); // key c              increase target by 1
-    operator.b().onTrue(shooter.changeTargetRPS(() -> -1)); // key x              decrease target by 1
-    operator.y().onTrue(shooter.shoot()); //key v
-    operator.a().onTrue(shooter.shootForDistance((() -> 5))); //key z
     FaultLogger.onFailing(f -> Commands.print(f.toString()));
+    operator.y().onTrue(shooter.shoot()); //v
   }
 }

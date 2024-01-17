@@ -9,6 +9,8 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.sciborgs1155.robot.shooter.Shooter;
+import org.sciborgs1155.robot.shooter.ShooterConstants;
+
 import static org.junit.jupiter.api.Assertions.*;
 import static org.sciborgs1155.lib.TestingUtil.*;
 
@@ -22,12 +24,10 @@ public class TestShooter {
         shooter = new Shooter();
     }
 
-    @ParameterizedTest
-    @ValueSource(doubles = {-1,1,2,3,4,5})
-    public void testVelocity(double v) {
-        run(shooter.setTargetRPS(() -> v));
-        run(shooter.shoot());
+    @Test
+    public void testVelocity() {
+        shooter.periodic();
         fastForward();
-        assertEquals(v, shooter.getVelocity(), DELTA);
+        assertEquals(ShooterConstants.CONSTANT_TARGET_RPS, shooter.getVelocity(), DELTA);
     }
 }

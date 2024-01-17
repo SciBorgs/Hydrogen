@@ -14,4 +14,5 @@ public class ShooterConstants {
   public static final double POSITION_FACTOR = 1;
   public static final double VELOCITY_FACTOR = 1;
   public static final double DISTANCE_CONVERSION = 1;
+  public static final double CONSTANT_TARGET_RPS = 3;
 }
