@@ -5,6 +5,11 @@ import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.kauailabs.navx.frc.AHRS;
+import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.util.HolonomicPathFollowerConfig;
+import com.pathplanner.lib.util.PIDConstants;
+import com.pathplanner.lib.util.ReplanningConfig;
+
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
@@ -15,6 +20,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -31,6 +37,8 @@ import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
+import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
@@ -109,6 +117,28 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     }
 
     SmartDashboard.putData("drive quasistatic forward", driveSysIdQuasistatic(Direction.kForward));
+
+    AutoBuilder.configureHolonomic(
+      this::getPose,
+      this::resetOdometry,
+      this::getChassisSpeed,
+      this::drive,
+      new HolonomicPathFollowerConfig(
+              new PIDConstants(Translation.P, Translation.I, Translation.D),
+              new PIDConstants(Rotation.P, Rotation.I, Rotation.D),
+              4.5,
+              TRACK_WIDTH.divide(2).in(Meters),
+              new ReplanningConfig()
+      ),
+      () -> {
+          var alliance = DriverStation.getAlliance();
+          if (alliance.isPresent()) {
+              return alliance.get() == DriverStation.Alliance.Red;
+          }
+          return false;
+      },
+      this
+    );
   }
 
   /**
@@ -232,6 +262,10 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   @Log.NT
   private SwerveModulePosition[] getModulePositions() {
     return modules.stream().map(SwerveModule::position).toArray(SwerveModulePosition[]::new);
+  }
+
+  public ChassisSpeeds getChassisSpeed() {
+    return kinematics.toChassisSpeeds(getModuleStates());
   }
 
   /** Updates pose estimation based on provided {@link EstimatedRobotPose} */
