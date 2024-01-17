@@ -13,6 +13,7 @@ import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.geometry.Rotation2d;
 import java.util.Set;
+import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
@@ -67,6 +68,9 @@ public class FlexModule implements ModuleIO {
         Set.of(Data.POSITION, Data.VELOCITY, Data.VOLTAGE),
         Set.of(Sensor.DUTY_CYCLE),
         false);
+
+    FaultLogger.register(driveMotor);
+    FaultLogger.register(turnMotor);
 
     driveMotor.burnFlash();
     turnMotor.burnFlash();
