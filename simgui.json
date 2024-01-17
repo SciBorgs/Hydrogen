@@ -34,7 +34,32 @@
       }
     }
   },
-  "NetworkTables Info": {
-    "visible": true
+  "NetworkTables": {
+    "transitory": {
+      "Robot": {
+        "drive": {
+          "frontRight": {
+            "SwerveModulePosition##v_/Robot/drive/frontRight/position": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            },
+            "SwerveModuleState##v_/Robot/drive/frontRight/state": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            },
+            "driveFeedback": {
+              "open": true
+            },
+            "open": true
+          },
+          "open": true
+        },
+        "open": true
+      }
+    }
   }
 }
