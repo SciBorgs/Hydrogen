@@ -47,7 +47,7 @@ public class SimDrive implements DriveIO {
     pose = sim.getPose();
     field.setRobotPose(pose);
   }
- 
+
   @Override
   public Pose2d getPose() {
     return pose;

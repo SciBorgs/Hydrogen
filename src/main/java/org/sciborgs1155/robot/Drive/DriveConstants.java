@@ -10,12 +10,13 @@ import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 public class DriveConstants {
   static double MAXSPEED = 5.0;
   static Pose2d STARTINGPOSE = new Pose2d(5, 5, Rotation2d.fromRadians(0));
-  static DifferentialDrivetrainSim STARTINGDIFFERENTIALDRIVESIM = new DifferentialDrivetrainSim(
-    DCMotor.getNEO(2),
-    9,
-    8.5,
-    60.0,
-    Units.inchesToMeters(3),
-    0.7112,
-    VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
+  static DifferentialDrivetrainSim STARTINGDIFFERENTIALDRIVESIM =
+      new DifferentialDrivetrainSim(
+          DCMotor.getNEO(2),
+          9,
+          8.5,
+          60.0,
+          Units.inchesToMeters(3),
+          0.7112,
+          VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
 }
