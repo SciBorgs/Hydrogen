@@ -10,7 +10,7 @@ import org.sciborgs1155.robot.Robot;
 
 public class Drive extends SubsystemBase implements Logged {
 
-  public PIDController leftPID = new PIDController(10, 5, 0);
+  PIDController leftPID = new PIDController(10, 5, 0);
   PIDController rightPID = new PIDController(10, 5, 0);
 
   @LogBoth DriveIO drive = Robot.isReal() ? new RealDrive() : new SimDrive();
@@ -18,14 +18,9 @@ public class Drive extends SubsystemBase implements Logged {
   public Command setMotorSpeeds(Supplier<Double> leftSpeed, Supplier<Double> rightSpeed) {
     return run(
         () ->
-            drive.setSpeeds(
+            drive.setVoltage(
                 leftPID.calculate(drive.getLeftSpeed(), leftSpeed.get()),
                 rightPID.calculate(drive.getRightSpeed(), rightSpeed.get())));
-  }
-
-  @Override
-  public void periodic() {
-    drive.periodic();
   }
 
   public double getLeftSpeed() {

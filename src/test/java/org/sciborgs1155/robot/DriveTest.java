@@ -6,7 +6,6 @@ import static org.sciborgs1155.lib.TestingUtil.*;
 import java.util.stream.Stream;
 
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.Arguments;
 import org.junit.jupiter.params.provider.MethodSource;
@@ -17,8 +16,9 @@ public class DriveTest {
 
     Drive drive;
     @BeforeEach
-    public void before() {
+    public void setup() {
         drive = new Drive();
+        setupHAL();
     }
     
     @ParameterizedTest

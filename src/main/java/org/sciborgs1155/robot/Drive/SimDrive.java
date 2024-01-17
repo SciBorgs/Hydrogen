@@ -1,10 +1,6 @@
 package org.sciborgs1155.robot.Drive;
 
-import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
-import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.system.plant.DCMotor;
-import edu.wpi.first.math.util.Units;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import monologue.Monologue.LogBoth;
@@ -14,25 +10,12 @@ public class SimDrive implements DriveIO {
 
   Pose2d pose = new Pose2d();
 
-  DifferentialDrivetrainSim sim =
-      new DifferentialDrivetrainSim(
-          DCMotor.getNEO(2),
-          9,
-          8.5,
-          60.0,
-          Units.inchesToMeters(3),
-          0.7112,
-          VecBuilder.fill(0.001, 0.001, 0.001, 0.1, 0.1, 0.005, 0.005));
+  DifferentialDrivetrainSim sim = DriveConstants.STARTINGDIFFERENTIALDRIVESIM;
 
   @LogBoth Field2d field = new Field2d();
 
   public SimDrive() {
-    sim.setPose(new Pose2d(5, 5, Rotation2d.fromRadians(0)));
-  }
-
-  @LogBoth
-  public double speed() {
-    return (sim.getLeftVelocityMetersPerSecond() + sim.getRightVelocityMetersPerSecond()) / 2;
+    sim.setPose(DriveConstants.STARTINGPOSE);
   }
 
   public double getLeftSpeed() {
@@ -44,14 +27,8 @@ public class SimDrive implements DriveIO {
   }
 
   @Override
-  public void setSpeeds(double leftSpeed, double rightSpeed) {
+  public void setVoltage(double leftSpeed, double rightSpeed) {
     sim.setInputs(leftSpeed, rightSpeed);
-  }
-
-  public void periodic() {
-    sim.update(Constants.PERIOD);
-    pose = sim.getPose();
-    field.setRobotPose(pose);
   }
 
   @LogBoth
@@ -62,5 +39,17 @@ public class SimDrive implements DriveIO {
   @LogBoth
   public double getY() {
     return pose.getY();
+  }
+
+  @Override
+  public void updateState() {
+    sim.update(Constants.PERIOD);
+    pose = sim.getPose();
+    field.setRobotPose(pose);
+  }
+ 
+  @Override
+  public Pose2d getPose() {
+    return pose;
   }
 }

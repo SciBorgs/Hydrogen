@@ -36,14 +36,13 @@ public class RealDrive implements DriveIO {
   }
 
   @Override
-  public void setSpeeds(double leftSpeed, double rightSpeed) {
+  public void setVoltage(double leftSpeed, double rightSpeed) {
     frontLeft.setVoltage(leftSpeed);
     frontRight.setVoltage(rightSpeed);
   }
 
-  public void periodic() {
-    Rotation2d gyroAngle = Rotation2d.fromDegrees(gyro.getGyroAngleX());
-    pose = odometry.update(gyroAngle, leftEncoder.getPosition(), rightEncoder.getPosition());
+  public Pose2d getPose() {
+    return pose;
   }
 
   public double getX() {
@@ -54,16 +53,17 @@ public class RealDrive implements DriveIO {
     return pose.getY();
   }
 
-  @Override
-  public double speed() {
-    return (leftEncoder.getVelocity() + rightEncoder.getVelocity()) / 2;
-  }
-
   public double getLeftSpeed() {
     return leftEncoder.getVelocity();
   }
 
   public double getRightSpeed() {
     return rightEncoder.getVelocity();
+  }
+
+  @Override
+  public void updateState() {
+    Rotation2d gyroAngle = Rotation2d.fromDegrees(gyro.getGyroAngleX());
+    pose = odometry.update(gyroAngle, leftEncoder.getPosition(), rightEncoder.getPosition());
   }
 }
