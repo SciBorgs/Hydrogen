@@ -10,4 +10,8 @@ public class ShooterConstants {
   public static final double kVVoltSecondsPerRotation =
       // Should have value 12V at free speed...
       12.0 / kShooterFreeRPS;
+  public static final int CURRENT_LIMIT = 10;
+  public static final double POSITION_FACTOR = 1;
+  public static final double VELOCITY_FACTOR = 1;
+  public static final double DISTANCE_CONVERSION = 1;
 }

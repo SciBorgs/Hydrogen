@@ -32,8 +32,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   public Shooter() {
-    //"flywheel should always me moving" - asa
-    setDefaultCommand(shoot(() -> 0.000001));
+    setDefaultCommand(shoot(0.001));
   }
   
   @Log.NT
@@ -41,24 +40,23 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
     return flywheel.velocity();
   }
 
-  public Command shoot() {
-    // Run the shooter flywheel at the desired setpoint using feedforward and feedback
+  public Command shoot(double targetRPS) {
     return run(() ->
-            flywheel.setVoltage(
-                pidController.calculate(flywheel.velocity(), getTargetRPS())
-                    + feedForward.calculate(getTargetRPS())))
-        // Wait until the shooter has reached the setpoint, and then run the feeder
-        .withName("Shoot");
+    flywheel.setVoltage(
+        pidController.calculate(flywheel.velocity(), targetRPS)
+            + feedForward.calculate(targetRPS)))
+            // Wait until the shooter has reached the setpoint, and then run the feeder
+            .withName("Shoot");
   }
 
-  public Command shoot(DoubleSupplier setpointRPS) {
-    // Run the shooter flywheel at the desired setpoint using feedforward and feedback
-    return run(() ->
-            flywheel.setVoltage(
-                pidController.calculate(flywheel.velocity(), setpointRPS.getAsDouble())
-                    + feedForward.calculate(setpointRPS.getAsDouble())))
-        // Wait until the shooter has reached the setpoint, and then run the feeder
-        .withName("Shoot");
+  public Command shoot() {
+    return shoot(targetRPS);
+  }
+
+  public Command setTargetRPS(DoubleSupplier targetRPS) {
+    return runOnce(
+      () -> this.targetRPS = targetRPS.getAsDouble()
+    );
   }
 
   public Command changeTargetRPS(DoubleSupplier change) {
@@ -66,6 +64,11 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
       () -> targetRPS += change.getAsDouble()
     );
   }
+
+  public Command shootForDistance(DoubleSupplier distance) {
+    return shoot(distance.getAsDouble() * DISTANCE_CONVERSION);
+  }
+
   @Log.NT
   public double getTargetRPS() {
       return targetRPS;

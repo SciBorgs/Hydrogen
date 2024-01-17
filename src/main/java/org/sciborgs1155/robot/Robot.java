@@ -4,10 +4,12 @@ import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.autonomous
 
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.shooter.Shooter;
 
+import edu.wpi.first.units.Energy;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.Commands;
@@ -68,7 +70,8 @@ public class Robot extends CommandRobot implements Logged {
     // operator.x().onTrue(shooter.shootCommand(1)); //key c
     operator.x().onTrue(shooter.changeTargetRPS(() -> 1)); // key c              increase target by 1
     operator.b().onTrue(shooter.changeTargetRPS(() -> -1)); // key x              decrease target by 1
-    operator.y().onTrue(shooter.shoot()); // key v                      aim at target
+    operator.y().onTrue(shooter.shoot()); //key v
+    operator.a().onTrue(shooter.shootForDistance((() -> 5))); //key z
     FaultLogger.onFailing(f -> Commands.print(f.toString()));
   }
 }
