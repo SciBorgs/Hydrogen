@@ -50,8 +50,10 @@ public class Robot extends CommandRobot implements Logged {
     addPeriodic(Monologue::updateAll, kDefaultPeriod);
     FaultLogger.setupLogging();
     addPeriodic(FaultLogger::update, 1);
-    if (isSimulation()) {
+
+    if (isReal()) {
       URCL.start();
+    } else {
       DriverStation.silenceJoystickConnectionWarning(true);
     }
   }
