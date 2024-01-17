@@ -6,33 +6,39 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import monologue.Annotations.Log;
 import monologue.Logged;
-import monologue.Monologue.LogBoth;
 import org.sciborgs1155.robot.Robot;
 
 public class Hopper extends SubsystemBase implements Logged {
 
-  final PIDController pid = new PIDController(kp, ki, kd);
-  public final HopperIO hopper = Robot.isReal() ? new RealHopper() : new SimHopper();
+  @Log final PIDController pid = new PIDController(kp, ki, kd);
 
-  @LogBoth public double targetSpeed = pid.getSetpoint();
-
-  @LogBoth
-  public double speed() {
-    return hopper.getSpeed();
+  public Hopper() {
+    this.pid.setSetpoint(0);
   }
 
-  @LogBoth private boolean isAtTarget = pid.atSetpoint();
+  public final HopperIO hopper = Robot.isReal() ? new RealHopper() : new SimHopper();
+
+  @Log
+  public double motorAngularVelocity() {
+    return hopper.getAngularVelocityOfMotor();
+  }
+
+  @Log
+  private boolean isAtTarget() {
+    return pid.atSetpoint();
+  }
 
   @Override
   public void periodic() {
-    hopper.setVoltage(pid.calculate(hopper.getSpeed(), targetSpeed));
+    hopper.setVoltage(pid.calculate(hopper.getAngularVelocityOfMotor(), pid.getSetpoint()));
   }
 
   public Command forward() {
     return runOnce(
             () -> {
-              pid.setSetpoint(MOTOR_MAX_SPEED);
+              pid.setSetpoint(HOPPER_ANGULAR_SPEED);
             })
         .andThen(Commands.idle());
   }
@@ -40,7 +46,7 @@ public class Hopper extends SubsystemBase implements Logged {
   public Command back() {
     return runOnce(
             () -> {
-              pid.setSetpoint(-MOTOR_MAX_SPEED);
+              pid.setSetpoint(-HOPPER_ANGULAR_SPEED);
             })
         .andThen(Commands.idle());
   }

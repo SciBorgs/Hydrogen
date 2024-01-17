@@ -22,12 +22,12 @@ public class IntakeTest {
   public void testMovement() {
     run(intake.intake());
     fastForward(500);
-    assertEquals(INTAKE_SPEED, intake.speed(), DELTA);
+    assertEquals(INTAKE_ANGULAR_SPEED, intake.motorAngularVelocity(), DELTA);
     // test forward movement
 
     run(intake.outtake());
     fastForward(500);
-    assertEquals(-INTAKE_SPEED, intake.speed(), DELTA);
+    assertEquals(-INTAKE_ANGULAR_SPEED, intake.motorAngularVelocity(), DELTA);
     // test backwards movement
 
   }

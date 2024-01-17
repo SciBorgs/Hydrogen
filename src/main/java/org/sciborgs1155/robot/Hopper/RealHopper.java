@@ -11,8 +11,8 @@ public class RealHopper implements HopperIO {
   RelativeEncoder encoder = motor.getEncoder();
 
   @Override
-  public double getSpeed() {
-    return motor.getEncoder().getVelocity() * WHEEL_RADIUS;
+  public double getAngularVelocityOfMotor() {
+    return motor.getEncoder().getVelocity() * RPM_TO_RAD_PER_S;
   }
 
   @Override

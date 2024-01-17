@@ -11,13 +11,13 @@ public class SimHopper implements HopperIO {
   DCMotorSim motor = new DCMotorSim(DCMotor.getNEO(1), 1, 1);
 
   @Override
-  public double getSpeed() {
+  public double getAngularVelocityOfMotor() {
     return motor.getAngularVelocityRadPerSec();
   }
 
   @Override
   public void setVoltage(double voltage) {
     motor.setInputVoltage(voltage);
-    motor.update(PERIOD);
+    motor.update(PERIOD.magnitude());
   }
 }

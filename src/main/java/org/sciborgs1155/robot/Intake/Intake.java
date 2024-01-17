@@ -5,31 +5,35 @@ import static org.sciborgs1155.robot.Intake.IntakeConstants.*;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
+import monologue.Annotations.Log;
 import monologue.Logged;
-import monologue.Monologue.LogBoth;
 import org.sciborgs1155.robot.Robot;
 
 public class Intake extends SubsystemBase implements Logged {
 
-  final PIDController pid = new PIDController(kp, kd, ki);
+  @Log final PIDController pid = new PIDController(kp, kd, ki);
+
+  public Intake() {
+    this.pid.setSetpoint(0);
+  }
 
   public final IntakeIO intake = Robot.isReal() ? new RealIntake() : new SimIntake();
-  @LogBoth public double targetSpeed = pid.getSetpoint();
+  @Log public double targetSpeed = pid.getSetpoint();
 
-  @LogBoth
-  public double speed() {
-    return intake.getSpeed();
+  @Log
+  public double motorAngularVelocity() {
+    return intake.getAngularVelocityOfMotor();
   }
 
   @Override
   public void periodic() {
-    intake.setVoltage(pid.calculate(intake.getSpeed(), targetSpeed));
+    intake.setVoltage(pid.calculate(intake.getAngularVelocityOfMotor(), pid.getSetpoint()));
   }
 
   public Command intake() {
     return runOnce(
         () -> {
-          pid.setSetpoint(INTAKE_SPEED);
+          pid.setSetpoint(INTAKE_ANGULAR_SPEED);
         });
   }
 
@@ -43,7 +47,7 @@ public class Intake extends SubsystemBase implements Logged {
   public Command outtake() {
     return runOnce(
         () -> {
-          pid.setSetpoint(-INTAKE_SPEED);
+          pid.setSetpoint(-INTAKE_ANGULAR_SPEED);
         });
   }
 }

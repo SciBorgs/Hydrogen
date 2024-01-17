@@ -9,11 +9,12 @@ import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.Hopper.Hopper;
 
 public class HopperTest {
-  Hopper hopper = new Hopper();
+  Hopper hopper;
   final double DELTA = 2;
 
   @BeforeEach
   public void setup() {
+    hopper = new Hopper();
     setupHAL();
   }
 
@@ -21,12 +22,12 @@ public class HopperTest {
   public void testMovement() {
     run(hopper.forward());
     fastForward(500);
-    assertEquals(MOTOR_MAX_SPEED, hopper.speed(), DELTA);
+    assertEquals(HOPPER_ANGULAR_SPEED, hopper.motorAngularVelocity(), DELTA);
     // reaches correct speed in forward direction
 
     run(hopper.back());
     fastForward(500);
-    assertEquals(MOTOR_MAX_SPEED * -1, hopper.speed(), DELTA);
+    assertEquals(HOPPER_ANGULAR_SPEED * -1, hopper.motorAngularVelocity(), DELTA);
     // reaches correct speed in reverse direction
   }
 }

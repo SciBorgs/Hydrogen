@@ -11,8 +11,8 @@ public class RealIntake implements IntakeIO {
   RelativeEncoder encoder = motor.getEncoder();
 
   @Override
-  public double getSpeed() {
-    return encoder.getVelocity() * MOTOR_RADIUS;
+  public double getAngularVelocityOfMotor() {
+    return encoder.getVelocity() * RPM_TO_RAD_PER_S;
   }
 
   @Override
