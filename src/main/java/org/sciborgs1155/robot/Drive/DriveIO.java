@@ -10,10 +10,6 @@ public interface DriveIO extends Logged {
 
   public double getRightSpeed();
 
-  public double getX();
-
-  public double getY();
-
   public void updateState();
 
   public Pose2d getPose();

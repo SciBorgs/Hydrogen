@@ -3,7 +3,7 @@ package org.sciborgs1155.robot.Drive;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.wpilibj.simulation.DifferentialDrivetrainSim;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
-import monologue.Monologue.LogBoth;
+import monologue.Annotations.Log;
 import org.sciborgs1155.robot.Constants;
 
 public class SimDrive implements DriveIO {
@@ -12,7 +12,7 @@ public class SimDrive implements DriveIO {
 
   DifferentialDrivetrainSim sim = DriveConstants.STARTINGDIFFERENTIALDRIVESIM;
 
-  @LogBoth Field2d field = new Field2d();
+  @Log.NT Field2d field = new Field2d();
 
   public SimDrive() {
     sim.setPose(DriveConstants.STARTINGPOSE);
@@ -29,16 +29,6 @@ public class SimDrive implements DriveIO {
   @Override
   public void setVoltage(double leftSpeed, double rightSpeed) {
     sim.setInputs(leftSpeed, rightSpeed);
-  }
-
-  @LogBoth
-  public double getX() {
-    return pose.getX();
-  }
-
-  @LogBoth
-  public double getY() {
-    return pose.getY();
   }
 
   @Override

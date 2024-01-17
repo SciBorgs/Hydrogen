@@ -4,8 +4,8 @@ import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import java.util.function.Supplier;
+import monologue.Annotations.Log;
 import monologue.Logged;
-import monologue.Monologue.LogBoth;
 import org.sciborgs1155.robot.Robot;
 
 public class Drive extends SubsystemBase implements Logged {
@@ -13,7 +13,7 @@ public class Drive extends SubsystemBase implements Logged {
   PIDController leftPID = new PIDController(8, 0, 0);
   PIDController rightPID = new PIDController(8, 0, 0);
 
-  @LogBoth DriveIO drive = Robot.isReal() ? new RealDrive() : new SimDrive();
+  @Log.File DriveIO drive = Robot.isReal() ? new RealDrive() : new SimDrive();
 
   public Command setMotorSpeeds(Supplier<Double> leftSpeed, Supplier<Double> rightSpeed) {
     return run(
