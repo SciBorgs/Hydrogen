@@ -6,4 +6,5 @@ public class HopperConstants {
   public static final double kp = 5;
   public static final double ki = 0;
   public static final double kd = 2;
+  public static final int HOPPER_PORT = 2;
 }
