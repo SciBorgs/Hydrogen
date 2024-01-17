@@ -32,7 +32,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   public Shooter() {
-    setDefaultCommand(shoot(0.001));
+    setDefaultCommand(shoot(() -> 0.001));
   }
   
   @Log.NT
@@ -40,17 +40,17 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
     return flywheel.velocity();
   }
 
-  public Command shoot(double targetRPS) {
+  public Command shoot(DoubleSupplier targetRPS) {
     return run(() ->
     flywheel.setVoltage(
-        pidController.calculate(flywheel.velocity(), targetRPS)
-            + feedForward.calculate(targetRPS)))
+        pidController.calculate(flywheel.velocity(), targetRPS.getAsDouble())
+            + feedForward.calculate(targetRPS.getAsDouble())))
             // Wait until the shooter has reached the setpoint, and then run the feeder
             .withName("Shoot");
   }
 
   public Command shoot() {
-    return shoot(targetRPS);
+    return shoot(this::getTargetRPS);
   }
 
   public Command setTargetRPS(DoubleSupplier targetRPS) {
@@ -66,7 +66,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   public Command shootForDistance(DoubleSupplier distance) {
-    return shoot(distance.getAsDouble() * DISTANCE_CONVERSION);
+    return shoot(() -> distance.getAsDouble() * DISTANCE_CONVERSION);
   }
 
   @Log.NT

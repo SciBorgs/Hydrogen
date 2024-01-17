@@ -25,7 +25,7 @@ public class TestShooter {
     @ParameterizedTest
     @ValueSource(doubles = {-1,1,2,3,4,5})
     public void testVelocity(double v) {
-        run(shooter.changeTargetRPS(() -> v));
+        run(shooter.setTargetRPS(() -> v));
         run(shooter.shoot());
         fastForward();
         assertEquals(v, shooter.getVelocity(), DELTA);
