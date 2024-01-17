@@ -4,7 +4,7 @@ import monologue.Logged;
 import monologue.Annotations.Log;
 
 public interface FlywheelIO extends Logged, AutoCloseable {
-  @Log
+  @Log.NT
   public double velocity();
 
   public void setVoltage(double voltage);

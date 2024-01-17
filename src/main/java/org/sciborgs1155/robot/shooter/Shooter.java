@@ -15,7 +15,7 @@ import org.sciborgs1155.robot.Robot;
 public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
   @Log.File private final FlywheelIO flywheel = Robot.isReal() ? new RealFlywheel() : new SimFlywheel();
 
-  @Log
+  @Log.NT
   private final PIDController pidController =
       new PIDController(kp, ki, kd);
       
@@ -26,7 +26,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
 
   private double targetRPS;
 
-  @Log
+  @Log.NT
   public boolean isAtGoal() {
     return pidController.atSetpoint();
   }
@@ -36,9 +36,19 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
     setDefaultCommand(shoot(() -> 0.000001));
   }
   
-  @Log
+  @Log.NT
   public double getVelocity() {
     return flywheel.velocity();
+  }
+
+  public Command shoot() {
+    // Run the shooter flywheel at the desired setpoint using feedforward and feedback
+    return run(() ->
+            flywheel.setVoltage(
+                pidController.calculate(flywheel.velocity(), getTargetRPS())
+                    + feedForward.calculate(getTargetRPS())))
+        // Wait until the shooter has reached the setpoint, and then run the feeder
+        .withName("Shoot");
   }
 
   public Command shoot(DoubleSupplier setpointRPS) {
@@ -56,7 +66,7 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
       () -> targetRPS += change.getAsDouble()
     );
   }
-  @Log
+  @Log.NT
   public double getTargetRPS() {
       return targetRPS;
   }

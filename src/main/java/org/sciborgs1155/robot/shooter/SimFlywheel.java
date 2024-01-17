@@ -7,7 +7,7 @@ import monologue.Annotations.Log;
 import org.sciborgs1155.robot.Constants;
 
 public class SimFlywheel implements FlywheelIO {
-  @Log
+  @Log.NT
   public final FlywheelSim flyWheelSim =
       new FlywheelSim(
           LinearSystemId.identifyVelocitySystem(ShooterConstants.kVVoltSecondsPerRotation, 1),
