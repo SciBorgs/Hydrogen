@@ -1,12 +1,19 @@
 package org.sciborgs1155.robot.Drive;
 
+import com.revrobotics.CANSparkBase.IdleMode;
+import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
-import com.revrobotics.CANSparkMaxLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.DifferentialDriveOdometry;
 import edu.wpi.first.wpilibj.ADIS16448_IMU;
+import java.util.Set;
+
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.lib.SparkUtils.Data;
+import org.sciborgs1155.lib.SparkUtils.Sensor;
 
 public class RealDrive implements DriveIO {
 
@@ -30,9 +37,43 @@ public class RealDrive implements DriveIO {
           rightEncoder.getPosition());
 
   public RealDrive() {
-    frontLeft.setInverted(true);
+
+    frontLeft.restoreFactoryDefaults();
+    frontRight.restoreFactoryDefaults();
+    rearLeft.restoreFactoryDefaults();
+    rearRight.restoreFactoryDefaults();
+
+    frontLeft.setSmartCurrentLimit(5);
+    frontRight.setSmartCurrentLimit(5);
+    rearLeft.setSmartCurrentLimit(5);
+    rearRight.setSmartCurrentLimit(5);
+
     rearLeft.follow(frontLeft);
     rearRight.follow(frontRight);
+
+    frontLeft.setIdleMode(IdleMode.kBrake);
+    frontRight.setIdleMode(IdleMode.kBrake);
+    rearRight.setIdleMode(IdleMode.kBrake);
+    rearLeft.setIdleMode(IdleMode.kBrake);
+
+    frontLeft.setInverted(true);
+
+    SparkUtils.configureFrameStrategy(
+        frontLeft, Set.of(Data.VELOCITY), Set.of(Sensor.DUTY_CYCLE), true);
+    SparkUtils.configureFrameStrategy(
+        frontRight, Set.of(Data.VELOCITY), Set.of(Sensor.DUTY_CYCLE), true);
+    SparkUtils.configureFollowerFrameStrategy(rearLeft);
+    SparkUtils.configureFollowerFrameStrategy(rearRight);
+
+    frontLeft.burnFlash();
+    frontRight.burnFlash();
+    rearLeft.burnFlash();
+    rearRight.burnFlash();
+
+    FaultLogger.register(frontLeft);
+    FaultLogger.register(frontRight);
+    FaultLogger.register(rearLeft);
+    FaultLogger.register(rearRight);
   }
 
   @Override
