@@ -6,6 +6,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -25,12 +26,15 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.List;
 import java.util.function.DoubleSupplier;
+import java.util.function.Supplier;
+
 import monologue.Annotations.IgnoreLogged;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning.PID;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
@@ -176,7 +180,28 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                         .in(RadiansPerSecond),
                     getHeading())));
   }
-
+  public Command driveAbsoluteRotationCommand(DoubleSupplier vx, DoubleSupplier vy, Supplier<Rotation2d> angle){
+    var pid = new PIDController(PID.P, PID.I, PID.D);
+    return run(
+        () ->
+            drive(
+                ChassisSpeeds.fromFieldRelativeSpeeds(
+                    xLimiter.calculate(
+                        MAX_SPEED
+                            .times(scale(vx.getAsDouble()))
+                            .times(speedMultiplier)
+                            .in(MetersPerSecond)),
+                    yLimiter.calculate(
+                        MAX_SPEED
+                            .times(scale(vy.getAsDouble()))
+                            .times(speedMultiplier)
+                            .in(MetersPerSecond)),
+                    pid.calculate(
+                      getHeading().getRadians(),
+                      angle.get().getRadians()),
+                    getHeading()
+                    )));
+  }
   /**
    * Drives the robot based on profided {@link ChassisSpeeds}.
    *
@@ -281,6 +306,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public Command setSpeedMultiplier(double multiplier) {
     return runOnce(() -> speedMultiplier = multiplier);
   }
+
+  
 
   /** Locks the drive motors. */
   private Command lockDriveMotors() {
