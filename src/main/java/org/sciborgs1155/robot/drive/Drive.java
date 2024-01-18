@@ -158,8 +158,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public Command drive(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier vOmega) {
     return run(
         () ->
-            drive(
-                ChassisSpeeds.fromFieldRelativeSpeeds(
+            driveFieldRelative(
+                new ChassisSpeeds(
                     xLimiter.calculate(
                         MAX_SPEED
                             .times(scale(vx.getAsDouble()))
@@ -173,8 +173,11 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                     MAX_ANGULAR_SPEED
                         .times(scale(vOmega.getAsDouble()))
                         .times(speedMultiplier)
-                        .in(RadiansPerSecond),
-                    getHeading())));
+                        .in(RadiansPerSecond))));
+  }
+
+  public void driveFieldRelative(ChassisSpeeds speeds) {
+    driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPose().getRotation()));
   }
 
   /**
@@ -184,7 +187,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    *
    * @param speeds The desired chassis speeds.
    */
-  public void drive(ChassisSpeeds speeds) {
+  public void driveRobotRelative(ChassisSpeeds speeds) {
     setModuleStates(
         kinematics.toSwerveModuleStates(
             ChassisSpeeds.discretize(speeds, Constants.PERIOD.in(Seconds))));
@@ -267,7 +270,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Stops drivetrain */
   public Command stop() {
-    return runOnce(() -> drive(new ChassisSpeeds()));
+    return runOnce(() -> driveRobotRelative(new ChassisSpeeds()));
   }
 
   /** Sets the drivetrain to an "X" configuration, preventing movement */
