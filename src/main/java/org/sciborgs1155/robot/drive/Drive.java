@@ -6,7 +6,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.MathUtil;
-import edu.wpi.first.math.controller.PIDController;
+import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -16,6 +16,7 @@ import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import edu.wpi.first.math.kinematics.SwerveDriveKinematics;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.math.trajectory.TrapezoidProfile;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -27,14 +28,13 @@ import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.List;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-
 import monologue.Annotations.IgnoreLogged;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
-import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning.PID;
+import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
@@ -180,14 +180,16 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                         .in(RadiansPerSecond))));
   }
 
-  public void driveFieldRelative(ChassisSpeeds speeds) {
-    driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPose().getRotation()));
-  }
-  public Command driveAbsoluteRotationCommand(DoubleSupplier vx, DoubleSupplier vy, Supplier<Rotation2d> angle){
-    var pid = new PIDController(PID.P, PID.I, PID.D);
+  public Command drive(DoubleSupplier vx, DoubleSupplier vy, Supplier<Rotation2d> heading) {
+    var pid =
+        new ProfiledPIDController(
+            Rotation.P,
+            Rotation.I,
+            Rotation.D,
+            new TrapezoidProfile.Constraints(MAX_ANGULAR_SPEED, MAX_ANGULAR_ACCEL));
     return run(
         () ->
-            drive(
+            driveFieldRelative(
                 ChassisSpeeds.fromFieldRelativeSpeeds(
                     xLimiter.calculate(
                         MAX_SPEED
@@ -199,18 +201,25 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                             .times(scale(vy.getAsDouble()))
                             .times(speedMultiplier)
                             .in(MetersPerSecond)),
-                    pid.calculate(
-                      getHeading().getRadians(),
-                      angle.get().getRadians()),
-                    getHeading()
-                    )));
+                    pid.calculate(getHeading().getRadians(), heading.get().getRadians()),
+                    getHeading())));
   }
+
+  /**
+   * Drives the robot relative to field based on provided {@link ChassisSpeeds} and current heading.
+   *
+   * @param speeds The desired field relative chassis speeds.
+   */
+  public void driveFieldRelative(ChassisSpeeds speeds) {
+    driveRobotRelative(ChassisSpeeds.fromFieldRelativeSpeeds(speeds, getPose().getRotation()));
+  }
+
   /**
    * Drives the robot based on profided {@link ChassisSpeeds}.
    *
    * <p>This method uses {@link ChassisSpeeds#discretize(ChassisSpeeds, double)} to reduce skew.
    *
-   * @param speeds The desired chassis speeds.
+   * @param speeds The desired robot relative chassis speeds.
    */
   public void driveRobotRelative(ChassisSpeeds speeds) {
     setModuleStates(
@@ -309,8 +318,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public Command setSpeedMultiplier(double multiplier) {
     return runOnce(() -> speedMultiplier = multiplier);
   }
-
-  
 
   /** Locks the drive motors. */
   private Command lockDriveMotors() {
