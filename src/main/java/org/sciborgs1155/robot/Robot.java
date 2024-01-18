@@ -1,8 +1,17 @@
 package org.sciborgs1155.robot;
 
+import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.autonomous;
 import static edu.wpi.first.wpilibj2.command.button.RobotModeTriggers.*;
 import static org.sciborgs1155.robot.Constants.*;
 
+import org.sciborgs1155.lib.CommandRobot;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.shooter.Shooter;
+
+import edu.wpi.first.units.Energy;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
@@ -12,6 +21,7 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import monologue.Monologue;
+
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.robot.Hopper.*;
@@ -31,13 +41,14 @@ public class Robot extends CommandRobot implements Logged {
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
 
   // SUBSYSTEMS
-  @Log private final Intake intake = new Intake();
-  @Log private final Hopper hopper = new Hopper();
+  @Log.File private final Shooter shooter = new Shooter();
+  @Log.File private final Intake intake = new Intake();
+  @Log.File private final Hopper hopper = new Hopper();
 
   // COMMANDS
   @Log.NT Autos autos = new Autos();
 
-  @Log
+  @Log.File
   boolean xIsPressed() {
     return operator.x().getAsBoolean();
   }
@@ -82,7 +93,9 @@ public class Robot extends CommandRobot implements Logged {
   private void configureBindings() {
     operator.x().whileTrue(hopper.forward());
     autonomous().whileTrue(new ProxyCommand(autos::get));
+    // operator.x().onTrue(shooter.shootCommand(1)); //key c
     FaultLogger.onFailing(f -> Commands.print(f.toString()));
+    operator.y().onTrue(shooter.shoot()); //v
   }
 
   public void robotPeriodic() {

@@ -15,6 +15,6 @@ import edu.wpi.first.units.Time;
  * @see Units
  */
 public class Constants {
-  public static final Measure<Time> PERIOD = Seconds.of(0.02); // roborio tickrate (s)
+  public static final double PERIOD = 0.02; // roborio tickrate (s)
   public static final double DEADBAND = 0.1;
 }

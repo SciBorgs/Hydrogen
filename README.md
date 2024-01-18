@@ -1,5 +1,7 @@
 # Hydrogen
-The SciBorgs' base repository.
+Not The SciBorgs' main base repository.
+
+made by ethan and henry (rookie 2023-2024)
 
 WIP
 
