@@ -8,9 +8,14 @@ import org.sciborgs1155.robot.Constants;
 
 public class SimDrive implements DriveIO {
 
-  Pose2d pose = new Pose2d();
-
-  DifferentialDrivetrainSim sim = DriveConstants.STARTINGDIFFERENTIALDRIVESIM;
+  DifferentialDrivetrainSim sim = new DifferentialDrivetrainSim(
+    DriveConstants.DRIVEMOTOR,
+    DriveConstants.GEARING,
+    DriveConstants.JKGMETERSSQUARED,
+    DriveConstants.MASSKG,
+    DriveConstants.WHEELRADIUSMETERS,
+    DriveConstants.TRACKWIDTHMETERS,
+    DriveConstants.MEASUREMENTSSTDDEVS);
 
   @Log.NT Field2d field = new Field2d();
 
@@ -34,12 +39,11 @@ public class SimDrive implements DriveIO {
   @Override
   public void updateState() {
     sim.update(Constants.PERIOD);
-    pose = sim.getPose();
-    field.setRobotPose(pose);
+    field.setRobotPose(sim.getPose());
   }
 
   @Override
   public Pose2d getPose() {
-    return pose;
+    return sim.getPose();
   }
 }
