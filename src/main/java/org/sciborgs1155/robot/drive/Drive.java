@@ -150,7 +150,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /**
-   * Drives the robot based on a {@link DoubleSupplier} for field relativex y and omega speeds.
+   * Drives the robot based on a {@link DoubleSupplier} for field relative x y and omega speeds.
    *
    * @param vx A supplier for the speed of the robot (-1 to 1) along the x axis (perpendicular to
    *     the alliance side).
@@ -180,6 +180,16 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                         .in(RadiansPerSecond))));
   }
 
+  /**
+   * Drives the robot based on a {@link DoubleSupplier} for field relative x y speeds and an absolute heading.
+   *
+   * @param vx A supplier for the speed of the robot (-1 to 1) along the x axis (perpendicular to
+   *     the alliance side).
+   * @param vy A supplier for the speed of the robot (-1 to 1) along the y axis (parallel to the
+   *     alliance side).
+   * @param heading A supplier for the field relative heading of the robot.
+   * @return The driving command.
+   */
   public Command drive(DoubleSupplier vx, DoubleSupplier vy, Supplier<Rotation2d> heading) {
     var pid =
         new ProfiledPIDController(
@@ -187,6 +197,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
             Rotation.I,
             Rotation.D,
             new TrapezoidProfile.Constraints(MAX_ANGULAR_SPEED, MAX_ANGULAR_ACCEL));
+
     return run(
         () ->
             driveFieldRelative(
