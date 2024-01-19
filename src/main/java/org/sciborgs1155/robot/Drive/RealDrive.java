@@ -28,8 +28,6 @@ public class RealDrive implements DriveIO {
 
   ADIS16448_IMU gyro = new ADIS16448_IMU();
 
-  Pose2d pose = new Pose2d();
-
   DifferentialDriveOdometry odometry =
       new DifferentialDriveOdometry(
           Rotation2d.fromDegrees(gyro.getAngle()),
@@ -83,15 +81,7 @@ public class RealDrive implements DriveIO {
   }
 
   public Pose2d getPose() {
-    return pose;
-  }
-
-  public double getX() {
-    return pose.getX();
-  }
-
-  public double getY() {
-    return pose.getY();
+    return odometry.getPoseMeters();
   }
 
   public double getLeftSpeed() {
@@ -105,6 +95,6 @@ public class RealDrive implements DriveIO {
   @Override
   public void updateState() {
     Rotation2d gyroAngle = Rotation2d.fromDegrees(gyro.getGyroAngleX());
-    pose = odometry.update(gyroAngle, leftEncoder.getPosition(), rightEncoder.getPosition());
+    odometry.update(gyroAngle, leftEncoder.getPosition(), rightEncoder.getPosition());
   }
 }
