@@ -1,10 +1,10 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.*;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
+import edu.wpi.first.apriltag.AprilTagFields;
+import edu.wpi.first.math.geometry.Rotation3d;
+import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation3d;
 
 /**
  * Constants is a globally accessible class for storing immutable values. Every value should be
@@ -18,4 +18,5 @@ import edu.wpi.first.units.Time;
 public class Constants {
   public static final Measure<Time> PERIOD = Seconds.of(0.02); // roborio tickrate (s)
   public static final double DEADBAND = 0.1;
-};
+  public static final int THROUGHBORE_PPR = 2048;
+}
