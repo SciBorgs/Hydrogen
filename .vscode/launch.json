@@ -6,6 +6,27 @@
   "configurations": [
     {
       "type": "java",
+      "name": "Main",
+      "request": "launch",
+      "mainClass": "org.sciborgs1155.robot.Main",
+      "projectName": "Hydrogen"
+    },
+    {
+      "type": "java",
+      "name": "FlexModule",
+      "request": "launch",
+      "mainClass": "org.sciborgs1155.robot.drive.FlexModule",
+      "projectName": "Hydrogen"
+    },
+    {
+      "type": "java",
+      "name": "TalonSwerveModule",
+      "request": "launch",
+      "mainClass": "org.sciborgs1155.robot.drive.TalonSwerveModule",
+      "projectName": "Hydrogen"
+    },
+    {
+      "type": "java",
       "name": "FailureManagement",
       "request": "launch",
       "mainClass": "org.sciborgs1155.lib.FailureManagement",

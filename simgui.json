@@ -1,31 +1,65 @@
 {
+  "HALProvider": {
+    "Other Devices": {
+      "window": {
+        "visible": false
+      }
+    }
+  },
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
       "/Robot/autos": "String Chooser",
-      "/SmartDashboard/PIDController[1]": "PIDController"
+      "/Robot/drive/field2d": "Field2d",
+      "/Robot/drive/frontLeft/driveFeedback": "PIDController",
+      "/Robot/drive/frontLeft/turnFeedback": "PIDController",
+      "/Robot/drive/frontRight/driveFeedback": "PIDController",
+      "/Robot/drive/frontRight/turnFeedback": "PIDController",
+      "/Robot/drive/rearLeft/driveFeedback": "PIDController",
+      "/Robot/drive/rearLeft/turnFeedback": "PIDController",
+      "/Robot/drive/rearRight/driveFeedback": "PIDController",
+      "/Robot/drive/rearRight/turnFeedback": "PIDController",
+      "/SmartDashboard/drive quasistatic forward": "Command"
+    },
+    "windows": {
+      "/Robot/drive/field2d": {
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/drive quasistatic forward": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
     "transitory": {
       "Robot": {
-        "open": true
-      },
-      "Shuffleboard": {
-        "open": true
-      },
-      "SmartDashboard": {
-        "Failures": {
-          "open": true,
-          "string[]##v_/SmartDashboard/Failures/warnings": {
+        "drive": {
+          "frontRight": {
+            "SwerveModulePosition##v_/Robot/drive/frontRight/position": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            },
+            "SwerveModuleState##v_/Robot/drive/frontRight/state": {
+              "Rotation2d##v_angle": {
+                "open": true
+              },
+              "open": true
+            },
+            "driveFeedback": {
+              "open": true
+            },
             "open": true
-          }
+          },
+          "open": true
         },
         "open": true
       }
     }
-  },
-  "NetworkTables Info": {
-    "visible": true
   }
 }

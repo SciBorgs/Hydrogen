@@ -10,10 +10,12 @@ import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import monologue.Monologue;
+import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
+import org.sciborgs1155.robot.drive.Drive;
 
 /**
  * This class is where the bulk of the robot should be declared. Since Command-based is a
@@ -28,9 +30,10 @@ public class Robot extends CommandRobot implements Logged {
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
+  private final Drive drive = Drive.create();
 
   // COMMANDS
-  @Log.NT Autos autos = new Autos();
+  @Log.NT private final Autos autos = new Autos();
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
@@ -41,23 +44,28 @@ public class Robot extends CommandRobot implements Logged {
 
   /** Configures basic behavior during different parts of the game. */
   private void configureGameBehavior() {
-    if (isSimulation()) {
-      DriverStation.silenceJoystickConnectionWarning(true);
-    }
-
-    // Configure logging with DataLogManager, Monologue, and FailureManagement
+    // Configure logging with DataLogManager, Monologue, FailureManagement, and URCL
     DataLogManager.start();
     Monologue.setupMonologue(this, "/Robot", false, true);
     addPeriodic(Monologue::updateAll, kDefaultPeriod);
     FaultLogger.setupLogging();
     addPeriodic(FaultLogger::update, 1);
+
+    if (isReal()) {
+      URCL.start();
+    } else {
+      DriverStation.silenceJoystickConnectionWarning(true);
+    }
   }
 
   /**
    * Configures subsystem default commands. Default commands are scheduled when no other command is
    * running on a subsystem.
    */
-  private void configureSubsystemDefaults() {}
+  private void configureSubsystemDefaults() {
+    drive.setDefaultCommand(
+        drive.drive(() -> -driver.getLeftX(), () -> -driver.getLeftY(), () -> -driver.getRightX()));
+  }
 
   /** Configures trigger -> command bindings */
   private void configureBindings() {
