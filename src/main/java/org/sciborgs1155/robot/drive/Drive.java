@@ -181,7 +181,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /**
-   * Drives the robot based on a {@link DoubleSupplier} for field relative x y speeds and an absolute heading.
+   * Drives the robot based on a {@link DoubleSupplier} for field relative x y speeds and an
+   * absolute heading.
    *
    * @param vx A supplier for the speed of the robot (-1 to 1) along the x axis (perpendicular to
    *     the alliance side).
