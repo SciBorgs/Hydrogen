@@ -1,10 +1,5 @@
 package org.sciborgs1155.robot;
 
-import static edu.wpi.first.units.Units.*;
-
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
-
 /**
  * Constants is a globally accessible class for storing immutable values. Every value should be
  * <code>public static final</code>.

@@ -24,6 +24,7 @@ import monologue.Monologue;
 
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.robot.Drive.Drive;
 import org.sciborgs1155.robot.Hopper.*;
 import org.sciborgs1155.robot.Intake.*;
 import org.sciborgs1155.robot.Ports.OI;
@@ -41,6 +42,7 @@ public class Robot extends CommandRobot implements Logged {
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
 
   // SUBSYSTEMS
+  @Log.File private final Drive drive = new Drive();
   @Log.File private final Shooter shooter = new Shooter();
   @Log.File private final Intake intake = new Intake();
   @Log.File private final Hopper hopper = new Hopper();
@@ -80,6 +82,8 @@ public class Robot extends CommandRobot implements Logged {
    * running on a subsystem.
    */
   private void configureSubsystemDefaults() {
+    drive.setDefaultCommand(
+        drive.setMotorSpeeds(() -> -driver.getLeftY(), () -> -driver.getRightY()));
     hopper.setDefaultCommand(hopper.stop());
     intake.setDefaultCommand(intake.stop());
   }
