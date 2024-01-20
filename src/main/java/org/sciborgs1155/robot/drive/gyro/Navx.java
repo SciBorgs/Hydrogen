@@ -6,7 +6,7 @@ import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.wpilibj.SPI;
 
 public class Navx implements GyroIO {
-  private AHRS ahrs;
+  private final AHRS ahrs = new AHRS();
 
   public Navx() {
     ahrs = new AHRS(SPI.Port.kMXP);
