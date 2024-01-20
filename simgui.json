@@ -51,6 +51,9 @@
       "Robot": {
         "drive": {
           "Pose2d##v_/Robot/drive/getPose": {
+            "Rotation2d##v_rotation": {
+              "open": true
+            },
             "open": true
           },
           "frontRight": {
@@ -68,8 +71,7 @@
             },
             "driveFeedback": {
               "open": true
-            },
-            "open": true
+            }
           },
           "open": true
         },

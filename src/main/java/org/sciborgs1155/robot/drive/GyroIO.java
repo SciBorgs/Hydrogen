@@ -23,6 +23,7 @@ public interface GyroIO extends AutoCloseable {
   /** Resets heading to 0 */
   public void reset();
 
+  /** GyroIO implementation for NavX */
   public class NavX implements GyroIO {
     private final AHRS ahrs = new AHRS();
 
@@ -41,5 +42,25 @@ public interface GyroIO extends AutoCloseable {
 
     @Override
     public void close() throws Exception {}
+  }
+
+  /** GyroIO implementation for nonexistent gyro */
+  public class NoGyro implements GyroIO {
+
+    @Override
+    public void close() throws Exception {}
+
+    @Override
+    public double getRate() {
+      return 0;
+    }
+
+    @Override
+    public Rotation3d getRotation3d() {
+      return new Rotation3d();
+    }
+
+    @Override
+    public void reset() {}
   }
 }

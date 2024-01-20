@@ -42,7 +42,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @IgnoreLogged private final List<SwerveModule> modules;
 
-  @Log.NT private final GyroIO gyro = new GyroIO.NavX();
+  private final GyroIO gyro;
+  private static Rotation2d simRotation = new Rotation2d();
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
 
@@ -66,16 +67,24 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
             new FlexModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0)),
             new FlexModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1)),
             new FlexModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2)),
-            new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)))
-        : new Drive(new SimModule(), new SimModule(), new SimModule(), new SimModule());
+            new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)),
+            new GyroIO.NavX())
+        : new Drive(
+            new SimModule(),
+            new SimModule(),
+            new SimModule(),
+            new SimModule(),
+            new GyroIO.NoGyro());
   }
 
   /** A swerve drive subsystem containing four {@link ModuleIO} modules. */
-  public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
+  public Drive(
+      ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight, GyroIO gyro) {
     this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0), " FL");
     this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1), "FR");
     this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2), "RL");
     this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3), " RR");
+    this.gyro = gyro;
 
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
@@ -242,7 +251,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @Override
   public void periodic() {
-    odometry.update(gyro.getRotation2d(), getModulePositions());
+    odometry.update(Robot.isReal() ? gyro.getRotation2d() : simRotation, getModulePositions());
 
     field2d.setRobotPose(getPose());
 
@@ -254,7 +263,12 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   @Override
-  public void simulationPeriodic() {}
+  public void simulationPeriodic() {
+    simRotation =
+        simRotation.rotateBy(
+            Rotation2d.fromRadians(
+                getChassisSpeed().omegaRadiansPerSecond * Constants.PERIOD.in(Seconds)));
+  }
 
   /** Stops drivetrain */
   public Command stop() {
