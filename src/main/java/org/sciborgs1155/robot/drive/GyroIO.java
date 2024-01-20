@@ -1,5 +1,6 @@
-package org.sciborgs1155.robot.drive.gyro;
+package org.sciborgs1155.robot.drive;
 
+import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 
@@ -21,4 +22,24 @@ public interface GyroIO extends AutoCloseable {
 
   /** Resets heading to 0 */
   public void reset();
+
+  public class NavX implements GyroIO {
+    private final AHRS ahrs = new AHRS();
+
+    public double getRate() {
+      return ahrs.getRate();
+    }
+
+    @Override
+    public Rotation3d getRotation3d() {
+      return ahrs.getRotation3d();
+    }
+
+    public void reset() {
+      ahrs.reset();
+    }
+
+    @Override
+    public void close() throws Exception {}
+  }
 }
