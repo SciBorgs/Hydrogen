@@ -19,8 +19,8 @@ public interface InputStream extends DoubleSupplier {
    * @param base The base stream.
    * @return A new input stream.
    */
-  public static InputStream of(InputStream base) {
-    return base;
+  public static InputStream of(DoubleSupplier base) {
+    return base::getAsDouble;
   }
 
   /**
