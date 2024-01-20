@@ -63,11 +63,11 @@ public interface InputStream extends DoubleSupplier {
   }
 
   /**
-   * Inverts the stream outputs.
+   * Negates the stream outputs.
    *
-   * @return An inverted stream.
+   * @return A stream scaled by -1.
    */
-  public default InputStream invert() {
+  public default InputStream negate() {
     return scale(-1);
   }
 
@@ -87,18 +87,19 @@ public interface InputStream extends DoubleSupplier {
    * @param exponent The exponent to raise them to.
    * @return An exponentiated stream.
    */
-  public default InputStream expWithSign(double exponent) {
-    return transform(x -> Math.copySign(x, Math.pow(x, exponent)));
+  public default InputStream signedPow(double exponent) {
+    return transform(x -> Math.copySign(Math.pow(x, exponent), x));
   }
 
   /**
-   * Deadbands the stream outputs by a minimum bound.
+   * Deadbands the stream outputs by a minimum bound and scales them from 0 to a maximum bound.
    *
    * @param bound The lower bound to deadband with.
+   * @param max The maximum value to scale with.
    * @return A deadbanded stream.
    */
-  public default InputStream deadband(double deadband) {
-    return transform(x -> MathUtil.applyDeadband(x, deadband));
+  public default InputStream deadband(double deadband, double max) {
+    return transform(x -> MathUtil.applyDeadband(x, deadband, Double.MAX_VALUE));
   }
 
   /**
