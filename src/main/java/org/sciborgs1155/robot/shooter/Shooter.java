@@ -29,6 +29,11 @@ public class Shooter extends SubsystemBase implements Logged, AutoCloseable {
   public boolean isAtGoal() {
     return pidController.atSetpoint();
   }
+  @Log.NT
+  public boolean isAtShootingSpeed() {
+    return pidController.getSetpoint() == CONSTANT_TARGET_RPS
+      && isAtGoal();
+  }
 
   public Shooter() {
     setDefaultCommand(runOnce(

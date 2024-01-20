@@ -5,7 +5,17 @@
       "/LiveWindow/Ungrouped/PIDController[1]": "PIDController",
       "/LiveWindow/Ungrouped/Scheduler": "Scheduler",
       "/Robot/autos": "String Chooser",
+      "/Robot/drive/field": "Field2d",
+      "/Robot/hopper/pid": "PIDController",
+      "/Robot/intake/pid": "PIDController",
       "/Robot/shooter/pidController": "PIDController"
+    },
+    "windows": {
+      "/Robot/drive/field": {
+        "window": {
+          "visible": true
+        }
+      }
     }
   },
   "NetworkTables": {
@@ -13,10 +23,22 @@
       "open": false
     },
     "transitory": {
+      "FMSInfo": {
+        "open": true
+      },
       "LiveWindow": {
         "open": true
       },
       "Robot": {
+        "drive": {
+          "open": true
+        },
+        "hopper": {
+          "open": true
+        },
+        "intake": {
+          "open": true
+        },
         "open": true,
         "shooter": {
           "open": true,
@@ -31,7 +53,9 @@
     }
   },
   "NetworkTables Info": {
-    "visible": true
+    "Clients": {
+      "open": true
+    }
   },
   "Plot": {
     "Plot <0>": {
@@ -109,7 +133,7 @@
             0.0,
             0.8500000238418579
           ],
-          "height": 343,
+          "height": 138,
           "series": [
             {
               "color": [
@@ -133,7 +157,102 @@
         }
       ],
       "window": {
-        "name": "ShooterPlot"
+        "name": "ShooterPlot",
+        "visible": false
+      }
+    },
+    "Plot <3>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 375,
+          "series": [
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/intake/motorAngularVelocity"
+            },
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/shooter/getVelocity"
+            }
+          ]
+        }
+      ],
+      "window": {
+        "visible": false
+      }
+    },
+    "Plot <4>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 185,
+          "series": [
+            {
+              "color": [
+                0.2980392277240753,
+                0.44705885648727417,
+                0.6901960968971252,
+                1.0
+              ],
+              "id": "NT:/Robot/shooter/getVelocity"
+            },
+            {
+              "color": [
+                0.8666667342185974,
+                0.5176470875740051,
+                0.32156863808631897,
+                1.0
+              ],
+              "id": "NT:/Robot/intake/motorAngularVelocity"
+            },
+            {
+              "color": [
+                0.3333333432674408,
+                0.658823549747467,
+                0.4078431725502014,
+                1.0
+              ],
+              "id": "NT:/Robot/hopper/motorAngularVelocity"
+            }
+          ]
+        }
+      ]
+    },
+    "Plot <5>": {
+      "plots": [
+        {
+          "backgroundColor": [
+            0.0,
+            0.0,
+            0.0,
+            0.8500000238418579
+          ],
+          "height": 435
+        }
+      ],
+      "window": {
+        "visible": false
       }
     }
   }

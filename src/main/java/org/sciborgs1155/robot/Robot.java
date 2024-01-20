@@ -51,12 +51,6 @@ public class Robot extends CommandRobot implements Logged {
   // COMMANDS
   @Log.NT Autos autos = new Autos();
 
-  @Log.File
-  boolean xIsPressed() {
-    return operator.x().getAsBoolean();
-  }
-  ;
-
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
     configureGameBehavior();
@@ -85,8 +79,6 @@ public class Robot extends CommandRobot implements Logged {
   private void configureSubsystemDefaults() {
     drive.setDefaultCommand(
         drive.setMotorSpeeds(() -> -driver.getLeftY(), () -> -driver.getRightY()));
-    hopper.setDefaultCommand(hopper.stop());
-    intake.setDefaultCommand(intake.stop());
   }
 
   /** Configures trigger -> command bindings */
@@ -96,11 +88,11 @@ public class Robot extends CommandRobot implements Logged {
   // variables angle and speed
 
   private void configureBindings() {
-    operator.x().whileTrue(hopper.forward());
+    operator.x().whileTrue(intake.intake().alongWith(hopper.forward()));
+    operator.a().whileTrue(shooter.shoot().alongWith(Commands.waitUntil(shooter::isAtShootingSpeed).andThen(hopper.forward())));
+    operator.b().whileTrue(intake.outtake());
     autonomous().whileTrue(new ProxyCommand(autos::get));
-    // operator.x().onTrue(shooter.shootCommand(1)); //key c
     FaultLogger.onFailing(f -> Commands.print(f.toString()));
-    operator.y().onTrue(shooter.shoot()); //v
   }
 
   public void robotPeriodic() {

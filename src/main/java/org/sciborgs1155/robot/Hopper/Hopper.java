@@ -12,20 +12,21 @@ import org.sciborgs1155.robot.Robot;
 
 public class Hopper extends SubsystemBase implements Logged {
 
-  @Log final PIDController pid = new PIDController(kp, ki, kd);
+  @Log.NT final PIDController pid = new PIDController(kp, ki, kd);
 
   public Hopper() {
     this.pid.setSetpoint(0);
+    setDefaultCommand(stop());
   }
 
   public final HopperIO hopper = Robot.isReal() ? new RealHopper() : new SimHopper();
 
-  @Log
+  @Log.NT
   public double motorAngularVelocity() {
     return hopper.getAngularVelocityOfMotor();
   }
 
-  @Log
+  @Log.NT
   private boolean isAtTarget() {
     return pid.atSetpoint();
   }

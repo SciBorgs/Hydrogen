@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.Intake;
 
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
+import static org.sciborgs1155.robot.Constants.*;
 
 public class SimIntake implements IntakeIO {
   DCMotorSim motor;
@@ -18,5 +19,6 @@ public class SimIntake implements IntakeIO {
   @Override
   public void setVoltage(double voltage) {
     motor.setInputVoltage(voltage);
+    motor.update(PERIOD);
   }
 }

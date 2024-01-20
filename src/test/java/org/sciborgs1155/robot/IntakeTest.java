@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.Intake.Intake;
 
 public class IntakeTest {
-  final double DELTA = 2;
+  final double DELTA = 7e-1;
   static Intake intake;
 
   @BeforeEach
@@ -30,5 +30,9 @@ public class IntakeTest {
     assertEquals(-INTAKE_ANGULAR_SPEED, intake.motorAngularVelocity(), DELTA);
     // test backwards movement
 
+    run(intake.stop());
+    fastForward(500);
+    assertEquals(0, intake.motorAngularVelocity(), DELTA);
+    // test stop
   }
 }
