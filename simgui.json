@@ -19,7 +19,14 @@
       "/Robot/drive/rearLeft/turnFeedback": "PIDController",
       "/Robot/drive/rearRight/driveFeedback": "PIDController",
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
-      "/SmartDashboard/drive quasistatic forward": "Command"
+      "/SmartDashboard/drive dynamic backward": "Command",
+      "/SmartDashboard/drive dynamic forward": "Command",
+      "/SmartDashboard/drive quasistatic backward": "Command",
+      "/SmartDashboard/drive quasistatic forward": "Command",
+      "/SmartDashboard/turn dynamic backward": "Command",
+      "/SmartDashboard/turn dynamic forward": "Command",
+      "/SmartDashboard/turn quasistatic backward": "Command",
+      "/SmartDashboard/turn quasistatic forward": "Command"
     },
     "windows": {
       "/Robot/drive/field2d": {
@@ -35,6 +42,11 @@
         "module-RL": {
           "style": "Line"
         },
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/drive dynamic forward": {
         "window": {
           "visible": true
         }
@@ -69,9 +81,7 @@
               },
               "open": true
             },
-            "driveFeedback": {
-              "open": true
-            }
+            "open": true
           },
           "open": true
         },
