@@ -5,10 +5,8 @@ import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.kauailabs.navx.frc.AHRS;
-import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -26,15 +24,14 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.List;
-import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import monologue.Annotations.IgnoreLogged;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
+import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
-import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
@@ -55,14 +52,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @Log.NT private final Field2d field2d = new Field2d();
   private final FieldObject2d[] modules2d;
-
-  // Rate limiting
-  private final SlewRateLimiter xLimiter =
-      new SlewRateLimiter(MAX_ACCEL.in(MetersPerSecondPerSecond));
-  private final SlewRateLimiter yLimiter =
-      new SlewRateLimiter(MAX_ACCEL.in(MetersPerSecondPerSecond));
-
-  @Log.NT private double speedMultiplier = 1;
 
   // SysId
   private final SysIdRoutine driveRoutine;
@@ -143,55 +132,31 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     odometry.resetPosition(getHeading(), getModulePositions(), pose);
   }
 
-  /** Deadbands and squares inputs */
-  private static double scale(double input) {
-    input = MathUtil.applyDeadband(input, Constants.DEADBAND);
-    return Math.copySign(input * input, input);
-  }
-
   /**
-   * Drives the robot based on a {@link DoubleSupplier} for field relative x y and omega speeds.
+   * Drives the robot based on a {@link InputStream} for field relative x y and omega velocities.
    *
-   * @param vx A supplier for the speed of the robot (-1 to 1) along the x axis (perpendicular to
-   *     the alliance side).
-   * @param vy A supplier for the speed of the robot (-1 to 1) along the y axis (parallel to the
+   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
    *     alliance side).
-   * @param vOmega A supplier for the angular speed of the robot (-1 to 1).
+   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
+   *     side).
+   * @param vOmega A supplier for the angular velocity of the robot.
    * @return The driving command.
    */
-  public Command drive(DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier vOmega) {
-    return run(
-        () ->
-            driveFieldRelative(
-                new ChassisSpeeds(
-                    xLimiter.calculate(
-                        MAX_SPEED
-                            .times(scale(vx.getAsDouble()))
-                            .times(speedMultiplier)
-                            .in(MetersPerSecond)),
-                    yLimiter.calculate(
-                        MAX_SPEED
-                            .times(scale(vy.getAsDouble()))
-                            .times(speedMultiplier)
-                            .in(MetersPerSecond)),
-                    MAX_ANGULAR_SPEED
-                        .times(scale(vOmega.getAsDouble()))
-                        .times(speedMultiplier)
-                        .in(RadiansPerSecond))));
+  public Command drive(InputStream vx, InputStream vy, InputStream vOmega) {
+    return run(() -> driveFieldRelative(new ChassisSpeeds(vx.get(), vy.get(), vOmega.get())));
   }
 
   /**
-   * Drives the robot based on a {@link DoubleSupplier} for field relative x y speeds and an
-   * absolute heading.
+   * Drives the robot based on a {@link InputStream} for field relative x y and omega velocities.
    *
-   * @param vx A supplier for the speed of the robot (-1 to 1) along the x axis (perpendicular to
-   *     the alliance side).
-   * @param vy A supplier for the speed of the robot (-1 to 1) along the y axis (parallel to the
+   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
    *     alliance side).
+   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
+   *     side).
    * @param heading A supplier for the field relative heading of the robot.
    * @return The driving command.
    */
-  public Command drive(DoubleSupplier vx, DoubleSupplier vy, Supplier<Rotation2d> heading) {
+  public Command drive(InputStream vx, InputStream vy, Supplier<Rotation2d> heading) {
     var pid =
         new ProfiledPIDController(
             Rotation.P,
@@ -202,19 +167,10 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return run(
         () ->
             driveFieldRelative(
-                ChassisSpeeds.fromFieldRelativeSpeeds(
-                    xLimiter.calculate(
-                        MAX_SPEED
-                            .times(scale(vx.getAsDouble()))
-                            .times(speedMultiplier)
-                            .in(MetersPerSecond)),
-                    yLimiter.calculate(
-                        MAX_SPEED
-                            .times(scale(vy.getAsDouble()))
-                            .times(speedMultiplier)
-                            .in(MetersPerSecond)),
-                    pid.calculate(getHeading().getRadians(), heading.get().getRadians()),
-                    getHeading())));
+                new ChassisSpeeds(
+                    vx.get(),
+                    vy.get(),
+                    pid.calculate(getHeading().getRadians(), heading.get().getRadians()))));
   }
 
   /**
@@ -324,11 +280,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     var front = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
     var back = new SwerveModuleState(0, Rotation2d.fromDegrees(-45));
     return run(() -> setModuleStates(new SwerveModuleState[] {front, back, back, front}));
-  }
-
-  /** Sets a new speed multiplier for the robot, this affects max cartesian and angular speeds */
-  public Command setSpeedMultiplier(double multiplier) {
-    return runOnce(() -> speedMultiplier = multiplier);
   }
 
   /** Locks the drive motors. */
