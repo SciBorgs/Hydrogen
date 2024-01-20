@@ -24,6 +24,15 @@ public interface InputStream extends DoubleSupplier {
   }
 
   /**
+   * Shorthand to return a double value.
+   *
+   * @return The value from {@link #getAsDouble()}.
+   */
+  public default double get() {
+    return getAsDouble();
+  }
+
+  /**
    * Transforms the stream outputs by an operator.
    *
    * @param operator A function that takes in two double inputs and returns one.

@@ -7,7 +7,6 @@ import static org.sciborgs1155.robot.drive.DriveConstants.*;
 import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
-import edu.wpi.first.math.filter.SlewRateLimiter;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -33,7 +32,6 @@ import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
-import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
@@ -54,14 +52,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @Log.NT private final Field2d field2d = new Field2d();
   private final FieldObject2d[] modules2d;
-
-  // Rate limiting
-  private final SlewRateLimiter xLimiter =
-      new SlewRateLimiter(MAX_ACCEL.in(MetersPerSecondPerSecond));
-  private final SlewRateLimiter yLimiter =
-      new SlewRateLimiter(MAX_ACCEL.in(MetersPerSecondPerSecond));
-
-  @Log.NT private double speedMultiplier = 1;
 
   // SysId
   private final SysIdRoutine driveRoutine;
@@ -153,10 +143,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    * @return The driving command.
    */
   public Command drive(InputStream vx, InputStream vy, InputStream vOmega) {
-    return run(
-        () ->
-            driveFieldRelative(
-                new ChassisSpeeds(vx.getAsDouble(), vy.getAsDouble(), vOmega.getAsDouble())));
+    return run(() -> driveFieldRelative(new ChassisSpeeds(vx.get(), vy.get(), vOmega.get())));
   }
 
   /**
@@ -181,8 +168,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
         () ->
             driveFieldRelative(
                 new ChassisSpeeds(
-                    vx.getAsDouble(),
-                    vy.getAsDouble(),
+                    vx.get(),
+                    vy.get(),
                     pid.calculate(getHeading().getRadians(), heading.get().getRadians()))));
   }
 
@@ -293,11 +280,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     var front = new SwerveModuleState(0, Rotation2d.fromDegrees(45));
     var back = new SwerveModuleState(0, Rotation2d.fromDegrees(-45));
     return run(() -> setModuleStates(new SwerveModuleState[] {front, back, back, front}));
-  }
-
-  /** Sets a new speed multiplier for the robot, this affects max cartesian and angular speeds */
-  public Command setSpeedMultiplier(double multiplier) {
-    return runOnce(() -> speedMultiplier = multiplier);
   }
 
   /** Locks the drive motors. */
