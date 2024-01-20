@@ -270,10 +270,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Zeroes the heading of the robot. */
   public Command zeroHeading() {
-    return runOnce(
-        Robot.isReal()
-            ? gyro::reset
-            : this::resetLastRotation); // could be a lambda, idk i dont have intellisense so
+    return runOnce(Robot.isReal() ? gyro::reset : () -> lastRotation = new Rotation2d());
   }
 
   /** Returns the module states. */
@@ -314,7 +311,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     lastRotation =
         lastRotation.rotateBy(
             Rotation2d.fromRadians(
-                kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond // TODO replace with getChassisSpeeds()
+                kinematics.toChassisSpeeds(getModuleStates())
+                        .omegaRadiansPerSecond // TODO replace with getChassisSpeeds()
                     * Constants.PERIOD.in(Seconds)));
   }
 

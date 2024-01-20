@@ -17,18 +17,7 @@ public interface GyroIO extends AutoCloseable {
   }
 
   /** Returns the heading of the robot as a Rotation3d. */
-  public default Rotation3d getRotation3d() {
-    return new Rotation3d(getYaw(), getPitch(), getPitch());
-  }
-
-  /** Returns the yaw value */
-  public double getYaw();
-
-  /** Returns the pitch value */
-  public double getPitch();
-
-  /** Returns the roll value */
-  public double getRoll();
+  public Rotation3d getRotation3d();
 
   /** Resets heading to 0 */
   public void reset();
