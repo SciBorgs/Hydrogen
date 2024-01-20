@@ -102,6 +102,13 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     }
 
     SmartDashboard.putData("drive quasistatic forward", driveSysIdQuasistatic(Direction.kForward));
+    SmartDashboard.putData("drive dynamic forward", driveSysIdDynamic(Direction.kForward));
+    SmartDashboard.putData("drive quasistatic backward", driveSysIdQuasistatic(Direction.kReverse));
+    SmartDashboard.putData("drive dynamic backward", driveSysIdDynamic(Direction.kReverse));
+    SmartDashboard.putData("turn quasistatic forward", turnSysIdQuasistatic(Direction.kForward));
+    SmartDashboard.putData("turn dynamic forward", turnSysIdDynamic(Direction.kForward));
+    SmartDashboard.putData("turn quasistatic backward", turnSysIdQuasistatic(Direction.kReverse));
+    SmartDashboard.putData("turn dynamic backward", turnSysIdDynamic(Direction.kReverse));
   }
 
   /**
@@ -233,10 +240,16 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return modules.stream().map(SwerveModule::state).toArray(SwerveModuleState[]::new);
   }
 
-  /** Returns the module positions */
+  /** Returns the module positions. */
   @Log.NT
   private SwerveModulePosition[] getModulePositions() {
     return modules.stream().map(SwerveModule::position).toArray(SwerveModulePosition[]::new);
+  }
+
+  /** Returns the module setpoints. */
+  @Log.NT
+  public SwerveModuleState[] getModuleSetpoints() {
+    return modules.stream().map(SwerveModule::desiredState).toArray(SwerveModuleState[]::new);
   }
 
   /** Updates pose estimation based on provided {@link EstimatedRobotPose} */
