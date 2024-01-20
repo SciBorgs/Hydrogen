@@ -33,12 +33,12 @@ public interface InputStream extends DoubleSupplier {
   }
 
   /**
-   * Transforms the stream outputs by an operator.
+   * Maps the stream outputs by an operator.
    *
-   * @param operator A function that takes in two double inputs and returns one.
-   * @return A transformed stream.
+   * @param operator A function that takes in a double input and returns a double output.
+   * @return A mapped stream.
    */
-  public default InputStream transform(DoubleUnaryOperator operator) {
+  public default InputStream map(DoubleUnaryOperator operator) {
     return () -> operator.applyAsDouble(getAsDouble());
   }
 
@@ -49,7 +49,7 @@ public interface InputStream extends DoubleSupplier {
    * @return A scaled stream.
    */
   public default InputStream scale(DoubleSupplier factor) {
-    return transform(x -> x * factor.getAsDouble());
+    return map(x -> x * factor.getAsDouble());
   }
 
   /**
@@ -78,7 +78,7 @@ public interface InputStream extends DoubleSupplier {
    * @return An exponentiated stream.
    */
   public default InputStream pow(double exponent) {
-    return transform(x -> Math.pow(x, exponent));
+    return map(x -> Math.pow(x, exponent));
   }
 
   /**
@@ -88,7 +88,7 @@ public interface InputStream extends DoubleSupplier {
    * @return An exponentiated stream.
    */
   public default InputStream signedPow(double exponent) {
-    return transform(x -> Math.copySign(Math.pow(x, exponent), x));
+    return map(x -> Math.copySign(Math.pow(x, exponent), x));
   }
 
   /**
@@ -99,7 +99,7 @@ public interface InputStream extends DoubleSupplier {
    * @return A deadbanded stream.
    */
   public default InputStream deadband(double deadband, double max) {
-    return transform(x -> MathUtil.applyDeadband(x, deadband, Double.MAX_VALUE));
+    return map(x -> MathUtil.applyDeadband(x, deadband, Double.MAX_VALUE));
   }
 
   /**
@@ -109,7 +109,7 @@ public interface InputStream extends DoubleSupplier {
    * @return A clamped stream.
    */
   public default InputStream clamp(double magnitude) {
-    return transform(x -> MathUtil.clamp(x, -magnitude, magnitude));
+    return map(x -> MathUtil.clamp(x, -magnitude, magnitude));
   }
 
   /**
@@ -120,6 +120,6 @@ public interface InputStream extends DoubleSupplier {
    */
   public default InputStream rateLimit(double rate) {
     var limiter = new SlewRateLimiter(rate);
-    return transform(x -> limiter.calculate(x));
+    return map(x -> limiter.calculate(x));
   }
 }
