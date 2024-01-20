@@ -279,6 +279,11 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return modules.stream().map(SwerveModule::state).toArray(SwerveModuleState[]::new);
   }
 
+  /** Returns the chassis speed. */
+  public ChassisSpeeds getChassisSpeed() {
+    return kinematics.toChassisSpeeds(getModuleStates());
+  }
+
   /** Returns the module positions */
   @Log.NT
   private SwerveModulePosition[] getModulePositions() {
@@ -311,8 +316,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     lastRotation =
         lastRotation.rotateBy(
             Rotation2d.fromRadians(
-                kinematics.toChassisSpeeds(getModuleStates())
-                        .omegaRadiansPerSecond // TODO replace with getChassisSpeeds()
+                getChassisSpeed().omegaRadiansPerSecond // TODO replace with getChassisSpeeds()
                     * Constants.PERIOD.in(Seconds)));
   }
 
@@ -369,5 +373,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     frontRight.close();
     rearLeft.close();
     rearRight.close();
+    gyro.close();
   }
 }
