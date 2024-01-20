@@ -22,7 +22,6 @@ public class DriveTest {
     setupHAL();
   }
 
-  @Disabled
   @ParameterizedTest
   @MethodSource("genTestSpeeds")
   public void atSetpoint(double lSpeed, double rSpeed) {

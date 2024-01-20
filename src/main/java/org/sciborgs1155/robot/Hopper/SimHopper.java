@@ -20,6 +20,6 @@ public class SimHopper implements HopperIO {
   @Override
   public void setVoltage(double voltage) {
     motor.setInputVoltage(voltage);
-    motor.update(PERIOD.magnitude());
+    motor.update(PERIOD);
   }
 }

@@ -26,6 +26,7 @@ public class TestShooter {
 
     @Test
     public void testVelocity() {
+        run(shooter.shoot());
         shooter.periodic();
         fastForward();
         assertEquals(ShooterConstants.CONSTANT_TARGET_RPS, shooter.getVelocity(), DELTA);

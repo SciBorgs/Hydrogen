@@ -40,6 +40,7 @@ public class Robot extends CommandRobot implements Logged {
 
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
+  private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
 
   // SUBSYSTEMS
   @Log.File private final Drive drive = new Drive();
