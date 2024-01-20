@@ -314,7 +314,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     lastRotation =
         lastRotation.rotateBy(
             Rotation2d.fromRadians(
-                kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond
+                kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond // TODO replace with getChassisSpeeds()
                     * Constants.PERIOD.in(Seconds)));
   }
 
