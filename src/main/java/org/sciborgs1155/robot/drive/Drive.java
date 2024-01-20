@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
-import com.kauailabs.navx.frc.AHRS;
 import edu.wpi.first.math.controller.ProfiledPIDController;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -43,7 +42,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @IgnoreLogged private final List<SwerveModule> modules;
 
-  private final AHRS imu = new AHRS();
+  private final GyroIO gyro;
+  private static Rotation2d simRotation = new Rotation2d();
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
 
@@ -67,16 +67,24 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
             new FlexModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0)),
             new FlexModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1)),
             new FlexModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2)),
-            new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)))
-        : new Drive(new SimModule(), new SimModule(), new SimModule(), new SimModule());
+            new FlexModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3)),
+            new GyroIO.NavX())
+        : new Drive(
+            new SimModule(),
+            new SimModule(),
+            new SimModule(),
+            new SimModule(),
+            new GyroIO.NoGyro());
   }
 
   /** A swerve drive subsystem containing four {@link ModuleIO} modules. */
-  public Drive(ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight) {
+  public Drive(
+      ModuleIO frontLeft, ModuleIO frontRight, ModuleIO rearLeft, ModuleIO rearRight, GyroIO gyro) {
     this.frontLeft = new SwerveModule(frontLeft, ANGULAR_OFFSETS.get(0), " FL");
     this.frontRight = new SwerveModule(frontRight, ANGULAR_OFFSETS.get(1), "FR");
     this.rearLeft = new SwerveModule(rearLeft, ANGULAR_OFFSETS.get(2), "RL");
     this.rearRight = new SwerveModule(rearRight, ANGULAR_OFFSETS.get(3), " RR");
+    this.gyro = gyro;
 
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
@@ -94,7 +102,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                 volts -> modules.forEach(m -> m.setTurnVoltage(volts.in(Volts))), null, this));
 
     odometry =
-        new SwerveDrivePoseEstimator(kinematics, getHeading(), getModulePositions(), new Pose2d());
+        new SwerveDrivePoseEstimator(
+            kinematics, gyro.getRotation2d(), getModulePositions(), new Pose2d());
 
     for (int i = 0; i < modules.size(); i++) {
       var module = modules.get(i);
@@ -122,21 +131,12 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /**
-   * Returns the heading of the robot, based on our pigeon.
-   *
-   * @return A Rotation2d of our angle.
-   */
-  public Rotation2d getHeading() {
-    return Robot.isReal() ? imu.getRotation2d() : Rotation2d.fromRadians(simulatedHeading);
-  }
-
-  /**
    * Resets the odometry to the specified pose.
    *
    * @param pose The pose to which to set the odometry.
    */
   public void resetOdometry(Pose2d pose) {
-    odometry.resetPosition(getHeading(), getModulePositions(), pose);
+    odometry.resetPosition(gyro.getRotation2d(), getModulePositions(), pose);
   }
 
   /**
@@ -177,7 +177,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                 new ChassisSpeeds(
                     vx.get(),
                     vy.get(),
-                    pid.calculate(getHeading().getRadians(), heading.get().getRadians()))));
+                    pid.calculate(
+                        getPose().getRotation().getRadians(), heading.get().getRadians()))));
   }
 
   /**
@@ -226,12 +227,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Zeroes the heading of the robot. */
   public Command zeroHeading() {
-    return runOnce(imu::reset);
-  }
-
-  /** Returns the pitch of the drive gyro */
-  public double getPitch() {
-    return imu.getPitch();
+    return runOnce(gyro::reset);
   }
 
   /** Returns the module states. */
@@ -252,6 +248,12 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return modules.stream().map(SwerveModule::desiredState).toArray(SwerveModuleState[]::new);
   }
 
+  /** Returns the chassis speed. */
+  @Log.NT
+  public ChassisSpeeds getChassisSpeed() {
+    return kinematics.toChassisSpeeds(getModuleStates());
+  }
+
   /** Updates pose estimation based on provided {@link EstimatedRobotPose} */
   public void updateEstimates(EstimatedRobotPose... poses) {
     for (int i = 0; i < poses.length; i++) {
@@ -262,7 +264,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @Override
   public void periodic() {
-    odometry.update(getHeading(), getModulePositions());
+    odometry.update(Robot.isReal() ? gyro.getRotation2d() : simRotation, getModulePositions());
 
     field2d.setRobotPose(getPose());
 
@@ -273,14 +275,12 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     }
   }
 
-  // jank
-  private double simulatedHeading = 0.0;
-
   @Override
   public void simulationPeriodic() {
-    simulatedHeading +=
-        kinematics.toChassisSpeeds(getModuleStates()).omegaRadiansPerSecond
-            * Constants.PERIOD.in(Seconds);
+    simRotation =
+        simRotation.rotateBy(
+            Rotation2d.fromRadians(
+                getChassisSpeed().omegaRadiansPerSecond * Constants.PERIOD.in(Seconds)));
   }
 
   /** Stops drivetrain */
@@ -331,5 +331,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     frontRight.close();
     rearLeft.close();
     rearRight.close();
+    gyro.close();
   }
 }

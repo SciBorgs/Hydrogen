@@ -30,6 +30,18 @@
     },
     "windows": {
       "/Robot/drive/field2d": {
+        "module- FL": {
+          "style": "Line"
+        },
+        "module- RR": {
+          "style": "Line"
+        },
+        "module-FR": {
+          "style": "Line"
+        },
+        "module-RL": {
+          "style": "Line"
+        },
         "window": {
           "visible": true
         }
@@ -50,6 +62,12 @@
     "transitory": {
       "Robot": {
         "drive": {
+          "Pose2d##v_/Robot/drive/getPose": {
+            "Rotation2d##v_rotation": {
+              "open": true
+            },
+            "open": true
+          },
           "frontRight": {
             "SwerveModulePosition##v_/Robot/drive/frontRight/position": {
               "Rotation2d##v_angle": {
@@ -67,6 +85,9 @@
           },
           "open": true
         },
+        "open": true
+      },
+      "Shuffleboard": {
         "open": true
       }
     }
