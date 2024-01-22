@@ -3,7 +3,6 @@ package org.sciborgs1155.robot.drive;
 import static edu.wpi.first.units.Units.*;
 
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
-import com.ctre.phoenix6.configs.TalonFXConfigurator;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.CANSparkBase.IdleMode;
@@ -12,50 +11,48 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkAbsoluteEncoder.Type;
 import edu.wpi.first.math.geometry.Rotation2d;
+import java.util.Set;
+import org.sciborgs1155.lib.SparkUtils;
+import org.sciborgs1155.lib.SparkUtils.Data;
+import org.sciborgs1155.lib.SparkUtils.Sensor;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
-public class TalonSwerveModule implements ModuleIO {
+/** Class to encapsulate a CTRE Talon Swerve module */
+public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor;
   private final CANSparkMax turnMotor;
 
   private final SparkAbsoluteEncoder turnEncoder;
 
-  public TalonSwerveModule(int drivePort, int turnPort) {
+  public TalonModule(int drivePort, int turnPort) {
     driveMotor = new TalonFX(drivePort);
     turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
-
-    turnEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
-
-    configureDrive(driveMotor.getConfigurator());
-    configureTurn();
 
     resetEncoders();
 
     driveMotor.getPosition().setUpdateFrequency(100);
     driveMotor.getVelocity().setUpdateFrequency(100);
-  }
 
-  // resolve magic numbers
-  private void configureDrive(TalonFXConfigurator cfg) {
-    TalonFXConfiguration toApply = new TalonFXConfiguration();
-    toApply.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    toApply.CurrentLimits.SupplyCurrentLimit = 50;
-    cfg.apply(toApply);
-  }
-
-  private void configureTurn() {
     turnMotor.restoreFactoryDefaults();
     turnMotor.setInverted(false);
     turnMotor.setIdleMode(IdleMode.kBrake);
-    turnMotor.setOpenLoopRampRate(0);
-    turnMotor.setSmartCurrentLimit(20);
+    turnMotor.setSmartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps));
 
+    turnEncoder = turnMotor.getAbsoluteEncoder(Type.kDutyCycle);
     turnEncoder.setInverted(Turning.ENCODER_INVERTED);
-
     turnEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians));
-    turnEncoder.setVelocityConversionFactor(Turning.POSITION_FACTOR.in(Radians));
+    turnEncoder.setVelocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond));
 
-    turnEncoder.setInverted(Turning.ENCODER_INVERTED);
+    SparkUtils.configureFrameStrategy(
+        turnMotor,
+        Set.of(Data.POSITION, Data.VELOCITY, Data.VOLTAGE),
+        Set.of(Sensor.DUTY_CYCLE),
+        false);
+
+    TalonFXConfiguration toApply = new TalonFXConfiguration();
+    toApply.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    toApply.CurrentLimits.SupplyCurrentLimit = 50;
+    driveMotor.getConfigurator().apply(toApply);
   }
 
   @Override

@@ -61,6 +61,11 @@ public class SwerveModule implements Logged, AutoCloseable {
     return new SwerveModulePosition(module.getDrivePosition(), module.getRotation());
   }
 
+  @Log.NT
+  public SwerveModuleState setpoint() {
+    return setpoint;
+  }
+
   /**
    * Updates controllers based on an optimized desired state and actuates the module accordingly.
    *

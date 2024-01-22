@@ -19,10 +19,34 @@
       "/Robot/drive/rearLeft/turnFeedback": "PIDController",
       "/Robot/drive/rearRight/driveFeedback": "PIDController",
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
-      "/SmartDashboard/drive quasistatic forward": "Command"
+      "/SmartDashboard/drive dynamic backward": "Command",
+      "/SmartDashboard/drive dynamic forward": "Command",
+      "/SmartDashboard/drive quasistatic backward": "Command",
+      "/SmartDashboard/drive quasistatic forward": "Command",
+      "/SmartDashboard/turn dynamic backward": "Command",
+      "/SmartDashboard/turn dynamic forward": "Command",
+      "/SmartDashboard/turn quasistatic backward": "Command",
+      "/SmartDashboard/turn quasistatic forward": "Command"
     },
     "windows": {
       "/Robot/drive/field2d": {
+        "module- FL": {
+          "style": "Line"
+        },
+        "module- RR": {
+          "style": "Line"
+        },
+        "module-FR": {
+          "style": "Line"
+        },
+        "module-RL": {
+          "style": "Line"
+        },
+        "window": {
+          "visible": true
+        }
+      },
+      "/SmartDashboard/drive dynamic forward": {
         "window": {
           "visible": true
         }
@@ -38,6 +62,12 @@
     "transitory": {
       "Robot": {
         "drive": {
+          "Pose2d##v_/Robot/drive/getPose": {
+            "Rotation2d##v_rotation": {
+              "open": true
+            },
+            "open": true
+          },
           "frontRight": {
             "SwerveModulePosition##v_/Robot/drive/frontRight/position": {
               "Rotation2d##v_angle": {
@@ -51,15 +81,18 @@
               },
               "open": true
             },
-            "driveFeedback": {
-              "open": true
-            },
             "open": true
           },
           "open": true
         },
         "open": true
+      },
+      "Shuffleboard": {
+        "open": true
       }
     }
+  },
+  "NetworkTables Info": {
+    "visible": true
   }
 }
