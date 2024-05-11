@@ -1,9 +1,10 @@
 package org.sciborgs1155.lib;
 
 import edu.wpi.first.hal.HAL;
+import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
-import edu.wpi.first.wpilibj2.command.Subsystem;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public class TestingUtil {
   /**
@@ -28,7 +29,7 @@ public class TestingUtil {
    * @param command The command to run.
    */
   public static void run(Command command) {
-    command.ignoringDisable(true).schedule();
+    command.schedule();
     CommandScheduler.getInstance().run();
   }
 
@@ -39,23 +40,43 @@ public class TestingUtil {
    * @param runs The number of times CommandScheduler is run.
    */
   public static void run(Command command, int runs) {
-    command.ignoringDisable(true).schedule();
+    command.schedule();
     fastForward(runs);
   }
 
-  /**
-   * Closes subsystem and unregisters it from CommandScheduler.
-   *
-   * @param subsystem The subsystem to unregister.
-   */
-  public static <TestableSubsystem extends Subsystem & AutoCloseable> void closeSubsystem(
-      TestableSubsystem subsystem) throws Exception {
-    CommandScheduler.getInstance().unregisterSubsystem(subsystem);
-    subsystem.close();
+  /** Sets up DS and initializes HAL with default values and asserts that it doesn't fail. */
+  public static void setupTests() {
+    assert HAL.initialize(500, 0);
+    DriverStationSim.setEnabled(true);
+    DriverStationSim.setTest(true);
+    DriverStationSim.notifyNewData();
   }
 
-  /** Initializes HAL with default values and asserts that it doesn't fail. */
-  public static void setupHAL() {
-    assert HAL.initialize(500, 0);
+  /**
+   * Resets CommandScheduler and closes all subsystems. Please call in an @AfterEach method!
+   *
+   * @param subsystems All subsystems that need to be closed
+   */
+  public static void reset(AutoCloseable... subsystems) throws Exception {
+    CommandScheduler.getInstance().unregisterAllSubsystems();
+    CommandScheduler.getInstance().cancelAll();
+    for (AutoCloseable subsystem : subsystems) {
+      subsystem.close();
+    }
+  }
+
+  public static void assertEqualsReport(
+      String faultName, double expected, double actual, double delta) {
+    assertReport(
+        Math.abs(expected - actual) <= delta,
+        faultName,
+        "expected: " + expected + "; actual: " + actual);
+  }
+
+  public static void assertReport(boolean condition, String faultName, String description) {
+    FaultLogger.report(
+        faultName,
+        (condition ? "success! " : "") + description,
+        condition ? FaultType.INFO : FaultType.WARNING);
   }
 }
