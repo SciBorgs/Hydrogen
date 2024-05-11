@@ -200,7 +200,6 @@ public final class FaultLogger {
         "motor above 100°C",
         FaultType.WARNING);
     // TODO actually fix PDH (this is cursed)
-    FakePDH.register(spark);
   }
 
   /**

@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.vision;
 
+import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
 
 import edu.wpi.first.math.Matrix;
@@ -25,7 +26,6 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.sciborgs1155.lib.FaultLogger;
-import org.sciborgs1155.robot.Constants.Field;
 import org.sciborgs1155.robot.Robot;
 
 public class Vision implements Logged {
@@ -41,7 +41,7 @@ public class Vision implements Logged {
 
   /** A factory to create new vision classes with our two configured cameras */
   public static Vision create() {
-    return new Vision(CAMERAS);
+    return new Vision(BACK_LEFT_CAMERA, BACK_RIGHT_CAMERA);
   }
 
   public Vision(CameraConfig... configs) {
