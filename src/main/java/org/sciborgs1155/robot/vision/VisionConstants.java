@@ -1,15 +1,11 @@
 package org.sciborgs1155.robot.vision;
 
-import static edu.wpi.first.units.Units.Inches;
-
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation2d;
-import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Transform3d;
-import edu.wpi.first.math.geometry.Translation3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
@@ -21,29 +17,13 @@ public class VisionConstants {
   /* The front of the robot is defined at the intake */
 
   public static final CameraConfig BACK_LEFT_CAMERA =
-      new CameraConfig(
-          "back left",
-          new Transform3d(
-              new Translation3d(Inches.of(-10.74), Inches.of(11.617), Inches.of(17.25)),
-              new Rotation3d(0, -Math.PI / 6, 5 * Math.PI / 6)));
+      new CameraConfig("back left", new Transform3d());
   public static final CameraConfig BACK_RIGHT_CAMERA =
-      new CameraConfig(
-          "back right",
-          new Transform3d(
-              new Translation3d(Inches.of(-10.74), Inches.of(-11.617), Inches.of(17.25)),
-              new Rotation3d(0, -Math.PI / 6, -5 * Math.PI / 6)));
+      new CameraConfig("back right", new Transform3d());
   public static final CameraConfig FRONT_LEFT_CAMERA =
-      new CameraConfig(
-          "front left",
-          new Transform3d(
-              new Translation3d(-0.089, 0.3, 0.46),
-              new Rotation3d(Math.PI, -Math.PI / 6, Math.PI / 6)));
+      new CameraConfig("front left", new Transform3d());
   public static final CameraConfig FRONT_RIGHT_CAMERA =
-      new CameraConfig(
-          "front right",
-          new Transform3d(
-              new Translation3d(-0.273, -0.3, 0.485),
-              new Rotation3d(0, -Math.PI / 6, -Math.PI / 6)));
+      new CameraConfig("front right", new Transform3d());
 
   // OV9281 constants for our configuration
   public static final int WIDTH = 1280;

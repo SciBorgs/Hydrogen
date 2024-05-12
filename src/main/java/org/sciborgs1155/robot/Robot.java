@@ -25,7 +25,6 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
@@ -73,10 +72,6 @@ public class Robot extends CommandRobot implements Logged {
 
     // Configure pose estimation updates every tick
     addPeriodic(() -> drive.updateEstimates(vision.getEstimatedGlobalPoses()), PERIOD.in(Seconds));
-
-    for (var r : SparkUtils.getRunnables()) {
-      addPeriodic(r, 5);
-    }
 
     RobotController.setBrownoutVoltage(6.0);
 
