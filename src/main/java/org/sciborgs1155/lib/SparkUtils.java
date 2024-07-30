@@ -3,11 +3,24 @@ package org.sciborgs1155.lib;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.REVLibError;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 
 /** Utility class for configuration of Spark motor controllers */
 public class SparkUtils {
+
+  private static final List<Runnable> runnables = new ArrayList<>();
+
+  public static void addChecker(Runnable runnable) {
+    runnables.add(runnable);
+  }
+
+  public static List<Runnable> getRunnables() {
+    return runnables;
+  }
+
   // REV's docs have the size of a signed value of 65535ms for the max period
   // https://docs.revrobotics.com/brushless/spark-max/control-interfaces#periodic-status-frames
   // The actual max is half of this (32767ms)
@@ -73,9 +86,10 @@ public class SparkUtils {
     int status5 = FRAME_STRATEGY_DISABLED; // duty cycle position | default 200
     int status6 = FRAME_STRATEGY_DISABLED; // duty cycle velocity | default 200
     int status7 = FRAME_STRATEGY_DISABLED;
-    // status frame 7 is cursed, the only mention i found of it in rev's docs is at
+    // // status frame 7 is cursed, the only mention i found of it in rev's docs is at
+    // //
     // https://docs.revrobotics.com/brushless/spark-flex/revlib/spark-flex-firmware-changelog#breaking-changes
-    // if it's only IAccum, there's literally no reason to enable the frame
+    // // if it's only IAccum, there's literally no reason to enable the frame
 
     if (withFollower || data.contains(Data.APPLIED_OUTPUT)) {
       status0 = FRAME_STRATEGY_VERY_FAST;

@@ -11,6 +11,8 @@ import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
+import edu.wpi.first.wpilibj.GenericHID.RumbleType;
+import edu.wpi.first.wpilibj.PowerDistribution;
 import edu.wpi.first.wpilibj.RobotController;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -25,6 +27,7 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
+import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
@@ -41,6 +44,8 @@ public class Robot extends CommandRobot implements Logged {
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
+
+  private final PowerDistribution pdh = new PowerDistribution();
 
   // SUBSYSTEMS
   private final Drive drive = Drive.create();
@@ -68,7 +73,7 @@ public class Robot extends CommandRobot implements Logged {
 
     SmartDashboard.putData(CommandScheduler.getInstance());
     // Log PDH
-    // SmartDashboard.putData("PDH", new PowerDistribution());
+    SmartDashboard.putData("PDH", pdh);
 
     // Configure pose estimation updates every tick
     addPeriodic(() -> drive.updateEstimates(vision.getEstimatedGlobalPoses()), PERIOD.in(Seconds));
@@ -77,8 +82,9 @@ public class Robot extends CommandRobot implements Logged {
 
     if (isReal()) {
       URCL.start();
+      pdh.clearStickyFaults();
+      pdh.setSwitchableChannel(true);
     } else {
-      DriverStation.silenceJoystickConnectionWarning(true);
       DriverStation.silenceJoystickConnectionWarning(true);
       addPeriodic(() -> vision.simulationPeriodic(drive.pose()), PERIOD.in(Seconds));
     }
@@ -130,8 +136,22 @@ public class Robot extends CommandRobot implements Logged {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
   }
 
+  public Command rumble(RumbleType rumbleType, double strength) {
+    return Commands.runOnce(
+            () -> {
+              driver.getHID().setRumble(rumbleType, strength);
+              operator.getHID().setRumble(rumbleType, strength);
+            })
+        .andThen(Commands.waitSeconds(0.3))
+        .finallyDo(
+            () -> {
+              driver.getHID().setRumble(rumbleType, 0);
+              operator.getHID().setRumble(rumbleType, 0);
+            });
+  }
+
   public Command systemsCheck() {
-    return Commands.sequence(drive.systemsCheck());
+    return Test.toCommand().withName("Test Mechanisms");
   }
 
   @Override
