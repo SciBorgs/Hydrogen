@@ -1,11 +1,9 @@
 package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Seconds;
-import static org.sciborgs1155.robot.Constants.PERIOD;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -13,6 +11,7 @@ import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.math.system.plant.LinearSystemId;
 import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import org.sciborgs1155.robot.Constants;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
@@ -34,18 +33,12 @@ public class SimModule implements ModuleIO {
   private final PIDController turnFeedback =
       new PIDController(Turning.PID.SIM.P, Turning.PID.SIM.I, Turning.PID.SIM.D);
 
-  private final SimpleMotorFeedforward driveTranslationFeedforward =
-      new SimpleMotorFeedforward(
-          Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear);
-  private final SimpleMotorFeedforward driveRotationFeedforward =
-      new SimpleMotorFeedforward(
-          Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.kA_angular);
-
   private SwerveModuleState setpoint = new SwerveModuleState();
 
   private final String name;
 
   public SimModule(String name) {
+    resetEncoders();
     this.name = name;
   }
 
@@ -103,51 +96,29 @@ public class SimModule implements ModuleIO {
   }
 
   @Override
-  public void setDriveSetpoint(double velocity) {}
+  public void setDriveSetpoint(double velocity, double feedforward) {
+    setDriveVoltage(driveFeedback.calculate(velocity) + feedforward);
+  }
 
   @Override
-  public void setTurnSetpoint(double angle) {}
+  public void setTurnSetpoint(double angle) {
+    setTurnVoltage(turnFeedback.calculate(angle));
+  }
 
   @Override
-  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
+  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode, double driveFF) {
+    // Optimize the reference state to avoid spinning further than 90 degrees
     setpoint = SwerveModuleState.optimize(setpoint, rotation());
+    // Scale setpoint by cos of turning error to reduce tread wear
     setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
 
-    double driveTVolts =
-        switch (mode) {
-          case CLOSED_LOOP_VELOCITY ->
-              driveTranslationFeedforward.calculate(
-                  this.setpoint.speedMetersPerSecond,
-                  setpoint.speedMetersPerSecond,
-                  PERIOD.in(Seconds));
-          case OPEN_LOOP_VELOCITY ->
-              driveTranslationFeedforward.calculate(setpoint.speedMetersPerSecond);
-        };
-
-    double driveRVolts =
-        switch (mode) {
-          case CLOSED_LOOP_VELOCITY ->
-              driveRotationFeedforward.calculate(
-                  this.setpoint.speedMetersPerSecond,
-                  setpoint.speedMetersPerSecond,
-                  PERIOD.in(Seconds));
-          case OPEN_LOOP_VELOCITY ->
-              driveRotationFeedforward.calculate(setpoint.speedMetersPerSecond);
-        };
-
-    double driveVolts =
-        driveTVolts + driveRVolts; // original: double driveVolts = driveTVolts * movementRatio +
-    // driveRVolts * (1 - movementRatio);
-
-    if (mode == ControlMode.CLOSED_LOOP_VELOCITY) {
-      driveVolts += driveFeedback.calculate(driveVelocity(), setpoint.speedMetersPerSecond);
+    if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
+      setDriveVoltage(driveFF);
+    } else {
+      setDriveSetpoint(setpoint.speedMetersPerSecond, driveFF);
     }
 
-    double turnVolts = turnFeedback.calculate(rotation().getRadians(), setpoint.angle.getRadians());
-
-    setDriveVoltage(driveVolts);
-    setTurnVoltage(turnVolts);
-
+    setTurnSetpoint(setpoint.angle.getRadians());
     this.setpoint = setpoint;
   }
 

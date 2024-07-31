@@ -4,14 +4,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import monologue.Logged;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 
 /** Generalized hardware internals for a swerve module */
 public interface ModuleIO extends Logged, AutoCloseable {
-  /** The method to use when controlling the drive motor. */
-  public static enum ControlMode {
-    CLOSED_LOOP_VELOCITY,
-    OPEN_LOOP_VELOCITY;
-  }
 
   /**
    * Returns the name of the swerve module (e.g. "FR" indicating the front right swerve module.)
@@ -84,7 +80,7 @@ public interface ModuleIO extends Logged, AutoCloseable {
    *
    * @param velocity The velocity setpoint.
    */
-  void setDriveSetpoint(double velocity);
+  void setDriveSetpoint(double velocity, double feedforward);
 
   /**
    * Sets the setpoint value for the onboard turn motor's PID.
@@ -100,8 +96,9 @@ public interface ModuleIO extends Logged, AutoCloseable {
    *
    * @param setpoint The desired state of the module.
    * @param mode The control mode to use when calculating drive voltage.
+   * @param driveFF The desired feedforward voltage for the drive motor.
    */
-  void updateSetpoint(SwerveModuleState setpoint, ControlMode mode);
+  void updateSetpoint(SwerveModuleState setpoint, ControlMode mode, double driveFF);
 
   /**
    * Updates the drive voltage and turn angle.

@@ -12,7 +12,6 @@ import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -21,6 +20,7 @@ import monologue.Annotations.Log;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
@@ -34,7 +34,6 @@ public class SparkModule implements ModuleIO {
   private final SparkPIDController drivePID;
   private final SparkPIDController turnPID;
 
-  private final SimpleMotorFeedforward driveFF;
   private final Rotation2d angularOffset;
 
   private double lastPosition;
@@ -48,9 +47,6 @@ public class SparkModule implements ModuleIO {
     driveMotor = new CANSparkFlex(drivePort, MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     drivePID = driveMotor.getPIDController();
-    driveFF =
-        new SimpleMotorFeedforward(
-            Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear); // TODO: Re-tune
 
     check(driveMotor, driveMotor.restoreFactoryDefaults());
 
@@ -186,8 +182,8 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
-  public void setDriveSetpoint(double velocity) {
-    drivePID.setReference(velocity, ControlType.kVelocity, 0, driveFF.calculate(velocity));
+  public void setDriveSetpoint(double velocity, double feedforward) {
+    drivePID.setReference(velocity, ControlType.kVelocity, 0, feedforward);
   }
 
   @Override
@@ -196,16 +192,16 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
-  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
+  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode, double driveFF) {
     // Optimize the reference state to avoid spinning further than 90 degrees
     setpoint = SwerveModuleState.optimize(setpoint, rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
     setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
 
     if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
-      setDriveVoltage(driveFF.calculate(setpoint.speedMetersPerSecond));
+      setDriveVoltage(driveFF);
     } else {
-      setDriveSetpoint(setpoint.speedMetersPerSecond);
+      setDriveSetpoint(setpoint.speedMetersPerSecond, driveFF);
     }
 
     setTurnSetpoint(setpoint.angle.getRadians());

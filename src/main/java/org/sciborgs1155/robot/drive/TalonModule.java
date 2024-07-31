@@ -15,7 +15,6 @@ import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.CANSparkMax;
 import com.revrobotics.SparkAbsoluteEncoder;
 import com.revrobotics.SparkPIDController;
-import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
@@ -24,6 +23,7 @@ import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
 import org.sciborgs1155.lib.TalonUtils;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
@@ -33,7 +33,6 @@ public class TalonModule implements ModuleIO {
   private final SparkAbsoluteEncoder turnEncoder;
 
   private final SparkPIDController turnPID;
-  private final SimpleMotorFeedforward driveFF;
 
   private final StatusSignal<Double> drivePos;
   private final StatusSignal<Double> driveVelocity;
@@ -41,16 +40,14 @@ public class TalonModule implements ModuleIO {
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
 
   private SwerveModuleState setpoint = new SwerveModuleState();
+  private final Rotation2d angularOffset;
 
   private final String name;
 
-  public TalonModule(int drivePort, int turnPort, String name) {
+  public TalonModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
     driveMotor = new TalonFX(drivePort);
     drivePos = driveMotor.getPosition();
     driveVelocity = driveMotor.getVelocity();
-    driveFF =
-        new SimpleMotorFeedforward(
-            Driving.FF.TALON.S, Driving.FF.TALON.V, Driving.FF.TALON.kA_linear);
 
     drivePos.setUpdateFrequency(1 / SENSOR_PERIOD.in(Seconds));
     driveVelocity.setUpdateFrequency(1 / SENSOR_PERIOD.in(Seconds));
@@ -113,6 +110,8 @@ public class TalonModule implements ModuleIO {
     register(turnMotor);
 
     resetEncoders();
+
+    this.angularOffset = angularOffset;
     this.name = name;
   }
 
@@ -143,7 +142,7 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public Rotation2d rotation() {
-    return Rotation2d.fromRadians(turnEncoder.getPosition());
+    return Rotation2d.fromRadians(turnEncoder.getPosition()).minus(angularOffset);
   }
 
   @Override
@@ -167,9 +166,8 @@ public class TalonModule implements ModuleIO {
   }
 
   @Override
-  public void setDriveSetpoint(double velocity) {
-    driveMotor.setControl(
-        velocityOut.withVelocity(velocity).withFeedForward(driveFF.calculate(velocity)));
+  public void setDriveSetpoint(double velocity, double feedforward) {
+    driveMotor.setControl(velocityOut.withVelocity(velocity).withFeedForward(feedforward));
   }
 
   @Override
@@ -178,15 +176,15 @@ public class TalonModule implements ModuleIO {
   }
 
   @Override
-  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
+  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode, double driveFF) {
     setpoint = SwerveModuleState.optimize(setpoint, rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
     setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
 
     if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
-      setDriveVoltage(driveFF.calculate(setpoint.speedMetersPerSecond));
+      setDriveVoltage(driveFF);
     } else {
-      setDriveSetpoint(setpoint.speedMetersPerSecond);
+      setDriveSetpoint(setpoint.speedMetersPerSecond, driveFF);
     }
 
     setTurnSetpoint(setpoint.angle.getRadians());

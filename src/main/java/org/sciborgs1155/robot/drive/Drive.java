@@ -15,6 +15,7 @@ import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.controller.PIDController;
 import edu.wpi.first.math.controller.ProfiledPIDController;
+import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.estimator.SwerveDrivePoseEstimator;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
@@ -48,17 +49,19 @@ import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.lib.Assertion;
+import org.sciborgs1155.lib.Assertion.EqualityAssertion;
+import org.sciborgs1155.lib.Assertion.TruthAssertion;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving.FF;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
-import org.sciborgs1155.robot.drive.ModuleIO.ControlMode;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
-
   // Modules
   private final ModuleIO frontLeft;
   private final ModuleIO frontRight;
@@ -81,6 +84,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   private final SysIdRoutine translationCharacterization;
   private final SysIdRoutine rotationalCharacterization;
 
+  private final SimpleMotorFeedforward driveFF;
+
   @Log.NT
   private final ProfiledPIDController translationController =
       new ProfiledPIDController(
@@ -94,23 +99,39 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
       new PIDController(Rotation.P, Rotation.I, Rotation.D);
 
   /**
-   * A factory to create a new swerve drive based on whether the robot is being ran in simulation or
-   * not.
+   * A factory to create a new swerve drive based on what the type of robot and whether the robot is
+   * being ran in simulation or not.
    */
   public static Drive create() {
-    return Robot.isReal()
-        ? new Drive(
-            new NavXGyro(),
-            new SparkModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
-            new SparkModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
-            new SparkModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
-            new SparkModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"))
-        : new Drive(
-            new NoGyro(),
-            new SimModule("FL"),
-            new SimModule("FR"),
-            new SimModule("RL"),
-            new SimModule("RR"));
+    if (Robot.isReal()) {
+      return switch (TYPE) {
+        case TALON ->
+            new Drive(
+                new NavXGyro(),
+                new TalonModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
+                new TalonModule(
+                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
+                new TalonModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
+                new TalonModule(
+                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"));
+        case SPARK ->
+            new Drive(
+                new NavXGyro(),
+                new SparkModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
+                new SparkModule(
+                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
+                new SparkModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
+                new SparkModule(
+                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"));
+      };
+    } else {
+      return new Drive(
+          new NoGyro(),
+          new SimModule("FL"),
+          new SimModule("FR"),
+          new SimModule("RL"),
+          new SimModule("RR"));
+    }
   }
 
   /** A factory to create a nonexistent swerve drive. */
@@ -129,6 +150,12 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
+
+    driveFF =
+        switch (TYPE) {
+          case TALON -> new SimpleMotorFeedforward(FF.TALON.S, FF.TALON.V, FF.TALON.kA_linear);
+          case SPARK -> new SimpleMotorFeedforward(FF.SPARK.S, FF.SPARK.V, FF.SPARK.kA_linear);
+        };
 
     translationCharacterization =
         new SysIdRoutine(
@@ -207,6 +234,10 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return odometry.getEstimatedPosition();
   }
 
+  public Rotation2d heading() {
+    return pose().getRotation();
+  }
+
   /**
    * Resets the odometry to the specified pose.
    *
@@ -214,10 +245,6 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    */
   public void resetOdometry(Pose2d pose) {
     odometry.resetPosition(gyro.getRotation2d(), getModulePositions(), pose);
-  }
-
-  public Rotation2d heading() {
-    return pose().getRotation();
   }
 
   /**
@@ -264,7 +291,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                     vy.getAsDouble(),
                     vOmega.getAsDouble(),
                     heading().plus(allianceRotation())),
-                ControlMode.OPEN_LOOP_VELOCITY));
+                DRIVE_MODE));
   }
 
   /**
@@ -314,7 +341,10 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     SwerveDriveKinematics.desaturateWheelSpeeds(desiredStates, MAX_SPEED.in(MetersPerSecond));
 
     for (int i = 0; i < modules.size(); i++) {
-      modules.get(i).updateSetpoint(desiredStates[i], mode);
+      modules
+          .get(i)
+          .updateSetpoint(
+              desiredStates[i], mode, driveFF.calculate(desiredStates[i].speedMetersPerSecond));
     }
   }
 
@@ -423,7 +453,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Stops drivetrain */
   public Command stop() {
-    return runOnce(() -> setChassisSpeeds(new ChassisSpeeds(), ControlMode.OPEN_LOOP_VELOCITY));
+    return runOnce(() -> setChassisSpeeds(new ChassisSpeeds(), ControlMode.CLOSED_LOOP_VELOCITY));
   }
 
   /** Sets the drivetrain to an "X" configuration, preventing movement */
@@ -434,14 +464,13 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
         () ->
             setModuleStates(
                 new SwerveModuleState[] {front, back, back, front},
-                ControlMode.OPEN_LOOP_VELOCITY,
+                ControlMode.CLOSED_LOOP_VELOCITY,
                 1));
   }
 
   public Test systemsCheck() {
     ChassisSpeeds speeds = new ChassisSpeeds(1, 1, 0);
-    Command testCommand =
-        run(() -> setChassisSpeeds(speeds, ControlMode.OPEN_LOOP_VELOCITY)).withTimeout(0.5);
+    Command testCommand = run(() -> setChassisSpeeds(speeds, DRIVE_MODE)).withTimeout(0.5);
     Function<ModuleIO, TruthAssertion> speedCheck =
         m ->
             tAssert(

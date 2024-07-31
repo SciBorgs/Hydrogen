@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.drive;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 
 public class NoModule implements ModuleIO {
 
@@ -51,13 +52,13 @@ public class NoModule implements ModuleIO {
   }
 
   @Override
-  public void setDriveSetpoint(double velocity) {}
+  public void setDriveSetpoint(double velocity, double feedforward) {}
 
   @Override
   public void setTurnSetpoint(double angle) {}
 
   @Override
-  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {}
+  public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode, double feedforward) {}
 
   @Override
   public void close() {}
