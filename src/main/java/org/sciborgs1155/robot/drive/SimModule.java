@@ -47,6 +47,11 @@ public class SimModule implements ModuleIO {
   }
 
   @Override
+  public String name() {
+    return name;
+  }
+
+  @Override
   public void setDriveVoltage(double voltage) {
     drive.setInputVoltage(voltage);
     drive.update(Constants.PERIOD.in(Seconds));
@@ -71,11 +76,6 @@ public class SimModule implements ModuleIO {
   @Override
   public Rotation2d rotation() {
     return Rotation2d.fromRadians(turn.getAngularPositionRad());
-  }
-
-  @Override
-  public String name() {
-    return name;
   }
 
   @Override

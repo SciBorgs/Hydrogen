@@ -40,7 +40,6 @@ import org.sciborgs1155.robot.vision.Vision;
  * subsystems, commands, and trigger mappings) should be declared here.
  */
 public class Robot extends CommandRobot implements Logged {
-
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
   private final CommandXboxController driver = new CommandXboxController(OI.DRIVER);
@@ -65,7 +64,7 @@ public class Robot extends CommandRobot implements Logged {
 
   /** Configures basic behavior during different parts of the game. */
   private void configureGameBehavior() {
-    // Configure logging with DataLogManager, Monologue, FailureManagement, and URCL
+    // Configure logging with DataLogManager, Monologue, URCL, and FaultLogger
     DataLogManager.start();
     Monologue.setupMonologue(this, "/Robot", false, true);
     addPeriodic(Monologue::updateAll, PERIOD.in(Seconds));
@@ -90,15 +89,12 @@ public class Robot extends CommandRobot implements Logged {
     }
   }
 
-  /**
-   * Configures subsystem default commands. Default commands are scheduled when no other command is
-   * running on a subsystem.
-   */
-  /** Configures trigger -> command bindings */
+  /** Configures trigger -> command bindings. */
   private void configureBindings() {
     InputStream x = InputStream.of(driver::getLeftX).negate();
     InputStream y = InputStream.of(driver::getLeftY).negate();
 
+    // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
         InputStream.hypot(x, y)
             .log("Robot/raw joystick")
@@ -111,9 +107,11 @@ public class Robot extends CommandRobot implements Logged {
 
     InputStream theta = InputStream.atan(x, y);
 
+    // Split x and y components of translation input
     x = r.scale(theta.map(Math::cos)); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
     y = r.scale(theta.map(Math::sin)); // .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
 
+    // Apply speed multiplier, deadband, square inputs, and scale rotation to max teleop speed
     InputStream omega =
         InputStream.of(driver::getRightX)
             .negate()
@@ -136,6 +134,13 @@ public class Robot extends CommandRobot implements Logged {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
   }
 
+  /**
+   * Command factory to make both controllers rumble.
+   *
+   * @param rumbleType The area of the controller to rumble.
+   * @param strength The intensity of the rumble.
+   * @return The command to rumble both controllers.
+   */
   public Command rumble(RumbleType rumbleType, double strength) {
     return Commands.runOnce(
             () -> {
@@ -151,7 +156,7 @@ public class Robot extends CommandRobot implements Logged {
   }
 
   public Command systemsCheck() {
-    return Test.toCommand().withName("Test Mechanisms");
+    return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
   }
 
   @Override

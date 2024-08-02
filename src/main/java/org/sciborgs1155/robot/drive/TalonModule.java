@@ -20,6 +20,7 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import java.util.Set;
+import monologue.Annotations.Log;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
@@ -29,22 +30,23 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class TalonModule implements ModuleIO {
-  private final TalonFX driveMotor;
-  private final CANSparkMax turnMotor;
+  private final TalonFX driveMotor; // Kraken X60
+  private final CANSparkMax turnMotor; // NEO 550
+
+  private final StatusSignal<Double> drivePos;
+  private final StatusSignal<Double> driveVelocity;
   private final SparkAbsoluteEncoder turningEncoder;
 
   private final SparkPIDController turnPID;
   private final SimpleMotorFeedforward driveFF;
 
-  private final StatusSignal<Double> drivePos;
-  private final StatusSignal<Double> driveVelocity;
+  private final Rotation2d angularOffset;
 
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
 
-  private SwerveModuleState setpoint = new SwerveModuleState();
+  @Log.NT private SwerveModuleState setpoint = new SwerveModuleState();
 
   private final String name;
-  private final Rotation2d angularOffset;
 
   public TalonModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
     driveMotor = new TalonFX(drivePort);
@@ -116,8 +118,14 @@ public class TalonModule implements ModuleIO {
     register(turnMotor);
 
     resetEncoders();
+
     this.name = name;
     this.angularOffset = angularOffset;
+  }
+
+  @Override
+  public String name() {
+    return name;
   }
 
   @Override
@@ -128,11 +136,6 @@ public class TalonModule implements ModuleIO {
   @Override
   public void setTurnVoltage(double voltage) {
     turnMotor.setVoltage(voltage);
-  }
-
-  @Override
-  public String name() {
-    return name;
   }
 
   @Override

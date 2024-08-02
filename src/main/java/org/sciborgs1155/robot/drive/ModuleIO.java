@@ -18,14 +18,14 @@ public interface ModuleIO extends Logged, AutoCloseable {
   /**
    * Sets the drive voltage of the module.
    *
-   * @param voltage The voltage to inputted into the drive motor.
+   * @param voltage The voltage to input into the drive motor.
    */
   void setDriveVoltage(double voltage);
 
   /**
    * Sets the turn voltage of the module.
    *
-   * @param voltage The voltage to inputted into the turn motor.
+   * @param voltage The voltage to input into the turn motor.
    */
   void setTurnVoltage(double voltage);
 
@@ -39,12 +39,12 @@ public interface ModuleIO extends Logged, AutoCloseable {
   /**
    * Returns the current velocity of the wheel.
    *
-   * @return The drive encoder velocity value, in radians / seconds.
+   * @return The drive encoder velocity value, in radians / second.
    */
   double driveVelocity();
 
   /**
-   * Returns the angular position of the module.
+   * Returns the current angular position of the module.
    *
    * @return The adjusted turn encoder position value, in radians.
    */
@@ -101,7 +101,7 @@ public interface ModuleIO extends Logged, AutoCloseable {
   /**
    * Updates the drive voltage and turn angle.
    *
-   * <p>This is useful for SysId characterization, but should never be run otherwise.
+   * <p>This is useful for SysId characterization and should not be used otherwise.
    *
    * @param angle The desired angle of the module.
    * @param voltage The voltage to supply to the drive motor.

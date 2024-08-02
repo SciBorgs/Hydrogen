@@ -15,7 +15,6 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   /* The front of the robot is defined at the intake */
-
   public static final CameraConfig BACK_LEFT_CAMERA =
       new CameraConfig("back left", new Transform3d());
   public static final CameraConfig BACK_RIGHT_CAMERA =

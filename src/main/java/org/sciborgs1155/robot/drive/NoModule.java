@@ -6,17 +6,16 @@ import edu.wpi.first.math.kinematics.SwerveModuleState;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 
 public class NoModule implements ModuleIO {
+  @Override
+  public String name() {
+    return "NoModule";
+  }
 
   @Override
   public void setDriveVoltage(double voltage) {}
 
   @Override
   public void setTurnVoltage(double voltage) {}
-
-  @Override
-  public String name() {
-    return "NoModule";
-  }
 
   @Override
   public double drivePosition() {
@@ -34,9 +33,6 @@ public class NoModule implements ModuleIO {
   }
 
   @Override
-  public void resetEncoders() {}
-
-  @Override
   public SwerveModuleState state() {
     return new SwerveModuleState();
   }
@@ -52,6 +48,9 @@ public class NoModule implements ModuleIO {
   }
 
   @Override
+  public void resetEncoders() {}
+
+  @Override
   public void setDriveSetpoint(double velocity) {}
 
   @Override
@@ -61,8 +60,8 @@ public class NoModule implements ModuleIO {
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {}
 
   @Override
-  public void close() {}
+  public void updateInputs(Rotation2d angle, double voltage) {}
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {}
+  public void close() {}
 }

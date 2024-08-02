@@ -26,8 +26,8 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class SparkModule implements ModuleIO {
-  private final CANSparkFlex driveMotor; // Neo Vortex
-  private final CANSparkMax turnMotor; // Neo 550
+  private final CANSparkFlex driveMotor; // NEO Vortex
+  private final CANSparkMax turnMotor; // NEO 550
 
   private final RelativeEncoder driveEncoder;
   private final SparkAbsoluteEncoder turningEncoder;
@@ -36,6 +36,7 @@ public class SparkModule implements ModuleIO {
   private final SparkPIDController turnPID;
 
   private final SimpleMotorFeedforward driveFF;
+
   private final Rotation2d angularOffset;
 
   private double lastPosition;
@@ -131,6 +132,11 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
+  public String name() {
+    return name;
+  }
+
+  @Override
   public void setDriveVoltage(double voltage) {
     driveMotor.setVoltage(voltage);
     check(driveMotor);
@@ -141,11 +147,6 @@ public class SparkModule implements ModuleIO {
   public void setTurnVoltage(double voltage) {
     turnMotor.setVoltage(voltage);
     check(turnMotor);
-  }
-
-  @Override
-  public String name() {
-    return name;
   }
 
   @Override
@@ -167,11 +168,6 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
-  public void resetEncoders() {
-    driveEncoder.setPosition(0);
-  }
-
-  @Override
   public SwerveModuleState state() {
     return new SwerveModuleState(driveVelocity(), rotation());
   }
@@ -184,6 +180,11 @@ public class SparkModule implements ModuleIO {
   @Override
   public SwerveModuleState desiredState() {
     return setpoint;
+  }
+
+  @Override
+  public void resetEncoders() {
+    driveEncoder.setPosition(0);
   }
 
   @Override
