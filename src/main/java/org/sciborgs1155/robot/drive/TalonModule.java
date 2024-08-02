@@ -24,13 +24,14 @@ import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
 import org.sciborgs1155.lib.TalonUtils;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor;
   private final CANSparkMax turnMotor;
-  private final SparkAbsoluteEncoder turnEncoder;
+  private final SparkAbsoluteEncoder turningEncoder;
 
   private final SparkPIDController turnPID;
   private final SimpleMotorFeedforward driveFF;
@@ -43,8 +44,9 @@ public class TalonModule implements ModuleIO {
   private SwerveModuleState setpoint = new SwerveModuleState();
 
   private final String name;
+  private final Rotation2d angularOffset;
 
-  public TalonModule(int drivePort, int turnPort, String name) {
+  public TalonModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
     driveMotor = new TalonFX(drivePort);
     drivePos = driveMotor.getPosition();
     driveVelocity = driveMotor.getVelocity();
@@ -70,7 +72,7 @@ public class TalonModule implements ModuleIO {
     TalonUtils.addMotor(driveMotor);
 
     turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
-    turnEncoder = turnMotor.getAbsoluteEncoder();
+    turningEncoder = turnMotor.getAbsoluteEncoder();
     turnPID = turnMotor.getPIDController();
 
     check(turnMotor, turnMotor.restoreFactoryDefaults());
@@ -81,17 +83,18 @@ public class TalonModule implements ModuleIO {
     check(turnMotor, turnPID.setPositionPIDWrappingEnabled(true));
     check(turnMotor, turnPID.setPositionPIDWrappingMinInput(-Math.PI));
     check(turnMotor, turnPID.setPositionPIDWrappingMaxInput(Math.PI));
-    check(turnMotor, turnPID.setFeedbackDevice(turnEncoder));
+    check(turnMotor, turnPID.setFeedbackDevice(turningEncoder));
 
     check(turnMotor, turnMotor.setIdleMode(IdleMode.kBrake));
     check(turnMotor, turnMotor.setSmartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
-    turnEncoder.setInverted(Turning.ENCODER_INVERTED);
+    turningEncoder.setInverted(Turning.ENCODER_INVERTED);
     check(turnMotor);
-    check(turnMotor, turnEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians)));
+    check(
+        turnMotor, turningEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians)));
     check(
         turnMotor,
-        turnEncoder.setVelocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond)));
-    check(turnMotor, turnEncoder.setAverageDepth(2));
+        turningEncoder.setVelocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond)));
+    check(turnMotor, turningEncoder.setAverageDepth(2));
     check(
         turnMotor,
         SparkUtils.configureFrameStrategy(
@@ -114,6 +117,7 @@ public class TalonModule implements ModuleIO {
 
     resetEncoders();
     this.name = name;
+    this.angularOffset = angularOffset;
   }
 
   @Override
@@ -143,7 +147,7 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public Rotation2d rotation() {
-    return Rotation2d.fromRadians(turnEncoder.getPosition());
+    return Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset);
   }
 
   @Override

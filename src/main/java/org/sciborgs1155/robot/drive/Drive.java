@@ -52,9 +52,9 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
-import org.sciborgs1155.robot.drive.ModuleIO.ControlMode;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
@@ -94,23 +94,39 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
       new PIDController(Rotation.P, Rotation.I, Rotation.D);
 
   /**
-   * A factory to create a new swerve drive based on whether the robot is being ran in simulation or
-   * not.
+   * A factory to create a new swerve drive based on what the type of robot and whether the robot is
+   * being ran in simulation or not.
    */
   public static Drive create() {
-    return Robot.isReal()
-        ? new Drive(
-            new NavXGyro(),
-            new SparkModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
-            new SparkModule(FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
-            new SparkModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
-            new SparkModule(REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"))
-        : new Drive(
-            new NoGyro(),
-            new SimModule("FL"),
-            new SimModule("FR"),
-            new SimModule("RL"),
-            new SimModule("RR"));
+    if (Robot.isReal()) {
+      return switch (TYPE) {
+        case TALON ->
+            new Drive(
+                new NavXGyro(),
+                new TalonModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
+                new TalonModule(
+                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
+                new TalonModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
+                new TalonModule(
+                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"));
+        case SPARK ->
+            new Drive(
+                new NavXGyro(),
+                new SparkModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
+                new SparkModule(
+                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
+                new SparkModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
+                new SparkModule(
+                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"));
+      };
+    } else {
+      return new Drive(
+          new NoGyro(),
+          new SimModule("FL"),
+          new SimModule("FR"),
+          new SimModule("RL"),
+          new SimModule("RR"));
+    }
   }
 
   /** A factory to create a nonexistent swerve drive. */

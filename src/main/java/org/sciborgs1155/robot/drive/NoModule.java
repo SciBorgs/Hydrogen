@@ -3,6 +3,7 @@ package org.sciborgs1155.robot.drive;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 
 public class NoModule implements ModuleIO {
 

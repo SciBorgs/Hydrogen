@@ -4,15 +4,10 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import monologue.Logged;
+import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 
 /** Generalized hardware internals for a swerve module */
 public interface ModuleIO extends Logged, AutoCloseable {
-  /** The method to use when controlling the drive motor. */
-  public static enum ControlMode {
-    CLOSED_LOOP_VELOCITY,
-    OPEN_LOOP_VELOCITY;
-  }
-
   /**
    * Returns the name of the swerve module (e.g. "FR" indicating the front right swerve module.)
    *
