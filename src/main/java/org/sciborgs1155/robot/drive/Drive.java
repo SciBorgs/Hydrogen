@@ -66,8 +66,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   @IgnoreLogged private final List<ModuleIO> modules;
 
-  // Gyro
-  private final GyroIO gyro; // navX2-MXP
+  // Gyro, navX2-MXP
+  private final GyroIO gyro;
   private static Rotation2d simRotation = new Rotation2d();
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
@@ -82,7 +82,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   private final SysIdRoutine translationCharacterization;
   private final SysIdRoutine rotationalCharacterization;
 
-  // Path-following
+  // Movement automation
   @Log.NT
   private final ProfiledPIDController translationController =
       new ProfiledPIDController(
@@ -314,8 +314,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /**
-   * Sets the states of each of the swerve modules using target speeds that the drivetrain will work
-   * to reach.
+   * Sets the states of each swerve module using target speeds that the drivetrain will work to
+   * reach.
    *
    * @param speeds The speeds the drivetrain will run at.
    * @param mode The control loop used to achieve those speeds.

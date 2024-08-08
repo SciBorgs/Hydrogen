@@ -32,14 +32,14 @@ public interface ModuleIO extends Logged, AutoCloseable {
   /**
    * Returns the distance the wheel traveled.
    *
-   * @return The drive encoder position value, in radians.
+   * @return The drive encoder position value, in meters.
    */
   double drivePosition();
 
   /**
    * Returns the current velocity of the wheel.
    *
-   * @return The drive encoder velocity value, in radians / second.
+   * @return The drive encoder velocity value, in meters / second.
    */
   double driveVelocity();
 

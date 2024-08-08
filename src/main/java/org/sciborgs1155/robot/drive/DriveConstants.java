@@ -13,6 +13,7 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import java.util.List;
 
+/** Constants for our 2024 MAXSwerve drivetrain. */
 public final class DriveConstants {
   /** The type of control loop to use when controlling the drive motor. */
   public static enum ControlMode {
@@ -33,7 +34,7 @@ public final class DriveConstants {
   public static final ControlMode DRIVE_MODE = ControlMode.OPEN_LOOP_VELOCITY;
 
   // Rate at which sensors update periodicially
-  public static final Measure<Time> SENSOR_PERIOD = Seconds.of(0.001);
+  public static final Measure<Time> SENSOR_PERIOD = Seconds.of(0.02);
 
   // Distance between centers of right and left wheels on robot
   public static final Measure<Distance> TRACK_WIDTH = Meters.of(0.5715);
@@ -144,7 +145,7 @@ public final class DriveConstants {
         }
 
         public static final class TALON {
-          public static final double S = -1; // TODO
+          public static final double S = 0; // TODO
           public static final double V = 2.0681;
           public static final double kA_linear = 0.205;
           public static final double kA_angular = 0.376;

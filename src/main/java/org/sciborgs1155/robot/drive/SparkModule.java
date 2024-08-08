@@ -41,6 +41,7 @@ public class SparkModule implements ModuleIO {
 
   private double lastPosition;
   private double lastVelocity;
+  private Rotation2d lastRotation;
 
   @Log.NT private SwerveModuleState setpoint = new SwerveModuleState();
 
@@ -164,7 +165,12 @@ public class SparkModule implements ModuleIO {
 
   @Override
   public Rotation2d rotation() {
-    return Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset);
+    lastRotation =
+        SparkUtils.wrapCall(
+                turnMotor,
+                Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset))
+            .orElse(lastRotation);
+    return lastRotation;
   }
 
   @Override

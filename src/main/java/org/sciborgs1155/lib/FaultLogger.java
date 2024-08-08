@@ -198,7 +198,6 @@ public final class FaultLogger {
         SparkUtils.name(spark),
         "motor above 100°C",
         FaultType.WARNING);
-    // FakePDH.register(spark);
   }
 
   /**

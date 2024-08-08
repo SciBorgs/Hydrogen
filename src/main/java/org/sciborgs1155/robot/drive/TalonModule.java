@@ -2,7 +2,7 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.FaultLogger.*;
-import static org.sciborgs1155.robot.drive.DriveConstants.SENSOR_PERIOD;
+import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
@@ -37,14 +37,16 @@ public class TalonModule implements ModuleIO {
   private final StatusSignal<Double> driveVelocity;
   private final SparkAbsoluteEncoder turningEncoder;
 
+  private final VelocityVoltage velocityOut = new VelocityVoltage(0);
+
   private final SparkPIDController turnPID;
   private final SimpleMotorFeedforward driveFF;
 
   private final Rotation2d angularOffset;
 
-  private final VelocityVoltage velocityOut = new VelocityVoltage(0);
-
   @Log.NT private SwerveModuleState setpoint = new SwerveModuleState();
+
+  private Rotation2d lastRotation;
 
   private final String name;
 
@@ -64,9 +66,11 @@ public class TalonModule implements ModuleIO {
     driveMotor.getConfigurator().apply(talonConfig);
 
     talonConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    talonConfig.CurrentLimits.SupplyCurrentLimit = 80;
+    talonConfig.Feedback.SensorToMechanismRatio = Driving.POSITION_FACTOR.in(Meters);
+    talonConfig.CurrentLimits.SupplyCurrentLimit = Driving.CURRENT_LIMIT.in(Amps);
+
     talonConfig.Slot0.kP = Driving.PID.TALON.P;
-    talonConfig.Slot1.kI = Driving.PID.TALON.I;
+    talonConfig.Slot0.kI = Driving.PID.TALON.I;
     talonConfig.Slot0.kD = Driving.PID.TALON.D;
 
     driveMotor.getConfigurator().apply(talonConfig);
@@ -150,7 +154,12 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public Rotation2d rotation() {
-    return Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset);
+    lastRotation =
+        SparkUtils.wrapCall(
+                turnMotor,
+                Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset))
+            .orElse(lastRotation);
+    return lastRotation;
   }
 
   @Override
