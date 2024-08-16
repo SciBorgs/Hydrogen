@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.drive.DriveConstants.TYPE;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.controller.PIDController;
@@ -19,10 +20,19 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 public class SimModule implements ModuleIO {
 
   private final DCMotorSim drive =
-      new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear),
-          DCMotor.getNeoVortex(1),
-          1 / Driving.GEARING);
+      switch (TYPE) {
+        case SPARK ->
+            new DCMotorSim(
+                LinearSystemId.createDCMotorSystem(Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear),
+                DCMotor.getNeoVortex(1),
+                1 / Driving.GEARING);
+        case TALON ->
+            new DCMotorSim(
+                LinearSystemId.createDCMotorSystem(Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear),
+                DCMotor.getKrakenX60(1),
+                1 / Driving.GEARING);
+      };
+
   private final DCMotorSim turn =
       new DCMotorSim(
           LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A),
@@ -35,8 +45,14 @@ public class SimModule implements ModuleIO {
       new PIDController(Turning.PID.SIM.P, Turning.PID.SIM.I, Turning.PID.SIM.D);
 
   private final SimpleMotorFeedforward driveFF =
-      new SimpleMotorFeedforward(
-          Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.kA_angular);
+      switch (TYPE) {
+        case SPARK ->
+            new SimpleMotorFeedforward(
+                Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear);
+        case TALON ->
+            new SimpleMotorFeedforward(
+                Driving.FF.TALON.S, Driving.FF.TALON.V, Driving.FF.TALON.kA_linear);
+      };
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
