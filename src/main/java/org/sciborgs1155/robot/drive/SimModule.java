@@ -28,7 +28,7 @@ public class SimModule implements ModuleIO {
                 1 / Driving.GEARING);
         case TALON ->
             new DCMotorSim(
-                LinearSystemId.createDCMotorSystem(Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear),
+                LinearSystemId.createDCMotorSystem(Driving.FF.TALON.V, Driving.FF.TALON.kA_linear),
                 DCMotor.getKrakenX60(1),
                 1 / Driving.GEARING);
       };
