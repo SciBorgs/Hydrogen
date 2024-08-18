@@ -10,12 +10,12 @@ public class NoGyro implements GyroIO {
   public void close() throws Exception {}
 
   @Override
-  public double getRate() {
+  public double rate() {
     return 0;
   }
 
   @Override
-  public Rotation3d getRotation3d() {
+  public Rotation3d rotation3d() {
     return rotation;
   }
 

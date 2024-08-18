@@ -23,14 +23,29 @@ public class SimModule implements ModuleIO {
       switch (TYPE) {
         case SPARK ->
             new DCMotorSim(
-                LinearSystemId.createDCMotorSystem(Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear),
+                LinearSystemId.createDCMotorSystem(Driving.FF.SPARK.V, Driving.FF.SPARK.A),
                 DCMotor.getNeoVortex(1),
                 1 / Driving.GEARING);
         case TALON ->
             new DCMotorSim(
-                LinearSystemId.createDCMotorSystem(Driving.FF.TALON.V, Driving.FF.TALON.kA_linear),
+                LinearSystemId.createDCMotorSystem(Driving.FF.TALON.V, Driving.FF.TALON.A),
                 DCMotor.getKrakenX60(1),
                 1 / Driving.GEARING);
+      };
+
+  private final PIDController driveFeedback =
+      switch (TYPE) {
+        case SPARK ->
+            new PIDController(Driving.PID.SPARK.P, Driving.PID.SPARK.I, Driving.PID.SPARK.D);
+        case TALON ->
+            new PIDController(Driving.PID.TALON.P, Driving.PID.TALON.I, Driving.PID.TALON.D);
+      };
+  private final SimpleMotorFeedforward driveFF =
+      switch (TYPE) {
+        case SPARK ->
+            new SimpleMotorFeedforward(Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.A);
+        case TALON ->
+            new SimpleMotorFeedforward(Driving.FF.TALON.S, Driving.FF.TALON.V, Driving.FF.TALON.A);
       };
 
   private final DCMotorSim turn =
@@ -39,20 +54,8 @@ public class SimModule implements ModuleIO {
           DCMotor.getNeo550(1),
           1 / Turning.MOTOR_GEARING);
 
-  private final PIDController driveFeedback =
-      new PIDController(Driving.PID.SIM.P, Driving.PID.SIM.I, Driving.PID.SIM.D);
   private final PIDController turnFeedback =
-      new PIDController(Turning.PID.SIM.P, Turning.PID.SIM.I, Turning.PID.SIM.D);
-
-  private final SimpleMotorFeedforward driveFF =
-      switch (TYPE) {
-        case SPARK ->
-            new SimpleMotorFeedforward(
-                Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear);
-        case TALON ->
-            new SimpleMotorFeedforward(
-                Driving.FF.TALON.S, Driving.FF.TALON.V, Driving.FF.TALON.kA_linear);
-      };
+      new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
@@ -60,6 +63,8 @@ public class SimModule implements ModuleIO {
 
   public SimModule(String name) {
     this.name = name;
+
+    turnFeedback.enableContinuousInput(-Math.PI, Math.PI);
   }
 
   @Override
@@ -117,12 +122,13 @@ public class SimModule implements ModuleIO {
 
   @Override
   public void setDriveSetpoint(double velocity) {
-    setDriveVoltage(driveFeedback.calculate(velocity) + driveFF.calculate(velocity));
+    setDriveVoltage(
+        driveFeedback.calculate(driveVelocity(), velocity) + driveFF.calculate(velocity));
   }
 
   @Override
-  public void setTurnSetpoint(double angle) {
-    setTurnVoltage(turnFeedback.calculate(angle));
+  public void setTurnSetpoint(double setpoint) {
+    setTurnVoltage(turnFeedback.calculate(rotation().getRadians(), setpoint));
   }
 
   @Override

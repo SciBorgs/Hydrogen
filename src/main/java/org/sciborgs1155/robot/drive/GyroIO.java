@@ -9,15 +9,15 @@ public interface GyroIO extends AutoCloseable {
   default void calibrate() {}
 
   /** Returns the rate of rotation. */
-  double getRate();
+  double rate();
 
   /** Returns the heading of the robot as a Rotation2d. */
-  default Rotation2d getRotation2d() {
-    return getRotation3d().toRotation2d();
+  default Rotation2d rotation2d() {
+    return rotation3d().toRotation2d();
   }
 
   /** Returns the heading of the robot as a Rotation3d. */
-  Rotation3d getRotation3d();
+  Rotation3d rotation3d();
 
   /** Resets heading to 0 */
   void reset();

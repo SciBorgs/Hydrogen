@@ -14,9 +14,10 @@ public class VisionConstants {
   public static final AprilTagFieldLayout TAG_LAYOUT =
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
-  /* The front of the robot is defined at the intake */
+  /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   public static final CameraConfig BACK_LEFT_CAMERA =
       new CameraConfig("back left", new Transform3d());
+
   public static final CameraConfig BACK_RIGHT_CAMERA =
       new CameraConfig("back right", new Transform3d());
   public static final CameraConfig FRONT_LEFT_CAMERA =
@@ -41,6 +42,5 @@ public class VisionConstants {
   // First half of locations are on red side, second half on blue side
   // (ex. source: 1,2 is red, 9,10)
 
-  // Unsure if getFudicialID() returns the tags from 1-16 or 0-15 (assuming 0-15)
   public static final double[] TAG_WEIGHTS = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
 }

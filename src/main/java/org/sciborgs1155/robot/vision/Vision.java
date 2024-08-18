@@ -39,9 +39,9 @@ public class Vision implements Logged {
 
   private VisionSystemSim visionSim;
 
-  /** A factory to create new vision classes with our two configured cameras */
+  /** A factory to create new vision classes with our two configured cameras. */
   public static Vision create() {
-    return new Vision(BACK_LEFT_CAMERA, BACK_RIGHT_CAMERA);
+    return new Vision();
   }
 
   public Vision(CameraConfig... configs) {
@@ -95,7 +95,7 @@ public class Vision implements Logged {
    * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
    *     used for estimation.
    */
-  public PoseEstimate[] getEstimatedGlobalPoses() {
+  public PoseEstimate[] estimatedGlobalPoses() {
     List<PoseEstimate> estimates = new ArrayList<>();
     for (int i = 0; i < estimators.length; i++) {
       var result = cameras[i].getLatestResult();
@@ -111,8 +111,7 @@ public class Vision implements Logged {
           .ifPresent(
               e ->
                   estimates.add(
-                      new PoseEstimate(
-                          e, getEstimationStdDevs(e.estimatedPose.toPose2d(), result))));
+                      new PoseEstimate(e, estimationStdDevs(e.estimatedPose.toPose2d(), result))));
     }
     return estimates.toArray(PoseEstimate[]::new);
   }
@@ -139,7 +138,7 @@ public class Vision implements Logged {
    *
    * @param estimatedPose The estimated pose to guess standard deviations for.
    */
-  public Matrix<N3, N1> getEstimationStdDevs(
+  public Matrix<N3, N1> estimationStdDevs(
       Pose2d estimatedPose, PhotonPipelineResult pipelineResult) {
     var estStdDevs = VisionConstants.SINGLE_TAG_STD_DEVS;
     var targets = pipelineResult.getTargets();

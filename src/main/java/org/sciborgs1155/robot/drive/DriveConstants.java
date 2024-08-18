@@ -13,9 +13,12 @@ import edu.wpi.first.units.Time;
 import edu.wpi.first.units.Velocity;
 import java.util.List;
 
-/** Constants for our 2024 MAXSwerve drivetrain. */
+/**
+ * Constants for our 2024 MAXSwerve drivetrain. All fields in this file should be updated for the
+ * current robot configuration!
+ */
 public final class DriveConstants {
-  /** The type of control loop to use when controlling the drive motor. */
+  /** The type of control loop to use when controlling a module's drive motor. */
   public static enum ControlMode {
     CLOSED_LOOP_VELOCITY,
     OPEN_LOOP_VELOCITY;
@@ -26,6 +29,8 @@ public final class DriveConstants {
     TALON, // Kraken X60 Drive, NEO 550 Turn
     SPARK; // NEO Vortex Drive, NEO 550 Turn
   }
+
+  // TODO: Change central drivetrain constants as needed.
 
   // The type of module on the chassis
   public static final ModuleType TYPE = ModuleType.SPARK;
@@ -77,6 +82,7 @@ public final class DriveConstants {
 
   public static final Rotation3d GYRO_OFFSET = new Rotation3d(0, 0, Math.PI);
 
+  // TODO: Change ALL characterization constants for each unique robot as needed.
   public static final class Translation {
     public static final double P = 3.0;
     public static final double I = 0.0;
@@ -113,18 +119,12 @@ public final class DriveConstants {
 
       public static final class PID {
         public static final class SPARK {
-          public static final double P = 1;
-          public static final double I = 0.0;
-          public static final double D = 0.0;
-        }
-
-        public static final class TALON {
           public static final double P = 3.2;
           public static final double I = 0.0;
           public static final double D = 0.0;
         }
 
-        public static final class SIM {
+        public static final class TALON {
           public static final double P = 3.2;
           public static final double I = 0.0;
           public static final double D = 0.0;
@@ -132,23 +132,16 @@ public final class DriveConstants {
       }
 
       public static final class FF {
-        // s: 0.21474, 0.23963, 0.16188, 0.13714
-        // v: 2.115, 2.0681, 2.1498, 2.0948
-        // a linear: 0.17586, 0.13707, 0.23915, 0.26842
-        // a rotation: 0.37587, 0.20079
-        // 2 has 0.55 R^2
         public static final class SPARK {
-          public static final double S = 0.23963;
-          public static final double V = 2.0681;
-          public static final double kA_linear = 0.205;
-          public static final double kA_angular = 0.376;
+          public static final double S = 0.088468;
+          public static final double V = 2.1314;
+          public static final double A = 0.33291;
         }
 
         public static final class TALON {
-          public static final double S = 0; // TODO
-          public static final double V = 2.0681;
-          public static final double kA_linear = 0.205;
-          public static final double kA_angular = 0.376;
+          public static final double S = 0.088468;
+          public static final double V = 2.1314;
+          public static final double A = 0.33291;
         }
       }
     }
@@ -165,23 +158,9 @@ public final class DriveConstants {
       public static final Measure<Current> CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
-        public static final class SPARK {
-          public static final double P = 0.3; // FAKE DOES NOT WORK
-          public static final double I = 0.0;
-          public static final double D = 0.05;
-        }
-
-        public static final class TALON {
-          public static final double P = 9;
-          public static final double I = 0.0;
-          public static final double D = 0.05;
-        }
-
-        public static final class SIM {
-          public static final double P = 9;
-          public static final double I = 0.0;
-          public static final double D = 0.05;
-        }
+        public static final double P = 9;
+        public static final double I = 0.0;
+        public static final double D = 0.05;
       }
 
       // system constants only used in simulation

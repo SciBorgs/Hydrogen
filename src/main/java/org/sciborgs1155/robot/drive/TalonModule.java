@@ -55,8 +55,7 @@ public class TalonModule implements ModuleIO {
     drivePos = driveMotor.getPosition();
     driveVelocity = driveMotor.getVelocity();
     driveFF =
-        new SimpleMotorFeedforward(
-            Driving.FF.TALON.S, Driving.FF.TALON.V, Driving.FF.TALON.kA_linear);
+        new SimpleMotorFeedforward(Driving.FF.TALON.S, Driving.FF.TALON.V, Driving.FF.TALON.A);
 
     drivePos.setUpdateFrequency(1 / SENSOR_PERIOD.in(Seconds));
     driveVelocity.setUpdateFrequency(1 / SENSOR_PERIOD.in(Seconds));
@@ -83,9 +82,9 @@ public class TalonModule implements ModuleIO {
 
     check(turnMotor, turnMotor.restoreFactoryDefaults());
 
-    check(turnMotor, turnPID.setP(Turning.PID.SPARK.P));
-    check(turnMotor, turnPID.setI(Turning.PID.SPARK.I));
-    check(turnMotor, turnPID.setD(Turning.PID.SPARK.D));
+    check(turnMotor, turnPID.setP(Turning.PID.P));
+    check(turnMotor, turnPID.setI(Turning.PID.I));
+    check(turnMotor, turnPID.setD(Turning.PID.D));
     check(turnMotor, turnPID.setPositionPIDWrappingEnabled(true));
     check(turnMotor, turnPID.setPositionPIDWrappingMinInput(-Math.PI));
     check(turnMotor, turnPID.setPositionPIDWrappingMaxInput(Math.PI));

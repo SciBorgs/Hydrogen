@@ -178,8 +178,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     odometry =
         new SwerveDrivePoseEstimator(
             kinematics,
-            gyro.getRotation2d(),
-            getModulePositions(),
+            gyro.rotation2d(),
+            modulePositions(),
             new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180)));
 
     for (int i = 0; i < modules.size(); i++) {
@@ -239,7 +239,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    * @param pose The pose to which to set the odometry.
    */
   public void resetOdometry(Pose2d pose) {
-    odometry.resetPosition(gyro.getRotation2d(), getModulePositions(), pose);
+    odometry.resetPosition(gyro.rotation2d(), modulePositions(), pose);
   }
 
   /**
@@ -308,7 +308,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    */
   public boolean isFacing(Translation2d target) {
     return Math.abs(
-            gyro.getRotation2d().getRadians()
+            gyro.rotation2d().getRadians()
                 - target.minus(pose().getTranslation()).getAngle().getRadians())
         < rotationController.getPositionTolerance();
   }
@@ -383,26 +383,26 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Returns the module states. */
   @Log.NT
-  public SwerveModuleState[] getModuleStates() {
+  public SwerveModuleState[] moduleStates() {
     return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module states. */
   @Log.NT
-  private SwerveModuleState[] getModuleSetpoints() {
+  private SwerveModuleState[] moduleSetpoints() {
     return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module positions. */
   @Log.NT
-  public SwerveModulePosition[] getModulePositions() {
+  public SwerveModulePosition[] modulePositions() {
     return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
   }
 
   /** Returns the robot-relative chassis speeds. */
   @Log.NT
   public ChassisSpeeds getRobotRelativeChassisSpeeds() {
-    return kinematics.toChassisSpeeds(getModuleStates());
+    return kinematics.toChassisSpeeds(moduleStates());
   }
 
   /** Returns the field-relative chassis speeds. */
@@ -434,7 +434,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   @Override
   public void periodic() {
     // update our heading in reality / sim
-    odometry.update(Robot.isReal() ? gyro.getRotation2d() : simRotation, getModulePositions());
+    odometry.update(Robot.isReal() ? gyro.rotation2d() : simRotation, modulePositions());
 
     // update our simulated field poses
     field2d.setRobotPose(pose());

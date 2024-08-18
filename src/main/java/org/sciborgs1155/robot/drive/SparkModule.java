@@ -52,12 +52,10 @@ public class SparkModule implements ModuleIO {
     driveEncoder = driveMotor.getEncoder();
     drivePID = driveMotor.getPIDController();
     driveFF =
-        new SimpleMotorFeedforward(
-            Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.kA_linear); // TODO: Re-tune
+        new SimpleMotorFeedforward(Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.A);
 
     check(driveMotor, driveMotor.restoreFactoryDefaults());
 
-    // TODO: Re-tune
     check(driveMotor, drivePID.setP(Driving.PID.SPARK.P));
     check(driveMotor, drivePID.setI(Driving.PID.SPARK.I));
     check(driveMotor, drivePID.setD(Driving.PID.SPARK.D));
@@ -86,10 +84,9 @@ public class SparkModule implements ModuleIO {
 
     check(turnMotor, turnMotor.restoreFactoryDefaults());
 
-    // TODO: Re-tune
-    check(turnMotor, turnPID.setP(Turning.PID.SPARK.P));
-    check(turnMotor, turnPID.setI(Turning.PID.SPARK.I));
-    check(turnMotor, turnPID.setD(Turning.PID.SPARK.D));
+    check(turnMotor, turnPID.setP(Turning.PID.P));
+    check(turnMotor, turnPID.setI(Turning.PID.I));
+    check(turnMotor, turnPID.setD(Turning.PID.D));
     check(turnMotor, turnPID.setPositionPIDWrappingEnabled(true));
     check(turnMotor, turnPID.setPositionPIDWrappingMinInput(-Math.PI));
     check(turnMotor, turnPID.setPositionPIDWrappingMaxInput(Math.PI));
