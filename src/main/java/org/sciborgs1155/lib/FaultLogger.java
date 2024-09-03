@@ -1,5 +1,7 @@
 package org.sciborgs1155.lib;
 
+import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.hardware.TalonFX;
 import com.kauailabs.navx.frc.AHRS;
 import com.revrobotics.CANSparkBase;
 import com.revrobotics.CANSparkBase.FaultID;
@@ -17,6 +19,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
 import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
@@ -256,6 +259,66 @@ public final class FaultLogger {
         "Photon Camera [" + camera.getName() + "]",
         "disconnected",
         FaultType.ERROR);
+  }
+
+  /**
+   * Registers fault suppliers for a talon.
+   *
+   * @param talon The talon to manage.
+   */
+  public static void register(TalonFX talon) {
+    int id = talon.getDeviceID();
+    BiConsumer<StatusSignal<Boolean>, String> regFault =
+        (f, d) -> register((BooleanSupplier) f, "Talon ID: " + id, d, FaultType.ERROR);
+
+    // TODO: Remove all the unnecessary faults
+    regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");
+    regFault.accept(talon.getFault_ProcTemp(), "Processor temperature exceeded limit");
+    regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");
+    regFault.accept(talon.getFault_ProcTemp(), "Processor temperature exceeded limit");
+    regFault.accept(talon.getFault_DeviceTemp(), "Device temperature exceeded limit");
+    regFault.accept(
+        talon.getFault_Undervoltage(), "Device supply voltage dropped to near brownout levels");
+    regFault.accept(
+        talon.getFault_BootDuringEnable(), "Device boot while detecting the enable signal");
+    regFault.accept(
+        talon.getFault_UnlicensedFeatureInUse(),
+        "An unlicensed feature is in use, device may not behave as expected.");
+    regFault.accept(
+        talon.getFault_BridgeBrownout(),
+        "Bridge was disabled most likely due to supply voltage dropping too low.");
+    regFault.accept(talon.getFault_RemoteSensorReset(), "The remote sensor has reset.");
+    regFault.accept(
+        talon.getFault_MissingDifferentialFX(),
+        "The remote Talon FX used for differential control is not present on CAN Bus.");
+    regFault.accept(
+        talon.getFault_RemoteSensorPosOverflow(), "The remote sensor position has overflowed.");
+    regFault.accept(
+        talon.getFault_OverSupplyV(),
+        "Supply Voltage has exceeded the maximum voltage rating of device.");
+    regFault.accept(talon.getFault_UnstableSupplyV(), "Supply Voltage is unstable.");
+    regFault.accept(
+        talon.getFault_ReverseHardLimit(),
+        "Reverse limit switch has been asserted.  Output is set to neutral.");
+    regFault.accept(
+        talon.getFault_ForwardHardLimit(),
+        "Forward limit switch has been asserted.  Output is set to neutral.");
+    regFault.accept(
+        talon.getFault_ReverseSoftLimit(),
+        "Reverse soft limit has been asserted.  Output is set to neutral.");
+    regFault.accept(
+        talon.getFault_ForwardSoftLimit(),
+        "Forward soft limit has been asserted.  Output is set to neutral.");
+    regFault.accept(
+        talon.getFault_RemoteSensorDataInvalid(), "The remote sensor's data is no longer trusted.");
+    regFault.accept(
+        talon.getFault_FusedSensorOutOfSync(),
+        "The remote sensor used for fusion has fallen out of sync to the local sensor.");
+    regFault.accept(talon.getFault_StatorCurrLimit(), "Stator current limit occured.");
+    regFault.accept(talon.getFault_SupplyCurrLimit(), "Supply current limit occured.");
+    regFault.accept(
+        talon.getFault_UsingFusedCANcoderWhileUnlicensed(),
+        "Using Fused CANcoder feature while unlicensed. Device has fallen back to remote CANcoder.");
   }
 
   /**
