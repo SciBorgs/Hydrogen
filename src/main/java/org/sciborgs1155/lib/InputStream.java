@@ -1,7 +1,10 @@
 package org.sciborgs1155.lib;
 
 import edu.wpi.first.math.MathUtil;
+import edu.wpi.first.math.filter.LinearFilter;
 import edu.wpi.first.math.filter.SlewRateLimiter;
+import edu.wpi.first.networktables.DoublePublisher;
+import edu.wpi.first.networktables.NetworkTableInstance;
 import java.util.function.DoubleSupplier;
 import java.util.function.DoubleUnaryOperator;
 
@@ -12,7 +15,6 @@ import java.util.function.DoubleUnaryOperator;
  */
 @FunctionalInterface
 public interface InputStream extends DoubleSupplier {
-
   /**
    * Creates an input stream from another.
    *
@@ -21,6 +23,14 @@ public interface InputStream extends DoubleSupplier {
    */
   public static InputStream of(DoubleSupplier base) {
     return base::getAsDouble;
+  }
+
+  public static InputStream hypot(InputStream x, InputStream y) {
+    return () -> Math.hypot(x.get(), y.get());
+  }
+
+  public static InputStream atan(InputStream x, InputStream y) {
+    return () -> Math.atan2(x.get(), y.get());
   }
 
   /**
@@ -72,6 +82,26 @@ public interface InputStream extends DoubleSupplier {
   }
 
   /**
+   * Offsets the stream by a factor.
+   *
+   * @param factor A supplier of offset values.
+   * @return An offset stream.
+   */
+  public default InputStream add(DoubleSupplier offset) {
+    return map(x -> x + offset.getAsDouble());
+  }
+
+  /**
+   * Offsets the stream by a factor.
+   *
+   * @param factor An offset.
+   * @return An offset stream.
+   */
+  public default InputStream add(double factor) {
+    return add(() -> factor);
+  }
+
+  /**
    * Raises the stream outputs to an exponent.
    *
    * @param exponent The exponent to raise them to.
@@ -92,6 +122,16 @@ public interface InputStream extends DoubleSupplier {
   }
 
   /**
+   * Filters the stream's outputs by the provided {@link LinearFilter}.
+   *
+   * @param filter The linear filter to use.
+   * @return A filtered stream.
+   */
+  public default InputStream filter(LinearFilter filter) {
+    return map(filter::calculate);
+  }
+
+  /**
    * Deadbands the stream outputs by a minimum bound and scales them from 0 to a maximum bound.
    *
    * @param bound The lower bound to deadband with.
@@ -99,7 +139,7 @@ public interface InputStream extends DoubleSupplier {
    * @return A deadbanded stream.
    */
   public default InputStream deadband(double deadband, double max) {
-    return map(x -> MathUtil.applyDeadband(x, deadband, Double.MAX_VALUE));
+    return map(x -> MathUtil.applyDeadband(x, deadband, max));
   }
 
   /**
@@ -121,5 +161,23 @@ public interface InputStream extends DoubleSupplier {
   public default InputStream rateLimit(double rate) {
     var limiter = new SlewRateLimiter(rate);
     return map(x -> limiter.calculate(x));
+  }
+
+  /**
+   * Logs the output of this stream to networktables every time it is polled.
+   *
+   * <p>A new stream is returned that is identical to this stream, but publishes its output to
+   * networktables every time it is polled.
+   *
+   * @param key The NetworkTables key to publish to.
+   * @return A stream with the same output as this one.
+   */
+  public default InputStream log(String key) {
+    DoublePublisher pub = NetworkTableInstance.getDefault().getDoubleTopic(key).publish();
+    return () -> {
+      double val = this.get();
+      pub.set(val);
+      return val;
+    };
   }
 }
