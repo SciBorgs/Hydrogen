@@ -15,7 +15,6 @@ import java.util.function.DoubleUnaryOperator;
  */
 @FunctionalInterface
 public interface InputStream extends DoubleSupplier {
-
   /**
    * Creates an input stream from another.
    *

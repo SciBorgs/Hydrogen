@@ -18,7 +18,6 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class SimModule implements ModuleIO {
-
   private final DCMotorSim drive =
       switch (TYPE) {
         case SPARK ->

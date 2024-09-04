@@ -11,7 +11,7 @@ public sealed interface Assertion {
   public void apply(boolean unitTest);
 
   /**
-   * Asserts that a condition is true, and reports to FaultLogger
+   * Asserts that a condition is true and reports to FaultLogger.
    *
    * @param condition
    * @param faultName
@@ -25,7 +25,7 @@ public sealed interface Assertion {
   }
 
   /**
-   * Asserts that two values are equal (with some tolerance), and reports to FaultLogger
+   * Asserts that two values are equal (with some tolerance) and reports to FaultLogger.
    *
    * @param faultName
    * @param expected

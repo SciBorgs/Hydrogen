@@ -16,6 +16,7 @@ public class VisionConstants {
       AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
 
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
+  // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
   public static final CameraConfig BACK_LEFT_CAMERA =
       new CameraConfig("back left", new Transform3d(1, 1, 1, new Rotation3d()));
 

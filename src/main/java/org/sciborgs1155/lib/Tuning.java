@@ -14,7 +14,6 @@ import edu.wpi.first.networktables.StringEntry;
  * </pre>
  */
 public final class Tuning {
-
   /**
    * Logs a DoubleEntry on Network Tables.
    *

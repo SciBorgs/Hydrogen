@@ -3,7 +3,7 @@ package org.sciborgs1155.robot.drive;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 
-/** Generalized gyroscope. Pigeon2, Navx, and SimGyro are to be implemented */
+/** Generalized gyroscope. Pigeon2, Navx, and SimGyro are to be implemented. */
 public interface GyroIO extends AutoCloseable {
   /** Calibrates the gyroscope. Pigeon2 does not need to do anything here. */
   default void calibrate() {}

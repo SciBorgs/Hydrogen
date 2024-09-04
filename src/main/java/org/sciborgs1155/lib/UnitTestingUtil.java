@@ -49,7 +49,7 @@ public class UnitTestingUtil {
   }
 
   /**
-   * Fasts forward in time by running CommandScheduler and updating timer
+   * Fasts forward in time by running CommandScheduler and updating timer.
    *
    * @param time
    */
@@ -66,7 +66,7 @@ public class UnitTestingUtil {
   }
 
   /**
-   * Schedules and runs a command
+   * Schedules and runs a command.
    *
    * @param command The command to run.
    */
@@ -88,7 +88,7 @@ public class UnitTestingUtil {
 
   /**
    * Schedules a command and runs it until it ends. Be careful -- if the command you give never
-   * ends, this will be an infinate loop!
+   * ends, this will be an infinite loop!
    *
    * @param command
    */

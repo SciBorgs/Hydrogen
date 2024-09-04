@@ -10,7 +10,6 @@ import java.util.Set;
 
 /** Utility class for configuration of Spark motor controllers */
 public class SparkUtils {
-
   private static final List<Runnable> runnables = new ArrayList<>();
 
   public static void addChecker(Runnable runnable) {
