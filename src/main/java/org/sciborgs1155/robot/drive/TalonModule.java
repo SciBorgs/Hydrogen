@@ -81,6 +81,9 @@ public class TalonModule implements ModuleIO {
     driveMotor.getConfigurator().apply(talonDriveConfig);
     turnMotor.getConfigurator().apply(talonTurnConfig);
 
+    register(turnMotor);
+    register(driveMotor);
+
     TalonUtils.addMotor(driveMotor);
     TalonUtils.addMotor(turnMotor);
 
