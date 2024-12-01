@@ -52,9 +52,7 @@ public class SwerveTest {
   @RepeatedTest(5)
   public void reachesRobotVelocity() {
     double xVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
-    ;
     double yVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
-    ;
     run(
         drive.run(
             () ->
