@@ -9,10 +9,8 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.kinematics.ChassisSpeeds;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
-import org.junit.jupiter.params.ParameterizedTest;
-import org.junit.jupiter.params.provider.ValueSource;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.NoGyro;
@@ -51,11 +49,10 @@ public class SwerveTest {
     runUnitTest(drive.systemsCheck());
   }
 
-  @Disabled
-  @Test
+  @RepeatedTest(5)
   public void reachesRobotVelocity() {
-    double xVelocitySetpoint = -0.5;
-    double yVelocitySetpoint = 0.25;
+    double xVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
+    double yVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
     run(
         drive.run(
             () ->
@@ -71,10 +68,9 @@ public class SwerveTest {
     assertEquals(yVelocitySetpoint, chassisSpeed.vyMetersPerSecond, DELTA);
   }
 
-  @Disabled
-  @ParameterizedTest
-  @ValueSource(doubles = {3, 4})
-  public void reachesAngularVelocity(double omegaRadiansPerSecond) {
+  @RepeatedTest(5)
+  public void reachesAngularVelocity() {
+    double omegaRadiansPerSecond = Math.random() * 2 - 1;
     run(
         drive.run(
             () ->
@@ -87,11 +83,10 @@ public class SwerveTest {
     assertEquals(omegaRadiansPerSecond, chassisSpeed.omegaRadiansPerSecond, DELTA);
   }
 
-  @Disabled
-  @Test
+  @RepeatedTest(5)
   public void testModuleDistance() {
-    double xVelocitySetpoint = 2.265;
-    double yVelocitySetpoint = 0;
+    double xVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
+    double yVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
 
     double deltaT = 4;
     double deltaX = xVelocitySetpoint * deltaT;
