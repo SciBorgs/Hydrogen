@@ -93,8 +93,9 @@ public class Robot extends CommandRobot implements Logged {
 
   /** Configures trigger -> command bindings. */
   private void configureBindings() {
-    InputStream x = InputStream.of(driver::getLeftX).negate();
-    InputStream y = InputStream.of(driver::getLeftY).negate();
+    // x and y are switched: we use joystick Y axis to control field x motion
+    InputStream x = InputStream.of(driver::getLeftY).negate();
+    InputStream y = InputStream.of(driver::getLeftX).negate();
 
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =

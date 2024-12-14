@@ -30,7 +30,7 @@ public interface InputStream extends DoubleSupplier {
   }
 
   public static InputStream atan(InputStream x, InputStream y) {
-    return () -> Math.atan2(x.get(), y.get());
+    return () -> Math.atan2(y.get(), x.get());
   }
 
   /**
@@ -97,8 +97,8 @@ public interface InputStream extends DoubleSupplier {
    * @param factor An offset.
    * @return An offset stream.
    */
-  public default InputStream add(double factor) {
-    return add(() -> factor);
+  public default InputStream add(double offset) {
+    return add(() -> offset);
   }
 
   /**
@@ -159,7 +159,7 @@ public interface InputStream extends DoubleSupplier {
    * @return A rate limited stream.
    */
   public default InputStream rateLimit(double rate) {
-    var limiter = new SlewRateLimiter(rate);
+    var limiter = new SlewRateLimiter(rate, -rate, get());
     return map(x -> limiter.calculate(x));
   }
 
