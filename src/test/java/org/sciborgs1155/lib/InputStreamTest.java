@@ -1,41 +1,81 @@
 package org.sciborgs1155.lib;
 
+import static edu.wpi.first.units.Units.Seconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.sciborgs1155.lib.InputStream.*;
 
+import edu.wpi.first.math.MathSharedStore;
 import org.junit.jupiter.api.Test;
 
 public class InputStreamTest {
 
-  private double two() {
-    return 2.0;
+  private InputStream stream(double n) {
+    return of(() -> n);
+  }
+
+  @Test
+  void hypotenous() {
+    assertEquals(5, hypot(stream(3), stream(4)).get());
+  }
+
+  @Test
+  void arctan() {
+    assertEquals(-Math.PI / 4, atan(stream(1), stream(-1)).get());
+  }
+
+  @Test
+  void map() {
+    assertEquals(8, stream(3).map(n -> 40 * n % 16).get());
+  }
+
+  @Test
+  void scale() {
+    assertEquals(-12.44, stream(4).scale(() -> -3.11).get());
+    assertEquals(-12.44, stream(4).scale(-3.11).get());
+  }
+
+  @Test
+  void negate() {
+    assertEquals(-13.123, stream(13.123).negate().get());
+  }
+
+  @Test
+  void add() {
+    assertEquals(9, stream(7).add(2).get());
+    assertEquals(5.232, stream(1.232).add(() -> 4).get());
+  }
+
+  @Test
+  void pow() {
+    assertEquals(8, stream(2).pow(3).get());
   }
 
   @Test
   void signedPow() {
-    var stream = InputStream.of(this::two).negate().clamp(1.8).signedPow(2);
-    System.out.println(stream.get());
-    assert stream.get() == -3.24;
+    assertEquals(0.25, stream(0.5).signedPow(2).get());
+    assertEquals(-0.25, stream(-0.5).signedPow(2).get());
   }
 
   @Test
   void deadband() {
-    var stream = InputStream.of(this::two).negate().scale(0.25);
-    assertEquals(stream.deadband(0.6, 1).get(), 0.0);
-    assertEquals(stream.deadband(0.1, 1).get(), -0.444444, 0.01);
+    assertEquals(0, stream(-0.5).deadband(0.6, 1).get());
+    assertEquals(2.25, stream(2).deadband(0.2, 1).get());
+  }
+
+  @Test
+  void clamp() {
+    assertEquals(5.32, stream(5.32).clamp(6.5).get());
+    assertEquals(-6.5, stream(-7).clamp(6.5).get());
   }
 
   @Test
   void rateLimit() {
-    InputStream cursed =
-        new InputStream() {
-          double state = 0;
-
-          @Override
-          public double getAsDouble() {
-            return state += 2;
-          }
-        }.rateLimit(1);
-
-    assertEquals(cursed.get(), 0, 0.1); // 0 time passes and we can't mock time
+    UnitTestingUtil.setupTests();
+    InputStream stream = of(() -> MathSharedStore.getTimestamp() * 2);
+    InputStream limited = stream.rateLimit(1);
+    double initial = limited.get();
+    UnitTestingUtil.fastForward(Seconds.of(2));
+    assertEquals(4, stream.get() - initial, 0.1);
+    assertEquals(2, limited.get() - initial, 0.1);
   }
 }
