@@ -33,23 +33,23 @@ public class FaultLoggerTest {
         base.getSubTable("Total Faults").getStringArrayTopic("errors").subscribe(new String[10]);
     FaultLogger.update();
     FaultLogger.report("Test", "Example", FaultType.INFO);
-    FaultLogger.update();
     assertEquals(1, FaultLogger.activeFaults().size());
+    FaultLogger.update();
     assertEquals(1, FaultLogger.totalFaults().size());
     assertEquals(1, activeInfos.get().length);
     assertEquals(0, totalErrors.get().length);
 
     // duplicate
     FaultLogger.report("Test", "Example", FaultType.INFO);
-    FaultLogger.update();
     assertEquals(1, FaultLogger.activeFaults().size());
+    FaultLogger.update();
     assertEquals(1, FaultLogger.totalFaults().size());
     assertEquals(1, activeInfos.get().length);
     assertEquals(0, totalErrors.get().length);
 
     FaultLogger.report("Test2", "Example2", FaultType.ERROR);
-    FaultLogger.update();
     assertEquals(1, FaultLogger.activeFaults().size());
+    FaultLogger.update();
     assertEquals(2, FaultLogger.totalFaults().size());
     assertEquals(0, activeInfos.get().length);
     assertEquals(1, totalErrors.get().length);
