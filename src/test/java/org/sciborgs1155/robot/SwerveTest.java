@@ -62,7 +62,7 @@ public class SwerveTest {
     run(drive.drive(() -> xVelocitySetpoint, () -> yVelocitySetpoint, drive::heading));
     fastForward(500);
 
-    ChassisSpeeds chassisSpeed = drive.getFieldRelativeChassisSpeeds();
+    ChassisSpeeds chassisSpeed = drive.fieldRelativeChassisSpeeds();
 
     assertEquals(xVelocitySetpoint, chassisSpeed.vxMetersPerSecond, DELTA);
     assertEquals(yVelocitySetpoint, chassisSpeed.vyMetersPerSecond, DELTA);
@@ -79,7 +79,7 @@ public class SwerveTest {
                     ControlMode.CLOSED_LOOP_VELOCITY)));
     fastForward();
 
-    ChassisSpeeds chassisSpeed = drive.getRobotRelativeChassisSpeeds();
+    ChassisSpeeds chassisSpeed = drive.robotRelativeChassisSpeeds();
     assertEquals(omegaRadiansPerSecond, chassisSpeed.omegaRadiansPerSecond, DELTA);
   }
 

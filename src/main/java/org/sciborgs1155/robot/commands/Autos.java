@@ -28,7 +28,7 @@ public class Autos {
     AutoBuilder.configureHolonomic(
         drive::pose,
         drive::resetOdometry,
-        drive::getRobotRelativeChassisSpeeds,
+        drive::robotRelativeChassisSpeeds,
         s -> drive.setChassisSpeeds(s, ControlMode.CLOSED_LOOP_VELOCITY),
         new HolonomicPathFollowerConfig(
             new PIDConstants(Translation.P, Translation.I, Translation.D),
