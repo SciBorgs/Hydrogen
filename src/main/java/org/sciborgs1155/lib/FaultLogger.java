@@ -42,11 +42,6 @@ public final class FaultLogger {
     }
   }
 
-  @FunctionalInterface
-  public static interface FaultReporter {
-    void report();
-  }
-
   /**
    * The type of fault, used for detecting whether the fallible is in a failure state and displaying
    * to NetworkTables.
@@ -79,8 +74,7 @@ public final class FaultLogger {
   }
 
   // DATA
-  private static final List<FaultReporter> faultReporters = new ArrayList<>();
-  private static final Set<Fault> newFaults = new HashSet<>();
+  private static final List<Supplier<Optional<Fault>>> faultReporters = new ArrayList<>();
   private static final Set<Fault> activeFaults = new HashSet<>();
   private static final Set<Fault> totalFaults = new HashSet<>();
 
@@ -91,23 +85,20 @@ public final class FaultLogger {
 
   /** Polls registered fallibles. This method should be called periodically. */
   public static void update() {
-    activeFaults.clear();
-
-    faultReporters.forEach(FaultReporter::report);
-    activeFaults.addAll(newFaults);
-    newFaults.clear();
+    faultReporters.forEach(r -> r.get().ifPresent(fault -> report(fault)));
 
     totalFaults.addAll(activeFaults);
 
     activeAlerts.set(activeFaults);
     totalAlerts.set(totalFaults);
+
+    activeFaults.clear();
   }
 
   /** Clears total faults. */
   public static void clear() {
     totalFaults.clear();
     activeFaults.clear();
-    newFaults.clear();
   }
 
   /** Clears fault suppliers. */
@@ -139,7 +130,7 @@ public final class FaultLogger {
    * @param fault The fault to report.
    */
   public static void report(Fault fault) {
-    newFaults.add(fault);
+    activeFaults.add(fault);
     switch (fault.type) {
       case ERROR -> DriverStation.reportError(fault.toString(), false);
       case WARNING -> DriverStation.reportWarning(fault.toString(), false);
@@ -164,7 +155,7 @@ public final class FaultLogger {
    * @param supplier A supplier of an optional fault.
    */
   public static void register(Supplier<Optional<Fault>> supplier) {
-    faultReporters.add(() -> supplier.get().ifPresent(FaultLogger::report));
+    faultReporters.add(supplier);
   }
 
   /**
@@ -176,12 +167,11 @@ public final class FaultLogger {
    */
   public static void register(
       BooleanSupplier condition, String name, String description, FaultType type) {
-    faultReporters.add(
-        () -> {
-          if (condition.getAsBoolean()) {
-            report(name, description, type);
-          }
-        });
+    register(
+        () ->
+            condition.getAsBoolean()
+                ? Optional.of(new Fault(name, description, type))
+                : Optional.empty());
   }
 
   /**
@@ -190,14 +180,9 @@ public final class FaultLogger {
    * @param spark The Spark Max or Spark Flex to manage.
    */
   public static void register(CANSparkBase spark) {
-    faultReporters.add(
-        () -> {
-          for (FaultID fault : FaultID.values()) {
-            if (spark.getFault(fault)) {
-              report(SparkUtils.name(spark), fault.name(), FaultType.ERROR);
-            }
-          }
-        });
+    for (FaultID fault : FaultID.values()) {
+      register(() -> spark.getFault(fault), SparkUtils.name(spark), fault.name(), FaultType.ERROR);
+    }
     register(
         () -> spark.getMotorTemperature() > 100,
         SparkUtils.name(spark),
@@ -234,18 +219,20 @@ public final class FaultLogger {
    */
   public static void register(PowerDistribution powerDistribution) {
     var fields = PowerDistributionFaults.class.getFields();
-    faultReporters.add(
-        () -> {
-          try {
-            PowerDistributionFaults faults = powerDistribution.getFaults();
-            for (Field fault : fields) {
-              if (fault.getBoolean(faults)) {
-                report("Power Distribution", fault.getName(), FaultType.ERROR);
+    for (Field fault : fields) {
+      register(
+          () -> {
+            try {
+              if (fault.getBoolean(powerDistribution.getFaults())) {
+                return Optional.of(
+                    new Fault("Power Distribution", fault.getName(), FaultType.ERROR));
               }
+            } catch (Exception e) {
             }
-          } catch (Exception e) {
-          }
-        });
+            return Optional.empty();
+          });
+    }
+    ;
   }
 
   /**
