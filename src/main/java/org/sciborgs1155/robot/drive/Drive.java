@@ -401,14 +401,14 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
 
   /** Returns the robot-relative chassis speeds. */
   @Log.NT
-  public ChassisSpeeds getRobotRelativeChassisSpeeds() {
+  public ChassisSpeeds robotRelativeChassisSpeeds() {
     return kinematics.toChassisSpeeds(moduleStates());
   }
 
   /** Returns the field-relative chassis speeds. */
   @Log.NT
-  public ChassisSpeeds getFieldRelativeChassisSpeeds() {
-    return ChassisSpeeds.fromRobotRelativeSpeeds(getRobotRelativeChassisSpeeds(), heading());
+  public ChassisSpeeds fieldRelativeChassisSpeeds() {
+    return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeChassisSpeeds(), heading());
   }
 
   /**
@@ -457,8 +457,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     simRotation =
         simRotation.rotateBy(
             Rotation2d.fromRadians(
-                getRobotRelativeChassisSpeeds().omegaRadiansPerSecond
-                    * Constants.PERIOD.in(Seconds)));
+                robotRelativeChassisSpeeds().omegaRadiansPerSecond * Constants.PERIOD.in(Seconds)));
   }
 
   /** Stops the drivetrain. */
