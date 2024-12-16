@@ -14,7 +14,7 @@ public class InputStreamTest {
   }
 
   @Test
-  void hypotenous() {
+  void hypotenuse() {
     assertEquals(5, hypot(stream(3), stream(4)).get());
   }
 
