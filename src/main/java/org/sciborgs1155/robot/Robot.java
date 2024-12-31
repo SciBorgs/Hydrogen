@@ -9,6 +9,7 @@ import static org.sciborgs1155.robot.Constants.DEADBAND;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.GenericHID.RumbleType;
@@ -60,6 +61,12 @@ public class Robot extends CommandRobot implements Logged {
     super(PERIOD.in(Seconds));
     configureGameBehavior();
     configureBindings();
+    configureLog();
+  }
+
+  private void configureLog() {
+    SignalLogger.setPath("./logs/");
+    SignalLogger.enableAutoLogging(true);
   }
 
   /** Configures basic behavior for different periods during the game. */
@@ -139,6 +146,10 @@ public class Robot extends CommandRobot implements Logged {
         .onFalse(Commands.runOnce(() -> speedMultiplier = Constants.FULL_SPEED_MULTIPLIER));
 
     // TODO: Add any additional bindings.
+    operator
+        .a()
+        .onTrue(Commands.runOnce(SignalLogger::start))
+        .onFalse(Commands.runOnce(SignalLogger::stop));
   }
 
   /**
