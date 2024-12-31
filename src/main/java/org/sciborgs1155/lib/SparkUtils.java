@@ -1,8 +1,8 @@
 package org.sciborgs1155.lib;
 
 import com.revrobotics.REVLibError;
-import com.revrobotics.SparkBase;
-import com.revrobotics.SparkLowLevel.PeriodicFrame;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkLowLevel.PeriodicFrame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;

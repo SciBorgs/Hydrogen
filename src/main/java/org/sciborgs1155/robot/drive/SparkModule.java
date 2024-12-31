@@ -7,7 +7,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.COUPLI
 import com.revrobotics.RelativeEncoder;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.IdleMode;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
@@ -50,7 +50,7 @@ public class SparkModule implements ModuleIO {
   public SparkModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
     driveMotor = new SparkFlex(drivePort, MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
-    drivePID = driveMotor.getPIDController();
+    drivePID = driveMotor.getClosedLoopController();
     driveFF =
         new SimpleMotorFeedforward(Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.A);
 

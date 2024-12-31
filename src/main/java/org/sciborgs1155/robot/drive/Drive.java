@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -89,7 +90,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
           Translation.P,
           Translation.I,
           Translation.D,
-          new TrapezoidProfile.Constraints(MAX_SPEED, MAX_ACCEL));
+          new TrapezoidProfile.Constraints(MAX_SPEED.in(MetersPerSecond), MAX_ACCEL.in(MetersPerSecondPerSecond)));
 
   @Log.NT
   private final PIDController rotationController =

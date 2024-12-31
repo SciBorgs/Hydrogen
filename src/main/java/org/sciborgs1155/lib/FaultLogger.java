@@ -2,10 +2,10 @@ package org.sciborgs1155.lib;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
 import com.revrobotics.REVLibError;
-import com.revrobotics.SparkBase;
-import com.revrobotics.SparkBase.FaultID;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.SparkBase.FaultID;
 import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
