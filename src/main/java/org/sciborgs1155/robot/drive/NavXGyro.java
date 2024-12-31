@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.drive;
 
-import com.kauailabs.navx.frc.AHRS;
+import com.studica.frc.AHRS;
 import edu.wpi.first.math.geometry.Rotation3d;
 import org.sciborgs1155.lib.FaultLogger;
 

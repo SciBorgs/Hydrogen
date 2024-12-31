@@ -4,10 +4,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkLowLevel.MotorType;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.SparkBase.IdleMode;
+import com.revrobotics.SparkFlex;
+import com.revrobotics.SparkLowLevel.MotorType;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,7 +23,7 @@ public class SparkUtilsTest {
 
   @Test
   void configure() {
-    CANSparkFlex motor = new CANSparkFlex(1, MotorType.kBrushless);
+    SparkFlex motor = new SparkFlex(1, MotorType.kBrushless);
     RelativeEncoder encoder = motor.getEncoder();
 
     check(motor, motor.restoreFactoryDefaults());

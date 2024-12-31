@@ -9,12 +9,12 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder;
-import com.revrobotics.SparkPIDController;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.IdleMode;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkClosedLoopController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -31,7 +31,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor; // Kraken X60
-  private final CANSparkMax turnMotor; // NEO 550
+  private final SparkMax turnMotor; // NEO 550
 
   private final StatusSignal<Double> drivePos;
   private final StatusSignal<Double> driveVelocity;
@@ -39,7 +39,7 @@ public class TalonModule implements ModuleIO {
 
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
 
-  private final SparkPIDController turnPID;
+  private final SparkClosedLoopController turnPID;
   private final SimpleMotorFeedforward driveFF;
 
   private final Rotation2d angularOffset;
@@ -76,7 +76,7 @@ public class TalonModule implements ModuleIO {
 
     TalonUtils.addMotor(driveMotor);
 
-    turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
+    turnMotor = new SparkMax(turnPort, MotorType.kBrushless);
     turningEncoder = turnMotor.getAbsoluteEncoder();
     turnPID = turnMotor.getPIDController();
 

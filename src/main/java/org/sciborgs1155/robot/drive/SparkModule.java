@@ -4,14 +4,14 @@ import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.COUPLING_RATIO;
 
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.SparkAbsoluteEncoder;
-import com.revrobotics.SparkPIDController;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.IdleMode;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.SparkClosedLoopController;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -26,14 +26,14 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class SparkModule implements ModuleIO {
-  private final CANSparkFlex driveMotor; // NEO Vortex
-  private final CANSparkMax turnMotor; // NEO 550
+  private final SparkFlex driveMotor; // NEO Vortex
+  private final SparkMax turnMotor; // NEO 550
 
   private final RelativeEncoder driveEncoder;
   private final SparkAbsoluteEncoder turningEncoder;
 
-  private final SparkPIDController drivePID;
-  private final SparkPIDController turnPID;
+  private final SparkClosedLoopController drivePID;
+  private final SparkClosedLoopController turnPID;
 
   private final SimpleMotorFeedforward driveFF;
 
@@ -48,7 +48,7 @@ public class SparkModule implements ModuleIO {
   private final String name;
 
   public SparkModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
-    driveMotor = new CANSparkFlex(drivePort, MotorType.kBrushless);
+    driveMotor = new SparkFlex(drivePort, MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     drivePID = driveMotor.getPIDController();
     driveFF =
@@ -78,7 +78,7 @@ public class SparkModule implements ModuleIO {
             false));
     check(driveMotor, driveMotor.burnFlash());
 
-    turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
+    turnMotor = new SparkMax(turnPort, MotorType.kBrushless);
     turningEncoder = turnMotor.getAbsoluteEncoder();
     turnPID = turnMotor.getPIDController();
 

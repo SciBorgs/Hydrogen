@@ -3,7 +3,6 @@ package org.sciborgs1155.lib;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.units.Measure;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.SimHooks;

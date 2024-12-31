@@ -6,11 +6,13 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularAcceleration;
+import edu.wpi.first.units.measure.AngularVelocity;
 import edu.wpi.first.units.measure.Current;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.units.Measure;
+import edu.wpi.first.units.measure.LinearAcceleration;
+import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
-import edu.wpi.first.units.measure.Velocity;
 import java.util.List;
 
 /**
@@ -52,16 +54,14 @@ public final class DriveConstants {
 
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
   public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5.74);
-  public static final LinearAcceleration MAX_ACCEL =
-      MetersPerSecondPerSecond.of(16.0);
+  public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(16.0);
   public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
   public static final AngularAcceleration MAX_ANGULAR_ACCEL =
       RadiansPerSecond.per(Second).of(MAX_ACCEL.in(MetersPerSecondPerSecond) / RADIUS.in(Meters));
 
   // Arbitrary max rotational velocity for the driver to effectively control the robot
-  public static final AngularVelocity TELEOP_ANGULAR_SPEED =
-      Radians.per(Second).of(2 * Math.PI);
+  public static final AngularVelocity TELEOP_ANGULAR_SPEED = Radians.per(Second).of(2 * Math.PI);
 
   public static final Translation2d[] MODULE_OFFSET = {
     new Translation2d(WHEEL_BASE.divide(2), TRACK_WIDTH.divide(2)), // front left

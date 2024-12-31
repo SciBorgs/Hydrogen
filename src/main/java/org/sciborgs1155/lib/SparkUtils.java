@@ -1,8 +1,8 @@
 package org.sciborgs1155.lib;
 
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
 import com.revrobotics.REVLibError;
+import com.revrobotics.SparkBase;
+import com.revrobotics.SparkLowLevel.PeriodicFrame;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +40,7 @@ public class SparkUtils {
    * @param spark The spark to find the name of.
    * @return The name of a spark.
    */
-  public static String name(CANSparkBase spark) {
+  public static String name(SparkBase spark) {
     return "Spark [" + spark.getDeviceId() + "]";
   }
 
@@ -69,13 +69,13 @@ public class SparkUtils {
    * @param data The data that the spark needs to send to the RIO.
    * @param sensors The sensors that provide data for the spark needs to send to the RIO.
    * @param withFollower Whether this spark has a following motor via {@link
-   *     CANSparkBase#follow(CANSparkBase)}.
+   *     SparkBase#follow(SparkBase)}.
    * @see Sensor
    * @see Data
    * @see https://docs.revrobotics.com/brushless/spark-max/control-interfaces
    */
   public static REVLibError configureFrameStrategy(
-      CANSparkBase spark, Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
+      SparkBase spark, Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
     int status0 = FRAME_STRATEGY_MEDIUM; // output, faults
     int status1 = FRAME_STRATEGY_SLOW;
     // integrated velocity, temperature, input voltage, current | default 20
@@ -141,7 +141,7 @@ public class SparkUtils {
    *
    * @param spark The follower spark.
    */
-  public static REVLibError configureNothingFrameStrategy(CANSparkBase spark) {
+  public static REVLibError configureNothingFrameStrategy(SparkBase spark) {
     return configureFrameStrategy(spark, Set.of(), Set.of(), false);
   }
 
@@ -153,7 +153,7 @@ public class SparkUtils {
    * @param value The value to wrap.
    * @return An optional that may contain the value.
    */
-  public static <T> Optional<T> wrapCall(CANSparkBase spark, T value) {
+  public static <T> Optional<T> wrapCall(SparkBase spark, T value) {
     if (FaultLogger.check(spark)) {
       return Optional.of(value);
     }

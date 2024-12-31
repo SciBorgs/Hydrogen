@@ -3,9 +3,9 @@ package org.sciborgs1155.lib;
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkBase.FaultID;
 import com.revrobotics.REVLibError;
+import com.revrobotics.SparkBase;
+import com.revrobotics.SparkBase.FaultID;
 import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -179,7 +179,7 @@ public final class FaultLogger {
    *
    * @param spark The Spark Max or Spark Flex to manage.
    */
-  public static void register(CANSparkBase spark) {
+  public static void register(SparkBase spark) {
     for (FaultID fault : FaultID.values()) {
       register(() -> spark.getFault(fault), SparkUtils.name(spark), fault.name(), FaultType.ERROR);
     }
@@ -316,7 +316,7 @@ public final class FaultLogger {
    * @param spark The spark to report REVLibErrors from.
    * @return If the spark is working without errors.
    */
-  public static boolean check(CANSparkBase spark) {
+  public static boolean check(SparkBase spark) {
     REVLibError error = spark.getLastError();
     return check(spark, error);
   }
@@ -330,7 +330,7 @@ public final class FaultLogger {
    * @param error Any REVLibErrors that may be returned from a method for a spark.
    * @return If the spark is working without errors.
    */
-  public static boolean check(CANSparkBase spark, REVLibError error) {
+  public static boolean check(SparkBase spark, REVLibError error) {
     if (error != REVLibError.kOk) {
       report(SparkUtils.name(spark), error.name(), FaultType.ERROR);
       return false;
