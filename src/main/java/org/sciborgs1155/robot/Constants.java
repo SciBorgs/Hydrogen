@@ -5,9 +5,9 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import org.sciborgs1155.robot.drive.DriveConstants;
@@ -33,7 +33,7 @@ public class Constants {
     return Rotation2d.fromRotations(alliance() == Alliance.Blue ? 0 : 0.5);
   }
 
-  public static final Measure<Time> PERIOD = Seconds.of(0.02); // roborio tickrate (s)
+  public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
   public static final double DEADBAND = 0.15;
   public static final double MAX_RATE =
       DriveConstants.MAX_ACCEL.baseUnitMagnitude()
@@ -43,8 +43,8 @@ public class Constants {
 
   // Origin at corner of blue alliance side of field
   public static class Field {
-    public static final Measure<Distance> LENGTH = Inches.of(651.223);
-    public static final Measure<Distance> WIDTH = Inches.of(323.277);
+    public static final Distance LENGTH = Inches.of(651.223);
+    public static final Distance WIDTH = Inches.of(323.277);
 
     /** Returns whether the provided position is within the boundaries of the field. */
     public static boolean inField(Pose3d pose) {

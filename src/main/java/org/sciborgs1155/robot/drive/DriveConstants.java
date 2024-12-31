@@ -5,12 +5,12 @@ import static edu.wpi.first.units.Units.*;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.units.Angle;
-import edu.wpi.first.units.Current;
-import edu.wpi.first.units.Distance;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.Current;
+import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
-import edu.wpi.first.units.Velocity;
+import edu.wpi.first.units.measure.Time;
+import edu.wpi.first.units.measure.Velocity;
 import java.util.List;
 
 /**
@@ -39,28 +39,28 @@ public final class DriveConstants {
   public static final ControlMode DRIVE_MODE = ControlMode.OPEN_LOOP_VELOCITY;
 
   // Rate at which sensors update periodicially
-  public static final Measure<Time> SENSOR_PERIOD = Seconds.of(0.02);
+  public static final Time SENSOR_PERIOD = Seconds.of(0.02);
 
   // Distance between centers of right and left wheels on robot
-  public static final Measure<Distance> TRACK_WIDTH = Meters.of(0.5715);
+  public static final Distance TRACK_WIDTH = Meters.of(0.5715);
   // Distance between front and back wheels on robot
-  public static final Measure<Distance> WHEEL_BASE = Meters.of(0.5715);
+  public static final Distance WHEEL_BASE = Meters.of(0.5715);
   // Distance from the center to any wheel of the robot
-  public static final Measure<Distance> RADIUS = TRACK_WIDTH.divide(2).times(Math.sqrt(2));
+  public static final Distance RADIUS = TRACK_WIDTH.divide(2).times(Math.sqrt(2));
   // Robot width with bumpers
-  public static final Measure<Distance> CHASSIS_WIDTH = Inches.of(32.645);
+  public static final Distance CHASSIS_WIDTH = Inches.of(32.645);
 
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
-  public static final Measure<Velocity<Distance>> MAX_SPEED = MetersPerSecond.of(5.74);
-  public static final Measure<Velocity<Velocity<Distance>>> MAX_ACCEL =
+  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5.74);
+  public static final LinearAcceleration MAX_ACCEL =
       MetersPerSecondPerSecond.of(16.0);
-  public static final Measure<Velocity<Angle>> MAX_ANGULAR_SPEED =
+  public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
-  public static final Measure<Velocity<Velocity<Angle>>> MAX_ANGULAR_ACCEL =
+  public static final AngularAcceleration MAX_ANGULAR_ACCEL =
       RadiansPerSecond.per(Second).of(MAX_ACCEL.in(MetersPerSecondPerSecond) / RADIUS.in(Meters));
 
   // Arbitrary max rotational velocity for the driver to effectively control the robot
-  public static final Measure<Velocity<Angle>> TELEOP_ANGULAR_SPEED =
+  public static final AngularVelocity TELEOP_ANGULAR_SPEED =
       Radians.per(Second).of(2 * Math.PI);
 
   public static final Translation2d[] MODULE_OFFSET = {
@@ -88,7 +88,7 @@ public final class DriveConstants {
     public static final double I = 0.0;
     public static final double D = 0.05;
 
-    public static final Measure<Distance> TOLERANCE = Centimeters.of(5);
+    public static final Distance TOLERANCE = Centimeters.of(5);
   }
 
   public static final class Rotation {
@@ -96,7 +96,7 @@ public final class DriveConstants {
     public static final double I = 0.0;
     public static final double D = 0.05;
 
-    public static final Measure<Angle> TOLERANCE = Degrees.of(3);
+    public static final Angle TOLERANCE = Degrees.of(3);
   }
 
   public static final class ModuleConstants {
@@ -106,16 +106,16 @@ public final class DriveConstants {
       // Possible pinion configurations : 12T, 13T, or 14T.
       public static final int PINION_TEETH = 14;
 
-      public static final Measure<Distance> CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
+      public static final Distance CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
 
       // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15 teeth on the
       // bevel pinion
       public static final double GEARING = 1.0 / 45.0 / 22.0 * 15.0 * 14.0;
 
-      public static final Measure<Distance> POSITION_FACTOR = CIRCUMFERENCE.times(GEARING);
-      public static final Measure<Velocity<Distance>> VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
+      public static final Distance POSITION_FACTOR = CIRCUMFERENCE.times(GEARING);
+      public static final LinearVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
-      public static final Measure<Current> CURRENT_LIMIT = Amps.of(50);
+      public static final Current CURRENT_LIMIT = Amps.of(50);
 
       public static final class PID {
         public static final class SPARK {
@@ -150,12 +150,12 @@ public final class DriveConstants {
       public static final double MOTOR_GEARING = 1.0 / 4.0 / 3.0;
       public static final double ENCODER_GEARING = 1;
 
-      public static final Measure<Angle> POSITION_FACTOR = Rotations.of(ENCODER_GEARING);
-      public static final Measure<Velocity<Angle>> VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
+      public static final Angle POSITION_FACTOR = Rotations.of(ENCODER_GEARING);
+      public static final AngularVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
       public static final boolean ENCODER_INVERTED = true;
 
-      public static final Measure<Current> CURRENT_LIMIT = Amps.of(20);
+      public static final Current CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
         public static final double P = 9;
