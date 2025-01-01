@@ -133,7 +133,7 @@ public class SimModule implements ModuleIO {
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    setpoint = SwerveModuleState.optimize(setpoint, rotation());
+    setpoint.optimize(rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
     setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
 

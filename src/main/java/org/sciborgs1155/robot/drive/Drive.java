@@ -90,7 +90,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
           Translation.P,
           Translation.I,
           Translation.D,
-          new TrapezoidProfile.Constraints(MAX_SPEED.in(MetersPerSecond), MAX_ACCEL.in(MetersPerSecondPerSecond)));
+          new TrapezoidProfile.Constraints(
+              MAX_SPEED.in(MetersPerSecond), MAX_ACCEL.in(MetersPerSecondPerSecond)));
 
   @Log.NT
   private final PIDController rotationController =

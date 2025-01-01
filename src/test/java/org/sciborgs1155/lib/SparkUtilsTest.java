@@ -5,9 +5,9 @@ import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
 import com.revrobotics.RelativeEncoder;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
