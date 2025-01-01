@@ -14,9 +14,8 @@ import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
 import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.EncoderConfig;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -56,47 +55,40 @@ public class SparkModule implements ModuleIO {
   private final String name;
 
   public SparkModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
+
+    // Drive Motor
+
     driveMotor = new SparkFlex(drivePort, MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     drivePID = driveMotor.getClosedLoopController();
     driveFF =
         new SimpleMotorFeedforward(Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.A);
-
     driveMotorConfig = new SparkFlexConfig();
-    check(driveMotor, driveMotor.configure(
-        driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
-    // check(driveMotor, driveMotor.restoreFactoryDefaults());
+
+    check(
+        driveMotor,
+        driveMotor.configure(
+            driveMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
 
     driveMotorConfig.apply(
-        driveMotorConfig.closedLoop
+        driveMotorConfig
+            .closedLoop
             .pid(Driving.PID.SPARK.P, Driving.PID.SPARK.I, Driving.PID.SPARK.D)
             .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
 
-
-    // check(driveMotor, drivePID.setP(Driving.PID.SPARK.P));
-    // check(driveMotor, drivePID.setI(Driving.PID.SPARK.I));
-    // check(driveMotor, drivePID.setD(Driving.PID.SPARK.D));
-    // check(driveMotor, drivePID.setFeedbackDevice(driveEncoder));
+    driveMotorConfig.apply(
+        driveMotorConfig
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit((int) Driving.CURRENT_LIMIT.in(Amps)));
 
     driveMotorConfig.apply(
-      driveMotorConfig
-      .idleMode(IdleMode.kBrake)
-      .smartCurrentLimit((int) Driving.CURRENT_LIMIT.in(Amps)));
-    // check(driveMotor, driveMotor.setIdleMode(IdleMode.kBrake));
-    // check(driveMotor, driveMotor.setSmartCurrentLimit((int) Driving.CURRENT_LIMIT.in(Amps)));
-    driveMotorConfig.apply(
-      driveMotorConfig.encoder
-        .positionConversionFactor(Driving.POSITION_FACTOR.in(Meters))
-        // check(driveMotor, driveEncoder.setPositionConversionFactor(Driving.POSITION_FACTOR.in(Meters)));
-        .velocityConversionFactor(Driving.VELOCITY_FACTOR.in(MetersPerSecond))
-        // check(
-        //     driveMotor,
-        //     driveEncoder.setVelocityConversionFactor(Driving.VELOCITY_FACTOR.in(MetersPerSecond)));
-        .uvwAverageDepth(16)
-        .uvwMeasurementPeriod(32)
-        // check(driveMotor, driveEncoder.setAverageDepth(16));
-        // check(driveMotor, driveEncoder.setMeasurementPeriod(32));
-    );
+        driveMotorConfig
+            .encoder
+            .positionConversionFactor(Driving.POSITION_FACTOR.in(Meters))
+            .velocityConversionFactor(Driving.VELOCITY_FACTOR.in(MetersPerSecond))
+            .uvwAverageDepth(16)
+            .uvwMeasurementPeriod(32));
+
     check(
         driveMotor,
         SparkUtils.configureFrameStrategy(
@@ -104,52 +96,46 @@ public class SparkModule implements ModuleIO {
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.INTEGRATED),
             false));
-    check(driveMotor, driveMotor.configure(driveMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
-    // check(driveMotor, driveMotor.burnFlash());
+
+    check(
+        driveMotor,
+        driveMotor.configure(
+            driveMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
+
+    // Turn Motor
 
     turnMotor = new SparkMax(turnPort, MotorType.kBrushless);
     turningEncoder = turnMotor.getAbsoluteEncoder();
     turnPID = turnMotor.getClosedLoopController();
-
     turnMotorConfig = new SparkMaxConfig();
-    check(turnMotor, turnMotor.configure(turnMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
 
-    // check(turnMotor, turnMotor.restoreFactoryDefaults());
+    check(
+        turnMotor,
+        turnMotor.configure(
+            turnMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
 
     turnMotorConfig.apply(
-      turnMotorConfig.closedLoop
+        turnMotorConfig
+            .closedLoop
             .pid(Turning.PID.P, Turning.PID.I, Turning.PID.D)
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(-Math.PI, Math.PI)
             .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
 
-    // check(turnMotor, turnPID.setP(Turning.PID.P));
-    // check(turnMotor, turnPID.setI(Turning.PID.I));
-    // check(turnMotor, turnPID.setD(Turning.PID.D));
-    // check(turnMotor, turnPID.setPositionPIDWrappingEnabled(true));
-    // check(turnMotor, turnPID.setPositionPIDWrappingMinInput(-Math.PI));
-    // check(turnMotor, turnPID.setPositionPIDWrappingMaxInput(Math.PI));
-    // check(turnMotor, turnPID.setFeedbackDevice(turningEncoder));
+    turnMotorConfig.apply(
+        turnMotorConfig
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
 
-    turnMotorConfig.apply(turnMotorConfig.idleMode(IdleMode.kBrake).smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
-    // check(turnMotor, turnMotor.setIdleMode(IdleMode.kBrake));
-    // check(turnMotor, turnMotor.setSmartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
-
-    turnMotorConfig.apply(new EncoderConfig().inverted(true));
-    // turningEncoder.setInverted(Turning.ENCODER_INVERTED);
-    // check(turnMotor);
+    turnMotorConfig.apply(turnMotorConfig.encoder.inverted(true));
 
     turnMotorConfig.apply(
-      turnMotorConfig.encoder
-        .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
-        // check(turnMotor, turningEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians)));
-        .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
-        // check(
-        //     turnMotor,
-            // turningEncoder.setVelocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond)));
-        .uvwAverageDepth(2)
-        // check(turnMotor, turningEncoder.setAverageDepth(2));
-    );
+        turnMotorConfig
+            .encoder
+            .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
+            .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
+            .uvwAverageDepth(2));
+
     check(
         turnMotor,
         SparkUtils.configureFrameStrategy(
@@ -157,6 +143,7 @@ public class SparkModule implements ModuleIO {
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.ABSOLUTE),
             false));
+
     SparkUtils.addChecker(
         () ->
             check(
@@ -167,8 +154,10 @@ public class SparkModule implements ModuleIO {
                     Set.of(Sensor.ABSOLUTE),
                     false)));
 
-    check(turnMotor, turnMotor.configure(turnMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
-    // check(turnMotor, turnMotor.burnFlash());
+    check(
+        turnMotor,
+        turnMotor.configure(
+            turnMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
 
     register(driveMotor);
     register(turnMotor);
