@@ -36,8 +36,8 @@ public class Constants {
 
   /** Describes physical properites of the robot. */
   public static class Robot {
-    public static final Mass MASS = Kilograms.of(11.55);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(1);
+    public static final Mass MASS = Kilograms.of(25);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
   }
 
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)

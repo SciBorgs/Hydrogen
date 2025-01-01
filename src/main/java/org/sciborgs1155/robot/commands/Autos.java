@@ -6,8 +6,8 @@ import static org.sciborgs1155.robot.Constants.Robot.*;
 import static org.sciborgs1155.robot.Constants.alliance;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.MODULE_OFFSET;
-import static org.sciborgs1155.robot.drive.DriveConstants.RADIUS;
 import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_COF;
+import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_RADIUS;
 
 import com.pathplanner.lib.auto.AutoBuilder;
 import com.pathplanner.lib.config.ModuleConfig;
@@ -43,7 +43,7 @@ public class Autos {
             MASS.in(Kilograms),
             MOI.in(KilogramSquareMeters),
             new ModuleConfig(
-                RADIUS,
+                WHEEL_RADIUS,
                 MAX_SPEED,
                 WHEEL_COF,
                 DCMotor.getNEO(1).withReduction(Driving.GEARING),

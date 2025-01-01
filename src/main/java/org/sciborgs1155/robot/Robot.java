@@ -128,7 +128,7 @@ public class Robot extends CommandRobot implements Logged {
 
     drive.setDefaultCommand(drive.drive(x, y, omega));
 
-    autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of()).asProxy());
+    autonomous().whileTrue(Commands.defer(autos::getSelected, Set.of(drive)).asProxy());
 
     test().whileTrue(systemsCheck());
 
