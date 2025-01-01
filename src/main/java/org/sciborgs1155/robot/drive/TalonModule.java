@@ -23,6 +23,9 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
+
 import java.util.Set;
 import monologue.Annotations.Log;
 import org.sciborgs1155.lib.SparkUtils;
@@ -38,8 +41,8 @@ public class TalonModule implements ModuleIO {
   private final SparkMax turnMotor; // NEO 550
   private final SparkMaxConfig turnMotorConfig;
 
-  private final StatusSignal<Double> drivePos;
-  private final StatusSignal<Double> driveVelocity;
+  private final StatusSignal<Angle> drivePos;
+  private final StatusSignal<AngularVelocity> driveVelocity;
   private final SparkAbsoluteEncoder turningEncoder;
 
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
@@ -212,7 +215,7 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
-    setpoint = SwerveModuleState.optimize(setpoint, rotation());
+    setpoint.optimize(rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
     setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
 
