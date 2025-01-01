@@ -25,7 +25,6 @@ import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularVelocity;
-
 import java.util.Set;
 import monologue.Annotations.Log;
 import org.sciborgs1155.lib.SparkUtils;
@@ -138,7 +137,7 @@ public class TalonModule implements ModuleIO {
         turnMotor,
         turnMotor.configure(
             turnMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
-    
+
     register(turnMotor);
 
     resetEncoders();
