@@ -4,7 +4,6 @@ import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkBase.FaultID;
 import com.studica.frc.AHRS;
 import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.networktables.NetworkTable;
@@ -180,9 +179,39 @@ public final class FaultLogger {
    * @param spark The Spark Max or Spark Flex to manage.
    */
   public static void register(SparkBase spark) {
-    for (FaultID fault : FaultID.values()) {
-      register(() -> spark.getFault(fault), SparkUtils.name(spark), fault.name(), FaultType.ERROR);
-    }
+    register(
+        () -> spark.getFaults().other,
+        SparkUtils.name(spark),
+        "other strange error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().motorType,
+        SparkUtils.name(spark),
+        "motor type error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().sensor, SparkUtils.name(spark), "sensor error", FaultType.ERROR);
+    register(() -> spark.getFaults().can, SparkUtils.name(spark), "CAN error", FaultType.ERROR);
+    register(
+        () -> spark.getFaults().temperature,
+        SparkUtils.name(spark),
+        "temperature error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().gateDriver,
+        SparkUtils.name(spark),
+        "gate driver error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().escEeprom,
+        SparkUtils.name(spark),
+        "escEeprom? error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().firmware,
+        SparkUtils.name(spark),
+        "firmware error",
+        FaultType.ERROR);
     register(
         () -> spark.getMotorTemperature() > 100,
         SparkUtils.name(spark),
