@@ -36,6 +36,7 @@ public class Vision implements Logged {
   private final PhotonCamera[] cameras;
   private final PhotonPoseEstimator[] estimators;
   private final PhotonCameraSim[] simCameras;
+  private final PhotonPipelineResult[] lastResults;
 
   private VisionSystemSim visionSim;
 
@@ -48,6 +49,7 @@ public class Vision implements Logged {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];
     simCameras = new PhotonCameraSim[configs.length];
+    lastResults = new PhotonPipelineResult[configs.length];
 
     for (int i = 0; i < configs.length; i++) {
       PhotonCamera camera = new PhotonCamera(configs[i].name());
@@ -60,6 +62,7 @@ public class Vision implements Logged {
       estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
       cameras[i] = camera;
       estimators[i] = estimator;
+      lastResults[i] = new PhotonPipelineResult();
 
       FaultLogger.register(camera);
     }
@@ -97,7 +100,27 @@ public class Vision implements Logged {
   public PoseEstimate[] estimatedGlobalPoses() {
     List<PoseEstimate> estimates = new ArrayList<>();
     for (int i = 0; i < estimators.length; i++) {
-      var result = cameras[i].getLatestResult(); // TO-DO: IT'S DEPRECATED, SHOULD UPDATE
+      var unread = cameras[i].getAllUnreadResults();
+      PhotonPipelineResult result;
+      if (unread.size() == 0) {
+        result = lastResults[i];
+      } else if (unread.size() == 1) {
+        result = unread.get(0);
+      } else {
+        // gets the latest result if there are multiple unread results
+        int maxIndex = 0;
+        double max = 0;
+        int unreadLength = unread.size();
+        for (int ie = 0; ie < unreadLength; ie++) {
+          double temp = unread.get(ie).getTimestampSeconds();
+          if (temp > max) {
+            max = temp;
+            maxIndex = ie;
+          }
+        }
+        result = unread.get(maxIndex);
+      }
+      lastResults[i] = result;
       var estimate = estimators[i].update(result);
       log("estimates present " + i, estimate.isPresent());
       estimate
@@ -122,8 +145,8 @@ public class Vision implements Logged {
    */
   @Log.NT
   public Pose3d[] getSeenTags() {
-    return Arrays.stream(cameras)
-        .flatMap(c -> c.getLatestResult().targets.stream())
+    return Arrays.stream(lastResults)
+        .flatMap(c -> c.targets.stream())
         .map(PhotonTrackedTarget::getFiducialId)
         .map(TAG_LAYOUT::getTagPose)
         .map(Optional::get)

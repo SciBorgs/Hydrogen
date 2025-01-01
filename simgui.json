@@ -9,6 +9,8 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Faults/Active Faults": "Alerts",
+      "/Faults/Total Faults": "Alerts",
       "/Robot/autos": "String Chooser",
       "/Robot/drive/field2d": "Field2d",
       "/Robot/drive/frontLeft/driveFeedback": "PIDController",
@@ -41,6 +43,11 @@
       "/SmartDashboard/turn quasistatic forward": "Command"
     },
     "windows": {
+      "/Robot/autos": {
+        "window": {
+          "visible": true
+        }
+      },
       "/Robot/drive/field2d": {
         "bottom": 1476,
         "height": 8.210550308227539,

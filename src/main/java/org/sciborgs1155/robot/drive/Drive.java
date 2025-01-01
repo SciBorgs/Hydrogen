@@ -312,7 +312,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return Math.abs(
             gyro.rotation2d().getRadians()
                 - target.minus(pose().getTranslation()).getAngle().getRadians())
-        < rotationController.getPositionTolerance();
+        < rotationController.getErrorTolerance();
   }
 
   /**

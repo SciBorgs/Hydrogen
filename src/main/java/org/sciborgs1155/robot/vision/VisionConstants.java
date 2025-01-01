@@ -13,7 +13,7 @@ import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public class VisionConstants {
   public static final AprilTagFieldLayout TAG_LAYOUT =
-      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
+      AprilTagFieldLayout.loadField(AprilTagFields.k2024Crescendo);
 
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
