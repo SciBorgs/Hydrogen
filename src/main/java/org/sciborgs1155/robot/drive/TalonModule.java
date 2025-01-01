@@ -11,10 +11,14 @@ import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
@@ -32,6 +36,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor; // Kraken X60
   private final SparkMax turnMotor; // NEO 550
+  private final SparkMaxConfig turnMotorConfig;
 
   private final StatusSignal<Double> drivePos;
   private final StatusSignal<Double> driveVelocity;
@@ -78,28 +83,36 @@ public class TalonModule implements ModuleIO {
 
     turnMotor = new SparkMax(turnPort, MotorType.kBrushless);
     turningEncoder = turnMotor.getAbsoluteEncoder();
-    turnPID = turnMotor.getPIDController();
+    turnPID = turnMotor.getClosedLoopController();
+    turnMotorConfig = new SparkMaxConfig();
 
-    check(turnMotor, turnMotor.restoreFactoryDefaults());
-
-    check(turnMotor, turnPID.setP(Turning.PID.P));
-    check(turnMotor, turnPID.setI(Turning.PID.I));
-    check(turnMotor, turnPID.setD(Turning.PID.D));
-    check(turnMotor, turnPID.setPositionPIDWrappingEnabled(true));
-    check(turnMotor, turnPID.setPositionPIDWrappingMinInput(-Math.PI));
-    check(turnMotor, turnPID.setPositionPIDWrappingMaxInput(Math.PI));
-    check(turnMotor, turnPID.setFeedbackDevice(turningEncoder));
-
-    check(turnMotor, turnMotor.setIdleMode(IdleMode.kBrake));
-    check(turnMotor, turnMotor.setSmartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
-    turningEncoder.setInverted(Turning.ENCODER_INVERTED);
-    check(turnMotor);
-    check(
-        turnMotor, turningEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians)));
     check(
         turnMotor,
-        turningEncoder.setVelocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond)));
-    check(turnMotor, turningEncoder.setAverageDepth(2));
+        turnMotor.configure(
+            turnMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
+
+    turnMotorConfig.apply(
+        turnMotorConfig
+            .closedLoop
+            .pid(Turning.PID.P, Turning.PID.I, Turning.PID.D)
+            .positionWrappingEnabled(true)
+            .positionWrappingInputRange(-Math.PI, Math.PI)
+            .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
+
+    turnMotorConfig.apply(
+        turnMotorConfig
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
+
+    turnMotorConfig.apply(turnMotorConfig.encoder.inverted(true));
+
+    turnMotorConfig.apply(
+        turnMotorConfig
+            .encoder
+            .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
+            .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
+            .uvwAverageDepth(2));
+
     check(
         turnMotor,
         SparkUtils.configureFrameStrategy(
@@ -107,6 +120,7 @@ public class TalonModule implements ModuleIO {
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.ABSOLUTE),
             false));
+
     SparkUtils.addChecker(
         () ->
             check(
@@ -116,8 +130,12 @@ public class TalonModule implements ModuleIO {
                     Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
                     Set.of(Sensor.ABSOLUTE),
                     false)));
-    check(turnMotor, turnMotor.burnFlash());
 
+    check(
+        turnMotor,
+        turnMotor.configure(
+            turnMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
+    
     register(turnMotor);
 
     resetEncoders();
