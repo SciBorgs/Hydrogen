@@ -287,7 +287,7 @@ public final class FaultLogger {
     BiConsumer<StatusSignal<Boolean>, String> regFault =
         (f, d) -> register((BooleanSupplier) f, "Talon ID: " + id, d, FaultType.ERROR);
 
-    // TODO: Remove all the unnecessary faults
+    // TODO: Remove all the unnecessary faults.
     regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");
     regFault.accept(talon.getFault_ProcTemp(), "Processor temperature exceeded limit");
     regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");
