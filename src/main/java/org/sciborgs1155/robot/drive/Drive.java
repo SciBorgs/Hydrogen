@@ -488,7 +488,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public Test systemsCheck() {
     ChassisSpeeds speeds = new ChassisSpeeds(1, 1, 0);
     Command testCommand =
-        run(() -> setChassisSpeeds(speeds, ControlMode.OPEN_LOOP_VELOCITY)).withTimeout(0.5);
+        run(() -> setChassisSpeeds(speeds, ControlMode.OPEN_LOOP_VELOCITY)).withTimeout(0.75);
     Function<ModuleIO, TruthAssertion> speedCheck =
         m ->
             tAssert(

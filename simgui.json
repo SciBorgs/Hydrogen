@@ -70,16 +70,6 @@
         "window": {
           "visible": true
         }
-      },
-      "/SmartDashboard/drive dynamic forward": {
-        "window": {
-          "visible": true
-        }
-      },
-      "/SmartDashboard/drive quasistatic forward": {
-        "window": {
-          "visible": true
-        }
       }
     }
   },
@@ -89,6 +79,9 @@
     },
     "transitory": {
       "Robot": {
+        "autos": {
+          "open": true
+        },
         "drive": {
           "Pose2d##v_/Robot/drive/getPose": {
             "Rotation2d##v_rotation": {

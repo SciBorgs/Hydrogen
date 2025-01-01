@@ -102,11 +102,7 @@ public class Vision implements Logged {
     for (int i = 0; i < estimators.length; i++) {
       var unread = cameras[i].getAllUnreadResults();
       PhotonPipelineResult result;
-      if (unread.size() == 0) {
-        result = lastResults[i];
-      } else if (unread.size() == 1) {
-        result = unread.get(0);
-      } else {
+      if (unread.size() > 1) {
         // gets the latest result if there are multiple unread results
         int maxIndex = 0;
         double max = 0;
@@ -119,8 +115,13 @@ public class Vision implements Logged {
           }
         }
         result = unread.get(maxIndex);
+        lastResults[i] = result;
+      } else if (unread.size() == 1) {
+        result = unread.get(0);
+        lastResults[i] = result;
+      } else {
+        result = lastResults[i];
       }
-      lastResults[i] = result;
       var estimate = estimators[i].update(result);
       log("estimates present " + i, estimate.isPresent());
       estimate
