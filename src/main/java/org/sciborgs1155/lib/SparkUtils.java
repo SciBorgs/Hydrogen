@@ -1,8 +1,7 @@
 package org.sciborgs1155.lib;
 
-import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
-import com.revrobotics.spark.SparkLowLevel.PeriodicFrame;
+import com.revrobotics.spark.config.SignalsConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -63,9 +62,8 @@ public class SparkUtils {
   }
 
   /**
-   * Configures CAN frames periods on a spark to send only specified data at high rates.
+   * Creates a SignalsConfig for a configuring a spark to send only specified data at high rates.
    *
-   * @param spark The Spark MAX or Spark FLEX to configure.
    * @param data The data that the spark needs to send to the RIO.
    * @param sensors The sensors that provide data for the spark needs to send to the RIO.
    * @param withFollower Whether this spark has a following motor via {@link
@@ -74,19 +72,18 @@ public class SparkUtils {
    * @see Data
    * @see https://docs.revrobotics.com/brushless/spark-max/control-interfaces
    */
-  public static REVLibError configureFrameStrategy(
-      SparkBase spark, Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
-    int status0 = FRAME_STRATEGY_MEDIUM; // output, faults
-    int status1 = FRAME_STRATEGY_SLOW;
-    // integrated velocity, temperature, input voltage, current | default 20
-    int status2 = FRAME_STRATEGY_SLOW; // integrated position | default 20
-    int status3 = FRAME_STRATEGY_DISABLED; // analog encoder | default 50
-    int status4 = FRAME_STRATEGY_DISABLED; // alternate quadrature encoder | default 20
-    int status5 = FRAME_STRATEGY_DISABLED; // duty cycle position | default 200
-    int status6 = FRAME_STRATEGY_DISABLED; // duty cycle velocity | default 200
-    int status7 = FRAME_STRATEGY_DISABLED;
+  public static SignalsConfig getStatucConfigurationFrameStrategy(
+      Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
+    int status0 = FRAME_STRATEGY_MEDIUM; // output, temperature, limits | default 10
+    int status1 = FRAME_STRATEGY_SLOW; // faults, warnings | default 20
+    int status2 = FRAME_STRATEGY_SLOW; // integrated velocity, position| default 20
+    int status3 = FRAME_STRATEGY_DISABLED; // analog encoder | default 20
+    int status4 = FRAME_STRATEGY_DISABLED; // external or alternate encoder | default 20
+    int status5 = FRAME_STRATEGY_DISABLED; // absolute encoder | default 20
+    int status6 = FRAME_STRATEGY_DISABLED; // nonexistent??? literally has no method modifying it...
+    int status7 = FRAME_STRATEGY_DISABLED; // IAccum
     // // status frame 7 is cursed, the only mention i found of it in rev's docs is at
-    // //
+    // // this page doesnt exist anymore!
     // https://docs.revrobotics.com/brushless/spark-flex/revlib/spark-flex-firmware-changelog#breaking-changes
     // // if it's only IAccum, there's literally no reason to enable the frame
 
@@ -124,25 +121,25 @@ public class SparkUtils {
       }
     }
 
-    int[] frames = {status0, status1, status2, status3, status4, status5, status6, status7};
-    REVLibError error = REVLibError.kOk;
-    for (int i = 0; i < frames.length; i++) {
-      REVLibError e = spark.setPeriodicFramePeriod(PeriodicFrame.fromId(i), frames[i]);
-      if (e != REVLibError.kOk) {
-        error = e;
-      }
-    }
-    return error;
+    SignalsConfig config = new SignalsConfig();
+    config
+        .appliedOutputPeriodMs(status0)
+        .faultsPeriodMs(status1)
+        .primaryEncoderPositionPeriodMs(status2)
+        .analogVoltagePeriodMs(status3)
+        .externalOrAltEncoderPosition(status4)
+        .absoluteEncoderPositionPeriodMs(status5)
+        .iAccumulationPeriodMs(status7);
+
+    return config;
   }
 
   /**
-   * Configures a follower spark to send nothing except output and faults. This means most data will
+   * Configures SignalsConfig that sends nothing except output and faults. This means most data will
    * not be accessible.
-   *
-   * @param spark The follower spark.
    */
-  public static REVLibError configureNothingFrameStrategy(SparkBase spark) {
-    return configureFrameStrategy(spark, Set.of(), Set.of(), false);
+  public static SignalsConfig getStatusConfigurationOfNothingFrameStrategy() {
+    return getStatucConfigurationFrameStrategy(Set.of(), Set.of(), false);
   }
 
   /**

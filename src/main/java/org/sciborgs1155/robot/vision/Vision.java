@@ -97,7 +97,7 @@ public class Vision implements Logged {
   public PoseEstimate[] estimatedGlobalPoses() {
     List<PoseEstimate> estimates = new ArrayList<>();
     for (int i = 0; i < estimators.length; i++) {
-      var result = cameras[i].getLatestResult();
+      var result = cameras[i].getLatestResult(); // TO-DO: IT'S DEPRECATED, SHOULD UPDATE
       var estimate = estimators[i].update(result);
       log("estimates present " + i, estimate.isPresent());
       estimate

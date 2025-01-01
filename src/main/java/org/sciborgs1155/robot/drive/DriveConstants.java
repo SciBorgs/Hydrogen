@@ -48,7 +48,7 @@ public final class DriveConstants {
   // Distance between front and back wheels on robot
   public static final Distance WHEEL_BASE = Meters.of(0.5715);
   // Distance from the center to any wheel of the robot
-  public static final Distance RADIUS = TRACK_WIDTH.divide(2).times(Math.sqrt(2));
+  public static final Distance RADIUS = TRACK_WIDTH.div(2).times(Math.sqrt(2));
   // Coefficient of friction between the drive wheel and the carpet.
   public static final double WHEEL_COF = 1.0;
   // Robot width with bumpers
@@ -66,10 +66,10 @@ public final class DriveConstants {
   public static final AngularVelocity TELEOP_ANGULAR_SPEED = Radians.per(Second).of(2 * Math.PI);
 
   public static final Translation2d[] MODULE_OFFSET = {
-    new Translation2d(WHEEL_BASE.divide(2), TRACK_WIDTH.divide(2)), // front left
-    new Translation2d(WHEEL_BASE.divide(2), TRACK_WIDTH.divide(-2)), // front right
-    new Translation2d(WHEEL_BASE.divide(-2), TRACK_WIDTH.divide(2)), // rear left
-    new Translation2d(WHEEL_BASE.divide(-2), TRACK_WIDTH.divide(-2)) // rear right
+    new Translation2d(WHEEL_BASE.div(2), TRACK_WIDTH.div(2)), // front left
+    new Translation2d(WHEEL_BASE.div(2), TRACK_WIDTH.div(-2)), // front right
+    new Translation2d(WHEEL_BASE.div(-2), TRACK_WIDTH.div(2)), // rear left
+    new Translation2d(WHEEL_BASE.div(-2), TRACK_WIDTH.div(-2)) // rear right
   };
 
   // angular offsets of the modules, since we use absolute encoders

@@ -115,23 +115,11 @@ public class TalonModule implements ModuleIO {
             .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
             .uvwAverageDepth(2));
 
-    check(
-        turnMotor,
-        SparkUtils.configureFrameStrategy(
-            turnMotor,
+    turnMotorConfig.apply(
+        SparkUtils.getStatucConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.ABSOLUTE),
             false));
-
-    SparkUtils.addChecker(
-        () ->
-            check(
-                turnMotor,
-                SparkUtils.configureFrameStrategy(
-                    turnMotor,
-                    Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
-                    Set.of(Sensor.ABSOLUTE),
-                    false)));
 
     check(
         turnMotor,

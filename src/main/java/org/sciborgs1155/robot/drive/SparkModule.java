@@ -89,10 +89,8 @@ public class SparkModule implements ModuleIO {
             .uvwAverageDepth(16)
             .uvwMeasurementPeriod(32));
 
-    check(
-        driveMotor,
-        SparkUtils.configureFrameStrategy(
-            driveMotor,
+    driveMotorConfig.apply(
+        SparkUtils.getStatucConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.INTEGRATED),
             false));
@@ -136,23 +134,11 @@ public class SparkModule implements ModuleIO {
             .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
             .uvwAverageDepth(2));
 
-    check(
-        turnMotor,
-        SparkUtils.configureFrameStrategy(
-            turnMotor,
+    turnMotorConfig.apply(
+        SparkUtils.getStatucConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.ABSOLUTE),
             false));
-
-    SparkUtils.addChecker(
-        () ->
-            check(
-                turnMotor,
-                SparkUtils.configureFrameStrategy(
-                    turnMotor,
-                    Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
-                    Set.of(Sensor.ABSOLUTE),
-                    false)));
 
     check(
         turnMotor,

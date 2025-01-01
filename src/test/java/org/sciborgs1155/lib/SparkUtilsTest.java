@@ -1,7 +1,6 @@
 package org.sciborgs1155.lib;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -29,10 +28,8 @@ public class SparkUtilsTest {
     SparkFlexConfig config = new SparkFlexConfig();
 
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
-    check(
-        motor,
-        SparkUtils.configureFrameStrategy(
-            motor,
+    config.apply(
+        SparkUtils.getStatucConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.INTEGRATED),
             false));
