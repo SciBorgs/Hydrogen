@@ -4,12 +4,12 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
-import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkBase.PersistMode;
 import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -38,7 +38,13 @@ public class SparkUtilsTest {
             false));
     config.apply(config.idleMode(IdleMode.kBrake).smartCurrentLimit(30));
 
-    config.apply(config.encoder.positionConversionFactor(0.5).velocityConversionFactor(0.25).uvwMeasurementPeriod(8).uvwAverageDepth(2));
+    config.apply(
+        config
+            .encoder
+            .positionConversionFactor(0.5)
+            .velocityConversionFactor(0.25)
+            .uvwMeasurementPeriod(8)
+            .uvwAverageDepth(2));
 
     motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
 

@@ -6,6 +6,8 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
+import edu.wpi.first.units.measure.Mass;
+import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
@@ -30,6 +32,12 @@ public class Constants {
   /** Returns the rotation of the robot's alliance with respect to the origin. */
   public static Rotation2d allianceRotation() {
     return Rotation2d.fromRotations(alliance() == Alliance.Blue ? 0 : 0.5);
+  }
+
+  /** Describes physical properites of the robot. */
+  public static class Robot {
+    public static final Mass MASS = Kilograms.of(11.55);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(1);
   }
 
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)

@@ -49,6 +49,8 @@ public final class DriveConstants {
   public static final Distance WHEEL_BASE = Meters.of(0.5715);
   // Distance from the center to any wheel of the robot
   public static final Distance RADIUS = TRACK_WIDTH.divide(2).times(Math.sqrt(2));
+  // Coefficient of friction between the drive wheel and the carpet.
+  public static final double WHEEL_COF = 1.0;
   // Robot width with bumpers
   public static final Distance CHASSIS_WIDTH = Inches.of(32.645);
 
