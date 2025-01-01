@@ -29,7 +29,7 @@ public class SparkUtilsTest {
 
     motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
     config.apply(
-        SparkUtils.getStatucConfigurationFrameStrategy(
+        SparkUtils.getSignalsConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.INTEGRATED),
             false));

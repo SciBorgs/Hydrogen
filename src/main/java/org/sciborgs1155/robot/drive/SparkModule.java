@@ -90,7 +90,7 @@ public class SparkModule implements ModuleIO {
             .uvwMeasurementPeriod(32));
 
     driveMotorConfig.apply(
-        SparkUtils.getStatucConfigurationFrameStrategy(
+        SparkUtils.getSignalsConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.INTEGRATED),
             false));
@@ -135,7 +135,7 @@ public class SparkModule implements ModuleIO {
             .uvwAverageDepth(2));
 
     turnMotorConfig.apply(
-        SparkUtils.getStatucConfigurationFrameStrategy(
+        SparkUtils.getSignalsConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.ABSOLUTE),
             false));

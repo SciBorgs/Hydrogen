@@ -72,7 +72,7 @@ public class SparkUtils {
    * @see Data
    * @see https://docs.revrobotics.com/brushless/spark-max/control-interfaces
    */
-  public static SignalsConfig getStatucConfigurationFrameStrategy(
+  public static SignalsConfig getSignalsConfigurationFrameStrategy(
       Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
     int status0 = FRAME_STRATEGY_MEDIUM; // output, bus voltage, temperature, limits | default 10
     int status1 = FRAME_STRATEGY_MEDIUM; // faults, warnings | default 20
@@ -130,11 +130,11 @@ public class SparkUtils {
   }
 
   /**
-   * Configures SignalsConfig that sends nothing except output and faults. This means most data will
-   * not be accessible.
+   * Configures a SignalsConfig that sends nothing except output and faults. This means most data
+   * will not be accessible.
    */
   public static SignalsConfig getStatusConfigurationOfNothingFrameStrategy() {
-    return getStatucConfigurationFrameStrategy(Set.of(), Set.of(), false);
+    return getSignalsConfigurationFrameStrategy(Set.of(), Set.of(), false);
   }
 
   /**

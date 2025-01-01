@@ -58,6 +58,9 @@ public class TalonModule implements ModuleIO {
   private final String name;
 
   public TalonModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
+
+    // Drive Motor
+
     driveMotor = new TalonFX(drivePort);
     drivePos = driveMotor.getPosition();
     driveVelocity = driveMotor.getVelocity();
@@ -82,6 +85,8 @@ public class TalonModule implements ModuleIO {
     driveMotor.getConfigurator().apply(talonConfig);
 
     TalonUtils.addMotor(driveMotor);
+
+    // Turn Motor
 
     turnMotor = new SparkMax(turnPort, MotorType.kBrushless);
     turningEncoder = turnMotor.getAbsoluteEncoder();
@@ -116,7 +121,7 @@ public class TalonModule implements ModuleIO {
             .uvwAverageDepth(2));
 
     turnMotorConfig.apply(
-        SparkUtils.getStatucConfigurationFrameStrategy(
+        SparkUtils.getSignalsConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.ABSOLUTE),
             false));
