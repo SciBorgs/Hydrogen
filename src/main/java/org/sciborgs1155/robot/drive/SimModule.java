@@ -131,7 +131,7 @@ public class SimModule implements ModuleIO {
     // Optimize the reference state to avoid spinning further than 90 degrees
     setpoint.optimize(rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
-    setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
+    setpoint.cosineScale(rotation());
 
     if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
       setDriveVoltage(driveFF.calculate(setpoint.speedMetersPerSecond));

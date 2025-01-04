@@ -74,57 +74,47 @@ public class SparkUtils {
    */
   public static SignalsConfig getSignalsConfigurationFrameStrategy(
       Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
-    int status0 = FRAME_STRATEGY_MEDIUM; // output, bus voltage, temperature, limits | default 10
-    int status1 = FRAME_STRATEGY_MEDIUM; // faults, warnings | default 20
-    int status2 = FRAME_STRATEGY_SLOW; // integrated velocity, position| default 20
-    int status3 = FRAME_STRATEGY_DISABLED; // analog encoder | default 20
-    int status4 = FRAME_STRATEGY_DISABLED; // external or alternate encoder | default 20
-    int status5 = FRAME_STRATEGY_DISABLED; // absolute encoder | default 20
-    // int status6 = FRAME_STRATEGY_DISABLED;
-    // nonexistent? literally has no config method modifying it...
-    int status7 = FRAME_STRATEGY_DISABLED; // IAccum
-    // // status frame 7 is cursed, the only mention i found of it in rev's docs is at
-    // // this page doesnt exist anymore!
-    // https://docs.revrobotics.com/brushless/spark-flex/revlib/spark-flex-firmware-changelog#breaking-changes
-    // // if it's only IAccum, there's literally no reason to enable the frame
+    SignalsConfig config =
+        new SignalsConfig()
+            .appliedOutputPeriodMs(
+                FRAME_STRATEGY_MEDIUM) // 0, output, bus voltage, temperature, limits | default 10
+            .faultsPeriodMs(FRAME_STRATEGY_MEDIUM) // 1, faults, warnings | default 20
+            .primaryEncoderPositionPeriodMs(
+                FRAME_STRATEGY_SLOW) // 2, integrated velocity, position| default 20
+            .analogVoltagePeriodMs(FRAME_STRATEGY_DISABLED) // 3, analog encoder | default 20
+            .externalOrAltEncoderPosition(
+                FRAME_STRATEGY_DISABLED) // 4, external or alternate encoder | default 20
+            .absoluteEncoderPositionPeriodMs(
+                FRAME_STRATEGY_DISABLED) // 5, absolute encoder | default 20
+            // 6, the nonexistent frame 6
+            .iAccumulationPeriodMs(FRAME_STRATEGY_DISABLED); // 7, IAccum  default 20
 
     if (withFollower || data.contains(Data.APPLIED_OUTPUT) || data.contains(Data.TEMPERATURE)) {
-      status0 = FRAME_STRATEGY_VERY_FAST;
+      config = config.appliedOutputPeriodMs(FRAME_STRATEGY_VERY_FAST); // status 0
     }
 
     if (sensors.contains(Sensor.INTEGRATED) && data.contains(Data.VELOCITY)
         || sensors.contains(Sensor.INTEGRATED) && data.contains(Data.POSITION)
         || data.contains(Data.INPUT_VOLTAGE)
         || data.contains(Data.CURRENT)) {
-      status2 = FRAME_STRATEGY_FAST;
+      config = config.primaryEncoderPositionPeriodMs(FRAME_STRATEGY_FAST);
     }
 
     if (sensors.contains(Sensor.ANALOG)
         && (data.contains(Data.VELOCITY) || data.contains(Data.POSITION))) {
-      status3 = FRAME_STRATEGY_FAST;
+      config = config.analogVoltagePeriodMs(FRAME_STRATEGY_FAST);
     }
 
     if (sensors.contains(Sensor.ALTERNATE)
         && (data.contains(Data.VELOCITY) || data.contains(Data.POSITION))) {
-      status4 = FRAME_STRATEGY_FAST;
+      config = config.externalOrAltEncoderPosition(FRAME_STRATEGY_FAST);
     }
 
     if (sensors.contains(Sensor.ABSOLUTE)) {
       if (data.contains(Data.POSITION)) {
-        status5 = FRAME_STRATEGY_FAST;
+        config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_FAST);
       }
     }
-
-    SignalsConfig config = new SignalsConfig();
-    config =
-        config
-            .appliedOutputPeriodMs(status0)
-            .faultsPeriodMs(status1)
-            .primaryEncoderPositionPeriodMs(status2)
-            .analogVoltagePeriodMs(status3)
-            .externalOrAltEncoderPosition(status4)
-            .absoluteEncoderPositionPeriodMs(status5)
-            .iAccumulationPeriodMs(status7);
 
     return config;
   }
