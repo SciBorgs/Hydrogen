@@ -5,6 +5,7 @@ import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.COUPLING_RATIO;
 
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.ClosedLoopSlot;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
 import com.revrobotics.spark.SparkBase.PersistMode;
@@ -217,7 +218,8 @@ public class SparkModule implements ModuleIO {
 
   @Override
   public void setDriveSetpoint(double velocity) {
-    drivePID.setReference(velocity, ControlType.kVelocity, 0, driveFF.calculate(velocity));
+    drivePID.setReference(
+        velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0, driveFF.calculate(velocity));
   }
 
   @Override
