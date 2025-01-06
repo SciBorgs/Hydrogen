@@ -6,7 +6,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
-
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public sealed interface Assertion {
@@ -42,7 +41,8 @@ public sealed interface Assertion {
   }
 
   public static record TruthAssertion(
-      BooleanSupplier condition, String faultName, Supplier<String> description) implements Assertion {
+      BooleanSupplier condition, String faultName, Supplier<String> description)
+      implements Assertion {
     @Override
     public void apply(boolean unitTest) {
       if (unitTest) {
