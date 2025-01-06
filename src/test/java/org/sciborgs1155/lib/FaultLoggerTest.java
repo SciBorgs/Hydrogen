@@ -5,10 +5,11 @@ import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
+import edu.wpi.first.wpilibj.Alert.AlertType;
+
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public class FaultLoggerTest {
 
@@ -32,25 +33,25 @@ public class FaultLoggerTest {
     var totalErrors =
         base.getSubTable("Total Faults").getStringArrayTopic("errors").subscribe(new String[10]);
     FaultLogger.update();
-    FaultLogger.report("Test", "Example", FaultType.INFO);
-    assertEquals(1, FaultLogger.activeFaults().size());
+    FaultLogger.report("Test", "Example", AlertType.kInfo);
+    assertEquals(1, FaultLogger.activeAlerts().size());
     FaultLogger.update();
-    assertEquals(1, FaultLogger.totalFaults().size());
+    assertEquals(1, FaultLogger.totalAlerts().size());
     assertEquals(1, activeInfos.get().length);
     assertEquals(0, totalErrors.get().length);
 
     // duplicate
-    FaultLogger.report("Test", "Example", FaultType.INFO);
-    assertEquals(1, FaultLogger.activeFaults().size());
+    FaultLogger.report("Test", "Example", AlertType.kInfo);
+    assertEquals(1, FaultLogger.activeAlerts().size());
     FaultLogger.update();
-    assertEquals(1, FaultLogger.totalFaults().size());
+    assertEquals(1, FaultLogger.totalAlerts().size());
     assertEquals(1, activeInfos.get().length);
     assertEquals(0, totalErrors.get().length);
 
-    FaultLogger.report("Test2", "Example2", FaultType.ERROR);
-    assertEquals(1, FaultLogger.activeFaults().size());
+    FaultLogger.report("Test2", "Example2", AlertType.kError);
+    assertEquals(1, FaultLogger.activeAlerts().size());
     FaultLogger.update();
-    assertEquals(2, FaultLogger.totalFaults().size());
+    assertEquals(2, FaultLogger.totalAlerts().size());
     assertEquals(0, activeInfos.get().length);
     assertEquals(1, totalErrors.get().length);
   }
@@ -64,7 +65,7 @@ public class FaultLoggerTest {
         base.getSubTable("Total Faults").getStringArrayTopic("errors").subscribe(new String[10]);
 
     FaultLogger.update();
-    FaultLogger.register(() -> true, "Recurring Test", "Idk", FaultType.ERROR);
+    FaultLogger.register(() -> true, "Recurring Test", "Idk", AlertType.kError);
     FaultLogger.update();
     FaultLogger.update();
 

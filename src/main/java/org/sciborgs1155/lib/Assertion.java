@@ -5,7 +5,8 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import org.sciborgs1155.lib.FaultLogger.FaultType;
+
+import edu.wpi.first.wpilibj.Alert.AlertType;
 
 public sealed interface Assertion {
   public void apply(boolean unitTest);
@@ -21,7 +22,7 @@ public sealed interface Assertion {
     FaultLogger.report(
         faultName,
         (condition ? "success! " : "") + description,
-        condition ? FaultType.INFO : FaultType.WARNING);
+        condition ? AlertType.kInfo : AlertType.kWarning);
   }
 
   /**
