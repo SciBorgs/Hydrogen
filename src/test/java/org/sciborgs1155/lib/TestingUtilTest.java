@@ -96,7 +96,7 @@ public class TestingUtilTest {
     runToCompletion(toCommand(passes));
     assertFaultCount(1, 0, 0);
 
-    TruthAssertion badAssertion = tAssert(() -> x != this.x, "x", "fails");
+    TruthAssertion badAssertion = tAssert(() -> x != this.x, "x", () -> "fails");
     Test fails = new Test(runOnce(() -> set(x)), Set.of(badAssertion));
     runToCompletion(toCommand(fails));
     assertFaultCount(1, 1, 0);
@@ -116,7 +116,7 @@ public class TestingUtilTest {
     runUnitTest(passes);
     assertFaultCount(0, 0, 0);
 
-    TruthAssertion badAssertion = tAssert(() -> x != this.x, "x", "fails");
+    TruthAssertion badAssertion = tAssert(() -> x != this.x, "x", () -> "fails");
     Test fails = new Test(runOnce(() -> set(x)), Set.of(badAssertion));
     assertThrows(AssertionError.class, (Executable) () -> runUnitTest(fails));
     assertFaultCount(0, 0, 0);
