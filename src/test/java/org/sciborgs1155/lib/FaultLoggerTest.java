@@ -26,11 +26,11 @@ public class FaultLoggerTest {
 
   @Test
   void report() {
-    NetworkTable base = NetworkTableInstance.getDefault().getTable("Faults");
+    NetworkTable base = NetworkTableInstance.getDefault().getTable("Alerts");
     var activeInfos =
-        base.getSubTable("Active Faults").getStringArrayTopic("infos").subscribe(new String[10]);
+        base.getSubTable("Active Alerts").getStringArrayTopic("infos").subscribe(new String[10]);
     var totalErrors =
-        base.getSubTable("Total Faults").getStringArrayTopic("errors").subscribe(new String[10]);
+        base.getSubTable("Total Alerts").getStringArrayTopic("errors").subscribe(new String[10]);
     FaultLogger.update();
     FaultLogger.report("Test", "Example", AlertType.kInfo);
     assertEquals(1, FaultLogger.activeAlerts().size());
@@ -57,11 +57,11 @@ public class FaultLoggerTest {
 
   @Test
   void register() {
-    NetworkTable base = NetworkTableInstance.getDefault().getTable("Faults");
+    NetworkTable base = NetworkTableInstance.getDefault().getTable("Alerts");
     var activeErrors =
-        base.getSubTable("Active Faults").getStringArrayTopic("errors").subscribe(new String[10]);
+        base.getSubTable("Active Alerts").getStringArrayTopic("errors").subscribe(new String[10]);
     var totalErrors =
-        base.getSubTable("Total Faults").getStringArrayTopic("errors").subscribe(new String[10]);
+        base.getSubTable("Total Alerts").getStringArrayTopic("errors").subscribe(new String[10]);
 
     FaultLogger.update();
     FaultLogger.register(() -> true, "Recurring Test", "Idk", AlertType.kError);

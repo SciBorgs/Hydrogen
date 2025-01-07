@@ -56,6 +56,7 @@ public final class FaultLogger {
 
   // DATA
   private static final HashMap<BooleanSupplier, Alert> alertReporters = new HashMap<>(0);
+  private static final HashMap<String, Alert> allAlerts = new HashMap<>(0);
   private static final Set<Alert> activeAlerts = new HashSet<>();
   private static final Set<Alert> totalAlerts = new HashSet<>();
 
@@ -68,10 +69,9 @@ public final class FaultLogger {
   public static void update() {
     alertReporters.forEach(
         (r, a) -> {
+          a.set(r.getAsBoolean());
           if (r.getAsBoolean()) {
-            a.set(true);
-          } else {
-            a.set(false);
+            report(a);
           }
         });
 
@@ -135,7 +135,14 @@ public final class FaultLogger {
    * @param type The type of the alert.
    */
   public static void report(String name, String description, AlertType type) {
-    report(new Alert(name, description, type));
+    allAlerts.clear();
+    alertReporters.forEach((r, a) -> allAlerts.put(alertToString(a), a));
+
+    Alert alert = new Alert(name, description, type);
+    if (allAlerts.containsKey(alertToString(alert))) {
+      alert = allAlerts.get(alertToString(alert));
+    }
+    report(alert);
   }
 
   /**
@@ -357,6 +364,7 @@ public final class FaultLogger {
   /**
    * Returns an array of descriptions of all alerts that match the specified type.
    *
+   * @param alerts Alerts to search through.
    * @param type The type to filter for.
    * @return An array of description strings.
    */
@@ -365,5 +373,21 @@ public final class FaultLogger {
         .filter(a -> a.getType() == type)
         .map(Alert::getText)
         .toArray(String[]::new);
+  }
+
+  /**
+   * Converts a WPILIB Alert to a String, which can be used to identify if Alerts are identical.
+   *
+   * @param alert
+   * @return
+   */
+  private static String alertToString(Alert alert) {
+    return String.valueOf(alert.get())
+        + alert.getText()
+        + (switch (alert.getType()) {
+          case kError -> "error";
+          case kWarning -> "warning";
+          case kInfo -> "info";
+        });
   }
 }
