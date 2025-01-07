@@ -10,20 +10,16 @@ import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayPublisher;
 import edu.wpi.first.wpilibj.Alert;
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
-import edu.wpi.first.wpilibj.Alert.AlertType;
-
 import java.lang.reflect.Field;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
-import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 
 /**
@@ -59,7 +55,7 @@ public final class FaultLogger {
   }
 
   // DATA
-  private static final List<Supplier<Optional<Alert>>> alertReporters = new ArrayList<>();
+  private static final HashMap<BooleanSupplier, Alert> alertReporters = new HashMap<>(0);
   private static final Set<Alert> activeAlerts = new HashSet<>();
   private static final Set<Alert> totalAlerts = new HashSet<>();
 
@@ -70,13 +66,21 @@ public final class FaultLogger {
 
   /** Polls registered fallibles. This method should be called periodically. */
   public static void update() {
-    alertReporters.forEach(r -> r.get().ifPresent(alert -> report(alert)));
+    alertReporters.forEach(
+        (r, a) -> {
+          if (r.getAsBoolean()) {
+            a.set(true);
+          } else {
+            a.set(false);
+          }
+        });
+
+    totalAlerts.addAll(activeAlerts);
 
     activeAlertsNT.set(activeAlerts);
     totalAlertsNT.set(totalAlerts);
 
     activeAlerts.clear();
-    alertReporters.forEach(r -> r.get().ifPresent(alert -> alert.set(false)));
   }
 
   /** Clears total alerts. */
@@ -139,8 +143,8 @@ public final class FaultLogger {
    *
    * @param supplier A supplier of an optional alert.
    */
-  public static void register(Supplier<Optional<Alert>> supplier) {
-    alertReporters.add(supplier);
+  public static void register(BooleanSupplier condition, Alert alert) {
+    alertReporters.put(condition, alert);
   }
 
   /**
@@ -152,11 +156,7 @@ public final class FaultLogger {
    */
   public static void register(
       BooleanSupplier condition, String name, String description, AlertType type) {
-    register(
-        () ->
-            condition.getAsBoolean()
-                ? Optional.of(new Alert(name, description, type))
-                : Optional.empty());
+    register(condition, new Alert(name, description, type));
   }
 
   /**
@@ -176,14 +176,8 @@ public final class FaultLogger {
         "motor type error",
         AlertType.kError);
     register(
-        () -> spark.getFaults().sensor, 
-        SparkUtils.name(spark), 
-        "sensor error", 
-        AlertType.kError);
-    register(() -> spark.getFaults().can, 
-        SparkUtils.name(spark), 
-        "CAN error", 
-        AlertType.kError);
+        () -> spark.getFaults().sensor, SparkUtils.name(spark), "sensor error", AlertType.kError);
+    register(() -> spark.getFaults().can, SparkUtils.name(spark), "CAN error", AlertType.kError);
     register(
         () -> spark.getFaults().temperature,
         SparkUtils.name(spark),
@@ -245,13 +239,14 @@ public final class FaultLogger {
           () -> {
             try {
               if (fault.getBoolean(powerDistribution.getFaults())) {
-                return Optional.of(
-                    new Alert("Power Distribution", fault.getName(), AlertType.kError));
+                return fault.getBoolean(powerDistribution.getFaults());
               }
             } catch (Exception e) {
+              return false;
             }
-            return Optional.empty();
-          });
+            return false;
+          },
+          new Alert("Power Distribution", fault.getName(), AlertType.kError));
     }
     ;
   }

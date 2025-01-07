@@ -3,10 +3,9 @@ package org.sciborgs1155.lib;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import edu.wpi.first.wpilibj.Alert.AlertType;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-
-import edu.wpi.first.wpilibj.Alert.AlertType;
 
 public sealed interface Assertion {
   public void apply(boolean unitTest);
