@@ -10,22 +10,22 @@ import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.networktables.StringArrayPublisher;
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
 import java.lang.reflect.Field;
-import java.util.HashMap;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 
 /**
- * FaultLogger allows for Alerts of faults to be logged and displayed.
+ * FaultLogger allows for faults to be logged and displayed.
  *
  * <pre>
  * FaultLogger.register(spark); // registers a spark, periodically checking for hardware faults
@@ -34,14 +34,31 @@ import org.photonvision.PhotonCamera;
  * </pre>
  */
 public final class FaultLogger {
+  /** An individual fault, containing necessary information. */
+  public static record Fault(String name, String description, FaultType type) {
+    @Override
+    public String toString() {
+      return name + ": " + description;
+    }
+  }
+
+  /**
+   * The type of fault, used for detecting whether the fallible is in a failure state and displaying
+   * to NetworkTables.
+   */
+  public static enum FaultType {
+    INFO,
+    WARNING,
+    ERROR,
+  }
 
   /** A class to represent an alerts widget on NetworkTables */
-  public static class AlertsNT {
+  public static class Alerts {
     private final StringArrayPublisher errors;
     private final StringArrayPublisher warnings;
     private final StringArrayPublisher infos;
 
-    public AlertsNT(NetworkTable base, String name) {
+    public Alerts(NetworkTable base, String name) {
       NetworkTable table = base.getSubTable(name);
       table.getStringTopic(".type").publish().set("Alerts");
       errors = table.getStringArrayTopic("errors").publish();
@@ -49,147 +66,116 @@ public final class FaultLogger {
       infos = table.getStringArrayTopic("infos").publish();
     }
 
-    public void set(Set<Alert> alerts) {
-      errors.set(filteredStrings(alerts, AlertType.kError));
-      warnings.set(filteredStrings(alerts, AlertType.kWarning));
-      infos.set(filteredStrings(alerts, AlertType.kInfo));
+    public void set(Set<Fault> faults) {
+      errors.set(filteredStrings(faults, FaultType.ERROR));
+      warnings.set(filteredStrings(faults, FaultType.WARNING));
+      infos.set(filteredStrings(faults, FaultType.INFO));
     }
   }
 
   // DATA
-  private static final HashMap<Optional<BooleanSupplier>, Alert> alertReporters = new HashMap<>(0);
-  private static final Set<Alert> activeAlerts = new HashSet<>();
-  private static final Set<Alert> totalAlerts = new HashSet<>();
+  private static final List<Supplier<Optional<Fault>>> faultReporters = new ArrayList<>();
+  private static final Set<Fault> activeFaults = new HashSet<>();
+  private static final Set<Fault> totalFaults = new HashSet<>();
 
   // NETWORK TABLES
-  private static final NetworkTable base = NetworkTableInstance.getDefault().getTable("Alerts");
-  private static final AlertsNT activeAlertsNT = new AlertsNT(base, "Active Alerts");
-  private static final AlertsNT totalAlertsNT = new AlertsNT(base, "Total Alerts");
+  private static final NetworkTable base = NetworkTableInstance.getDefault().getTable("Faults");
+  private static final Alerts activeAlerts = new Alerts(base, "Active Faults");
+  private static final Alerts totalAlerts = new Alerts(base, "Total Faults");
 
-  /** Polls registered Alerts. This method should be called periodically. */
+  /** Polls registered fallibles. This method should be called periodically. */
   public static void update() {
-    alertReporters.forEach(
-        (r, a) -> {
-          if (r.isPresent()) {
-            a.set(r.get().getAsBoolean());
-            if (r.get().getAsBoolean()) {
-              report(a);
-            } else {
-              a.set(false);
-            }
-          }
-        });
+    faultReporters.forEach(r -> r.get().ifPresent(fault -> report(fault)));
 
-    totalAlerts.addAll(activeAlerts);
+    totalFaults.addAll(activeFaults);
 
-    activeAlertsNT.set(activeAlerts);
-    totalAlertsNT.set(totalAlerts);
+    activeAlerts.set(activeFaults);
+    totalAlerts.set(totalFaults);
 
-    activeAlerts.clear();
+    activeFaults.clear();
   }
 
-  /** Clears total Alerts. */
+  /** Clears total faults. */
   public static void clear() {
-    totalAlerts.clear();
-    activeAlerts.clear();
+    totalFaults.clear();
+    activeFaults.clear();
   }
 
-  /** Clears all Alert mappings. */
+  /** Clears fault suppliers. */
   public static void unregisterAll() {
-    alertReporters.clear();
+    faultReporters.clear();
   }
 
   /**
-   * Returns the set of all current Alerts.
+   * Returns the set of all current faults.
    *
-   * @return The set of all current Alerts.
+   * @return The set of all current faults.
    */
-  public static Set<Alert> activeAlerts() {
-    return activeAlerts;
+  public static Set<Fault> activeFaults() {
+    return activeFaults;
   }
 
   /**
-   * Returns the set of all total Alerts.
+   * Returns the set of all total faults.
    *
-   * @return The set of all total Alerts.
+   * @return The set of all total faults.
    */
-  public static Set<Alert> totalAlerts() {
-    return totalAlerts;
+  public static Set<Fault> totalFaults() {
+    return totalFaults;
   }
 
   /**
-   * <b> Created for testing purposes. </b> Returns the length of the hashmap of all Alerts and
-   * their optional boolean suppliers.
+   * Reports a fault.
    *
-   * @return The length of the hashmap of all Alerts and their optional boolean suppliers.
+   * @param fault The fault to report.
    */
-  public static int alertReportersLength() {
-    return alertReporters.size();
-  }
-
-  /**
-   * Reports an Alert.
-   *
-   * @param alert The Alert to report.
-   */
-  public static void report(Alert alert) {
-    alert.set(true);
-    activeAlerts.add(alert);
-    switch (alert.getType()) {
-      case kError -> DriverStation.reportError(alert.getText(), false);
-      case kWarning -> DriverStation.reportWarning(alert.getText(), false);
-      case kInfo -> System.out.println(alert.getText());
+  public static void report(Fault fault) {
+    activeFaults.add(fault);
+    switch (fault.type) {
+      case ERROR -> DriverStation.reportError(fault.toString(), false);
+      case WARNING -> DriverStation.reportWarning(fault.toString(), false);
+      case INFO -> System.out.println(fault.toString());
     }
   }
 
   /**
-   * Reports an Alert.
+   * Reports a fault.
    *
-   * @param name The name of the Alert.
-   * @param description The description of the Alert.
-   * @param type The type of the Alert.
+   * @param name The name of the fault.
+   * @param description The description of the fault.
+   * @param type The type of the fault.
    */
-  public static void report(String name, String description, AlertType type) {
-    boolean existed = false;
-    for (Alert values : alertReporters.values()) {
-      if (values.getText() == description && values.getType() == type) {
-        existed = true;
-        report(values);
-        break;
-      }
-    }
-    if (!existed) {
-      Alert alert = new Alert(name, description, type);
-      alertReporters.put(Optional.of(() -> true), alert);
-      report(alert);
-    }
+  public static void report(String name, String description, FaultType type) {
+    report(new Fault(name, description, type));
   }
 
   /**
-   * Registers a new Alert with its respective optional boolean supplier.
+   * Registers a new fault supplier.
    *
-   * @param condition Determines whether or not the Alert should be active.
-   * @param alert The Alert.
+   * @param supplier A supplier of an optional fault.
    */
-  public static void register(Optional<BooleanSupplier> condition, Alert alert) {
-    alertReporters.put(condition, alert);
+  public static void register(Supplier<Optional<Fault>> supplier) {
+    faultReporters.add(supplier);
   }
 
   /**
-   * Registers a new Alert.
+   * Registers a new fault supplier.
    *
-   * @param condition Whether the Alert should be active.
-   * @param name The group of the Alert.
-   * @param description The Alert's description.
-   * @param type The type of Alert.
+   * @param condition Whether a failure is occuring.
+   * @param description The failure's description.
+   * @param type The type of failure.
    */
   public static void register(
-      BooleanSupplier condition, String name, String description, AlertType type) {
-    register(Optional.of(condition), new Alert(name, description, type));
+      BooleanSupplier condition, String name, String description, FaultType type) {
+    register(
+        () ->
+            condition.getAsBoolean()
+                ? Optional.of(new Fault(name, description, type))
+                : Optional.empty());
   }
 
   /**
-   * Registers Alerts for faults of a CAN-based Spark motor controller.
+   * Registers fault suppliers for a CAN-based Spark motor controller.
    *
    * @param spark The Spark Max or Spark Flex to manage.
    */
@@ -198,44 +184,44 @@ public final class FaultLogger {
         () -> spark.getFaults().other,
         SparkUtils.name(spark),
         "other strange error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> spark.getFaults().motorType,
         SparkUtils.name(spark),
         "motor type error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
-        () -> spark.getFaults().sensor, SparkUtils.name(spark), "sensor error", AlertType.kError);
-    register(() -> spark.getFaults().can, SparkUtils.name(spark), "CAN error", AlertType.kError);
+        () -> spark.getFaults().sensor, SparkUtils.name(spark), "sensor error", FaultType.ERROR);
+    register(() -> spark.getFaults().can, SparkUtils.name(spark), "CAN error", FaultType.ERROR);
     register(
         () -> spark.getFaults().temperature,
         SparkUtils.name(spark),
         "temperature error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> spark.getFaults().gateDriver,
         SparkUtils.name(spark),
         "gate driver error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> spark.getFaults().escEeprom,
         SparkUtils.name(spark),
         "escEeprom? error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> spark.getFaults().firmware,
         SparkUtils.name(spark),
         "firmware error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> spark.getMotorTemperature() > 100,
         SparkUtils.name(spark),
         "motor above 100°C",
-        AlertType.kError);
+        FaultType.WARNING);
   }
 
   /**
-   * Registers Alert for a duty cycle encoder.
+   * Registers fault suppliers for a duty cycle encoder.
    *
    * @param encoder The duty cycle encoder to manage.
    */
@@ -244,16 +230,16 @@ public final class FaultLogger {
         () -> !encoder.isConnected(),
         "Duty Cycle Encoder [" + encoder.getSourceChannel() + "]",
         "disconnected",
-        AlertType.kError);
+        FaultType.ERROR);
   }
 
   /**
-   * Registers Alerts for a NavX.
+   * Registers fault suppliers for a NavX.
    *
    * @param ahrs The NavX to manage.
    */
   public static void register(AHRS ahrs) {
-    register(() -> !ahrs.isConnected(), "NavX", "disconnected", AlertType.kError);
+    register(() -> !ahrs.isConnected(), "NavX", "disconnected", FaultType.ERROR);
   }
 
   /**
@@ -262,46 +248,46 @@ public final class FaultLogger {
    * @param canandgyro The Redux Boron CANandGyro to manage.
    */
   public static void register(Canandgyro canandgyro) {
-    register(() -> !canandgyro.isConnected(), "CANandGyro", "disconnected", AlertType.kError);
+    register(() -> !canandgyro.isConnected(), "CANandGyro", "disconnected", FaultType.ERROR);
     register(
         () -> canandgyro.getActiveFaults().accelerationSaturation(),
         "CANandGyro",
         "acceleration saturated",
-        AlertType.kWarning);
+        FaultType.WARNING);
     register(
         () -> canandgyro.getActiveFaults().angularVelocitySaturation(),
         "CANandGyro",
         "angular velocity saturated",
-        AlertType.kWarning);
+        FaultType.WARNING);
     register(
         () -> canandgyro.getActiveFaults().calibrating(),
         "CANandGyro",
         "calibrating",
-        AlertType.kWarning);
+        FaultType.WARNING);
     register(
         () -> canandgyro.getActiveFaults().canGeneralError(),
         "CANandGyro",
         "general CAN error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> canandgyro.getActiveFaults().canIDConflict(),
         "CANandGyro",
         "CAN ID conflict",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> canandgyro.getActiveFaults().outOfTemperatureRange(),
         "CANandGyro",
         "temperature error",
-        AlertType.kError);
+        FaultType.ERROR);
     register(
         () -> canandgyro.getActiveFaults().powerCycle(),
         "CANandGyro",
         "power cycling",
-        AlertType.kWarning);
+        FaultType.WARNING);
   }
 
   /**
-   * Registers Alerts for faults of a power distribution hub/panel.
+   * Registers fault suppliers for a power distribution hub/panel.
    *
    * @param powerDistribution The power distribution to manage.
    */
@@ -309,24 +295,22 @@ public final class FaultLogger {
     var fields = PowerDistributionFaults.class.getFields();
     for (Field fault : fields) {
       register(
-          Optional.of(
-              () -> {
-                try {
-                  if (fault.getBoolean(powerDistribution.getFaults())) {
-                    return fault.getBoolean(powerDistribution.getFaults());
-                  }
-                } catch (Exception e) {
-                  return false;
-                }
-                return false;
-              }),
-          new Alert("Power Distribution", fault.getName(), AlertType.kError));
+          () -> {
+            try {
+              if (fault.getBoolean(powerDistribution.getFaults())) {
+                return Optional.of(
+                    new Fault("Power Distribution", fault.getName(), FaultType.ERROR));
+              }
+            } catch (Exception e) {
+            }
+            return Optional.empty();
+          });
     }
     ;
   }
 
   /**
-   * Registers Alerts for a camera.
+   * Registers fault suppliers for a camera.
    *
    * @param camera The camera to manage.
    */
@@ -335,18 +319,18 @@ public final class FaultLogger {
         () -> !camera.isConnected(),
         "Photon Camera [" + camera.getName() + "]",
         "disconnected",
-        AlertType.kError);
+        FaultType.ERROR);
   }
 
   /**
-   * Registers Alerts for faults of a Talon motor.
+   * Registers fault suppliers for a talon.
    *
    * @param talon The talon to manage.
    */
   public static void register(TalonFX talon) {
     int id = talon.getDeviceID();
     BiConsumer<StatusSignal<Boolean>, String> regFault =
-        (f, d) -> register(() -> f.asSupplier().get(), "Talon ID: " + id, d, AlertType.kError);
+        (f, d) -> register(() -> f.getValue(), "Talon ID: " + id, d, FaultType.ERROR);
 
     // TODO: Remove all the unnecessary faults.
     regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");
@@ -422,23 +406,22 @@ public final class FaultLogger {
    */
   public static boolean check(SparkBase spark, REVLibError error) {
     if (error != REVLibError.kOk) {
-      report(SparkUtils.name(spark), error.name(), AlertType.kError);
+      report(SparkUtils.name(spark), error.name(), FaultType.ERROR);
       return false;
     }
     return true;
   }
 
   /**
-   * Returns an array of descriptions of all alerts that match the specified type.
+   * Returns an array of descriptions of all faults that match the specified type.
    *
-   * @param alerts Alerts to search through.
    * @param type The type to filter for.
    * @return An array of description strings.
    */
-  private static String[] filteredStrings(Set<Alert> alerts, AlertType type) {
-    return alerts.stream()
-        .filter(a -> a.getType() == type)
-        .map(Alert::getText)
+  private static String[] filteredStrings(Set<Fault> faults, FaultType type) {
+    return faults.stream()
+        .filter(a -> a.type() == type)
+        .map(Fault::toString)
         .toArray(String[]::new);
   }
 }

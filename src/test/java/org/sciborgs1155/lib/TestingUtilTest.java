@@ -12,8 +12,6 @@ import static org.sciborgs1155.lib.UnitTestingUtil.reset;
 import static org.sciborgs1155.lib.UnitTestingUtil.runToCompletion;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
-import edu.wpi.first.wpilibj.Alert;
-import edu.wpi.first.wpilibj.Alert.AlertType;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.Timer;
 import edu.wpi.first.wpilibj2.command.Command;
@@ -27,6 +25,8 @@ import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
 import org.sciborgs1155.lib.Assertion.EqualityAssertion;
 import org.sciborgs1155.lib.Assertion.TruthAssertion;
+import org.sciborgs1155.lib.FaultLogger.Fault;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 
 public class TestingUtilTest {
   int x;
@@ -76,13 +76,13 @@ public class TestingUtilTest {
 
   public void assertFaultCount(int infoCount, int warningCount, int errorCount) {
     FaultLogger.update();
-    Set<Alert> alerts = FaultLogger.totalAlerts();
-    Set<Alert> infos =
-        alerts.stream().filter(f -> f.getType() == AlertType.kInfo).collect(Collectors.toSet());
-    Set<Alert> warnings =
-        alerts.stream().filter(f -> f.getType() == AlertType.kWarning).collect(Collectors.toSet());
-    Set<Alert> errors =
-        alerts.stream().filter(f -> f.getType() == AlertType.kError).collect(Collectors.toSet());
+    Set<Fault> faults = FaultLogger.totalFaults();
+    Set<Fault> infos =
+        faults.stream().filter(f -> f.type() == FaultType.INFO).collect(Collectors.toSet());
+    Set<Fault> warnings =
+        faults.stream().filter(f -> f.type() == FaultType.WARNING).collect(Collectors.toSet());
+    Set<Fault> errors =
+        faults.stream().filter(f -> f.type() == FaultType.ERROR).collect(Collectors.toSet());
     assertEquals(infoCount, infos.size(), infos.toString());
     assertEquals(warningCount, warnings.size());
     assertEquals(errorCount, errors.size());
