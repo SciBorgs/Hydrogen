@@ -8,6 +8,8 @@
   },
   "NTProvider": {
     "types": {
+      "/Alerts/Active Alerts": "Alerts",
+      "/Alerts/Total Alerts": "Alerts",
       "/FMSInfo": "FMSInfo",
       "/Faults/Active Faults": "Alerts",
       "/Faults/Total Faults": "Alerts",
@@ -24,6 +26,11 @@
       "/Robot/drive/rotationController": "PIDController",
       "/Robot/drive/translationController": "ProfiledPIDController",
       "/SmartDashboard/Alerts": "Alerts",
+      "/SmartDashboard/Photon Camera [back left]": "Alerts",
+      "/SmartDashboard/Photon Camera [back right]": "Alerts",
+      "/SmartDashboard/Photon Camera [front left]": "Alerts",
+      "/SmartDashboard/Photon Camera [front right]": "Alerts",
+      "/SmartDashboard/Power Distribution": "Alerts",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "/SmartDashboard/drive dynamic backward": "Command",

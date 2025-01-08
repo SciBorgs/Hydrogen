@@ -17,6 +17,7 @@ import edu.wpi.first.wpilibj.PowerDistribution;
 import java.lang.reflect.Field;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
@@ -55,8 +56,8 @@ public final class FaultLogger {
   }
 
   // DATA
-  private static final HashMap<BooleanSupplier, Alert> alertReporters = new HashMap<>(0);
-  private static final HashMap<String, Alert> allAlerts = new HashMap<>(0);
+  private static final HashMap<Optional<BooleanSupplier>, Alert> alertReporters = new HashMap<>(0);
+  private static final Set<Alert> allAlerts = new HashSet<>();
   private static final Set<Alert> activeAlerts = new HashSet<>();
   private static final Set<Alert> totalAlerts = new HashSet<>();
 
@@ -69,9 +70,11 @@ public final class FaultLogger {
   public static void update() {
     alertReporters.forEach(
         (r, a) -> {
-          a.set(r.getAsBoolean());
-          if (r.getAsBoolean()) {
-            report(a);
+          if (r.isPresent()) {
+            a.set(r.get().getAsBoolean());
+            if (r.get().getAsBoolean()) {
+              report(a);
+            }
           }
         });
 
@@ -136,13 +139,20 @@ public final class FaultLogger {
    */
   public static void report(String name, String description, AlertType type) {
     allAlerts.clear();
-    alertReporters.forEach((r, a) -> allAlerts.put(alertToString(a), a));
-
-    Alert alert = new Alert(name, description, type);
-    if (allAlerts.containsKey(alertToString(alert))) {
-      alert = allAlerts.get(alertToString(alert));
+    alertReporters.forEach((r, a) -> allAlerts.add(a));
+    boolean existed = false;
+    for (Alert values : allAlerts) {
+      if (values.getText() == description && values.getType() == type) {
+        existed = true;
+        report(values);
+        break;
+      }
     }
-    report(alert);
+    if (!existed) {
+      Alert alert = new Alert(name, description, type);
+      alertReporters.put(Optional.of(() -> true), alert);
+      report(alert);
+    }
   }
 
   /**
@@ -150,7 +160,7 @@ public final class FaultLogger {
    *
    * @param supplier A supplier of an optional alert.
    */
-  public static void register(BooleanSupplier condition, Alert alert) {
+  public static void register(Optional<BooleanSupplier> condition, Alert alert) {
     alertReporters.put(condition, alert);
   }
 
@@ -163,7 +173,7 @@ public final class FaultLogger {
    */
   public static void register(
       BooleanSupplier condition, String name, String description, AlertType type) {
-    register(condition, new Alert(name, description, type));
+    register(Optional.of(condition), new Alert(name, description, type));
   }
 
   /**
@@ -243,16 +253,17 @@ public final class FaultLogger {
     var fields = PowerDistributionFaults.class.getFields();
     for (Field fault : fields) {
       register(
-          () -> {
-            try {
-              if (fault.getBoolean(powerDistribution.getFaults())) {
-                return fault.getBoolean(powerDistribution.getFaults());
-              }
-            } catch (Exception e) {
-              return false;
-            }
-            return false;
-          },
+          Optional.of(
+              () -> {
+                try {
+                  if (fault.getBoolean(powerDistribution.getFaults())) {
+                    return fault.getBoolean(powerDistribution.getFaults());
+                  }
+                } catch (Exception e) {
+                  return false;
+                }
+                return false;
+              }),
           new Alert("Power Distribution", fault.getName(), AlertType.kError));
     }
     ;
@@ -373,21 +384,5 @@ public final class FaultLogger {
         .filter(a -> a.getType() == type)
         .map(Alert::getText)
         .toArray(String[]::new);
-  }
-
-  /**
-   * Converts a WPILIB Alert to a String, which can be used to identify if Alerts are identical.
-   *
-   * @param alert
-   * @return
-   */
-  private static String alertToString(Alert alert) {
-    return String.valueOf(alert.get())
-        + alert.getText()
-        + (switch (alert.getType()) {
-          case kError -> "error";
-          case kWarning -> "warning";
-          case kInfo -> "info";
-        });
   }
 }
