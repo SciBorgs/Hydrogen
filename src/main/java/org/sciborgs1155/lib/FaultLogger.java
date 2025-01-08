@@ -25,7 +25,7 @@ import java.util.function.BooleanSupplier;
 import org.photonvision.PhotonCamera;
 
 /**
- * FaultLogger allows for faults to be logged and displayed.
+ * FaultLogger allows for Alerts of faults to be logged and displayed.
  *
  * <pre>
  * FaultLogger.register(spark); // registers a spark, periodically checking for hardware faults
@@ -58,7 +58,6 @@ public final class FaultLogger {
 
   // DATA
   private static final HashMap<Optional<BooleanSupplier>, Alert> alertReporters = new HashMap<>(0);
-  private static final Set<Alert> allAlerts = new HashSet<>();
   private static final Set<Alert> activeAlerts = new HashSet<>();
   private static final Set<Alert> totalAlerts = new HashSet<>();
 
@@ -67,7 +66,7 @@ public final class FaultLogger {
   private static final AlertsNT activeAlertsNT = new AlertsNT(base, "Active Alerts");
   private static final AlertsNT totalAlertsNT = new AlertsNT(base, "Total Alerts");
 
-  /** Polls registered fallibles. This method should be called periodically. */
+  /** Polls registered Alerts. This method should be called periodically. */
   public static void update() {
     alertReporters.forEach(
         (r, a) -> {
@@ -75,6 +74,8 @@ public final class FaultLogger {
             a.set(r.get().getAsBoolean());
             if (r.get().getAsBoolean()) {
               report(a);
+            } else {
+              a.set(false);
             }
           }
         });
@@ -87,39 +88,49 @@ public final class FaultLogger {
     activeAlerts.clear();
   }
 
-  /** Clears total alerts. */
+  /** Clears total Alerts. */
   public static void clear() {
     totalAlerts.clear();
     activeAlerts.clear();
   }
 
-  /** Clears alerts suppliers. */
+  /** Clears all Alert mappings. */
   public static void unregisterAll() {
     alertReporters.clear();
   }
 
   /**
-   * Returns the set of all current alerts.
+   * Returns the set of all current Alerts.
    *
-   * @return The set of all current alerts.
+   * @return The set of all current Alerts.
    */
   public static Set<Alert> activeAlerts() {
     return activeAlerts;
   }
 
   /**
-   * Returns the set of all total alerts.
+   * Returns the set of all total Alerts.
    *
-   * @return The set of all total alerts.
+   * @return The set of all total Alerts.
    */
   public static Set<Alert> totalAlerts() {
     return totalAlerts;
   }
 
   /**
-   * Reports an alert.
+   * <b> Created for testing purposes. </b> Returns the length of the hashmap of all Alerts and
+   * their optional boolean suppliers.
    *
-   * @param alert The alert to report.
+   * @return The length of the hashmap of all Alerts and their optional boolean suppliers.
+   */
+  public static int alertReportersLength() {
+    return alertReporters.size();
+  }
+
+  /**
+   * Reports an Alert.
+   *
+   * @param alert The Alert to report.
    */
   public static void report(Alert alert) {
     alert.set(true);
@@ -132,17 +143,15 @@ public final class FaultLogger {
   }
 
   /**
-   * Reports an alert.
+   * Reports an Alert.
    *
-   * @param name The name of the alert.
-   * @param description The description of the alert.
-   * @param type The type of the alert.
+   * @param name The name of the Alert.
+   * @param description The description of the Alert.
+   * @param type The type of the Alert.
    */
   public static void report(String name, String description, AlertType type) {
-    allAlerts.clear();
-    alertReporters.forEach((r, a) -> allAlerts.add(a));
     boolean existed = false;
-    for (Alert values : allAlerts) {
+    for (Alert values : alertReporters.values()) {
       if (values.getText() == description && values.getType() == type) {
         existed = true;
         report(values);
@@ -157,20 +166,22 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers a new alert supplier.
+   * Registers a new Alert with its respective optional boolean supplier.
    *
-   * @param supplier A supplier of an optional alert.
+   * @param condition Determines whether or not the Alert should be active.
+   * @param alert The Alert.
    */
   public static void register(Optional<BooleanSupplier> condition, Alert alert) {
     alertReporters.put(condition, alert);
   }
 
   /**
-   * Registers a new alert supplier.
+   * Registers a new Alert.
    *
-   * @param condition Whether a failure is occuring.
-   * @param description The failure's description.
-   * @param type The type of failure.
+   * @param condition Whether the Alert should be active.
+   * @param name The group of the Alert.
+   * @param description The Alert's description.
+   * @param type The type of Alert.
    */
   public static void register(
       BooleanSupplier condition, String name, String description, AlertType type) {
@@ -178,7 +189,7 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers fault suppliers for a CAN-based Spark motor controller.
+   * Registers Alerts for faults of a CAN-based Spark motor controller.
    *
    * @param spark The Spark Max or Spark Flex to manage.
    */
@@ -224,7 +235,7 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers alert suppliers for a duty cycle encoder.
+   * Registers Alert for a duty cycle encoder.
    *
    * @param encoder The duty cycle encoder to manage.
    */
@@ -237,7 +248,7 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers alert suppliers for a NavX.
+   * Registers Alerts for a NavX.
    *
    * @param ahrs The NavX to manage.
    */
@@ -246,7 +257,7 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers alert suppliers for a Redux Boron CANandGyro.
+   * Registers Alerts for faults of a Redux Boron CANandGyro.
    *
    * @param canandgyro The Redux Boron CANandGyro to manage.
    */
@@ -290,7 +301,7 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers fault suppliers for a power distribution hub/panel.
+   * Registers Alerts for faults of a power distribution hub/panel.
    *
    * @param powerDistribution The power distribution to manage.
    */
@@ -315,7 +326,7 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers fault suppliers for a camera.
+   * Registers Alerts for a camera.
    *
    * @param camera The camera to manage.
    */
@@ -328,14 +339,14 @@ public final class FaultLogger {
   }
 
   /**
-   * Registers fault suppliers for a talon.
+   * Registers Alerts for faults of a Talon motor.
    *
    * @param talon The talon to manage.
    */
   public static void register(TalonFX talon) {
     int id = talon.getDeviceID();
     BiConsumer<StatusSignal<Boolean>, String> regFault =
-        (f, d) -> register((BooleanSupplier) f, "Talon ID: " + id, d, AlertType.kError);
+        (f, d) -> register(() -> f.asSupplier().get(), "Talon ID: " + id, d, AlertType.kError);
 
     // TODO: Remove all the unnecessary faults.
     regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");

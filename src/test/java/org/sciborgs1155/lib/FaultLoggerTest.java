@@ -1,8 +1,12 @@
 package org.sciborgs1155.lib;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
+import com.ctre.phoenix6.hardware.TalonFX;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
 import edu.wpi.first.wpilibj.Alert.AlertType;
@@ -75,5 +79,33 @@ public class FaultLoggerTest {
 
     assertEquals(1, activeErrors.get().length);
     assertEquals(1, totalErrors.get().length);
+  }
+
+  @Test
+  void registerSpark() {
+    SparkFlex spark1 = new SparkFlex(10, MotorType.kBrushless);
+    FaultLogger.register(spark1);
+    int faults = FaultLogger.alertReportersLength();
+    assertTrue(faults > 0);
+    SparkFlex spark2 = new SparkFlex(11, MotorType.kBrushless);
+    FaultLogger.register(spark2);
+    FaultLogger.update();
+    assertEquals(2 * faults, FaultLogger.alertReportersLength());
+    spark1.close();
+    spark2.close();
+  }
+
+  @Test
+  void registerTalon() {
+    TalonFX talon1 = new TalonFX(10);
+    FaultLogger.register(talon1);
+    int faults = FaultLogger.alertReportersLength();
+    assertTrue(faults > 0);
+    TalonFX talon2 = new TalonFX(11);
+    FaultLogger.register(talon2);
+    FaultLogger.update();
+    assertEquals(2 * faults, FaultLogger.alertReportersLength());
+    talon1.close();
+    talon2.close();
   }
 }
