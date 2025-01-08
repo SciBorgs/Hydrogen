@@ -2,6 +2,7 @@ package org.sciborgs1155.lib;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.reduxrobotics.sensors.canandgyro.Canandgyro;
 import com.revrobotics.REVLibError;
 import com.revrobotics.spark.SparkBase;
 import com.studica.frc.AHRS;
@@ -116,7 +117,7 @@ public final class FaultLogger {
   }
 
   /**
-   * Reports a alert.
+   * Reports an alert.
    *
    * @param alert The alert to report.
    */
@@ -242,6 +243,50 @@ public final class FaultLogger {
    */
   public static void register(AHRS ahrs) {
     register(() -> !ahrs.isConnected(), "NavX", "disconnected", AlertType.kError);
+  }
+
+  /**
+   * Registers alert suppliers for a Redux Boron CANandGyro.
+   *
+   * @param canandgyro The Redux Boron CANandGyro to manage.
+   */
+  public static void register(Canandgyro canandgyro) {
+    register(() -> !canandgyro.isConnected(), "CANandGyro", "disconnected", AlertType.kError);
+    register(
+        () -> canandgyro.getActiveFaults().accelerationSaturation(),
+        "CANandGyro",
+        "acceleration saturated",
+        AlertType.kWarning);
+    register(
+        () -> canandgyro.getActiveFaults().angularVelocitySaturation(),
+        "CANandGyro",
+        "angular velocity saturated",
+        AlertType.kWarning);
+    register(
+        () -> canandgyro.getActiveFaults().calibrating(),
+        "CANandGyro",
+        "calibrating",
+        AlertType.kWarning);
+    register(
+        () -> canandgyro.getActiveFaults().canGeneralError(),
+        "CANandGyro",
+        "general CAN error",
+        AlertType.kError);
+    register(
+        () -> canandgyro.getActiveFaults().canIDConflict(),
+        "CANandGyro",
+        "CAN ID conflict",
+        AlertType.kError);
+    register(
+        () -> canandgyro.getActiveFaults().outOfTemperatureRange(),
+        "CANandGyro",
+        "temperature error",
+        AlertType.kError);
+    register(
+        () -> canandgyro.getActiveFaults().powerCycle(),
+        "CANandGyro",
+        "power cycling",
+        AlertType.kWarning);
   }
 
   /**
