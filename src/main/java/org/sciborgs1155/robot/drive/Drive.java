@@ -494,7 +494,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
             tAssert(
                 () -> m.state().speedMetersPerSecond * Math.signum(m.position().angle.getCos()) > 1,
                 "Drive Syst Check " + m.name() + " Module Speed",
-                "expected: >= 1; actual: " + m.state().speedMetersPerSecond);
+                () -> "expected: >= 1; actual: " + m.state().speedMetersPerSecond);
     Function<ModuleIO, EqualityAssertion> atAngle =
         m ->
             eAssert(
