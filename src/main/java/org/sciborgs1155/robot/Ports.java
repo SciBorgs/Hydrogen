@@ -8,6 +8,7 @@ public final class Ports {
   }
 
   public static final class Drive {
+    public static final int CANANDGYRO = 20;
     public static final int FRONT_LEFT_DRIVE = 11;
     public static final int REAR_LEFT_DRIVE = 10;
     public static final int FRONT_RIGHT_DRIVE = 12;

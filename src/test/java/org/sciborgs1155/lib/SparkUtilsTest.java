@@ -1,13 +1,14 @@
 package org.sciborgs1155.lib;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkFlex;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.RelativeEncoder;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkFlex;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkFlexConfig;
 import java.util.Set;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -23,30 +24,32 @@ public class SparkUtilsTest {
 
   @Test
   void configure() {
-    CANSparkFlex motor = new CANSparkFlex(1, MotorType.kBrushless);
-    RelativeEncoder encoder = motor.getEncoder();
+    SparkFlex motor = new SparkFlex(1, MotorType.kBrushless);
+    SparkFlexConfig config = new SparkFlexConfig();
 
-    check(motor, motor.restoreFactoryDefaults());
-    check(
-        motor,
-        SparkUtils.configureFrameStrategy(
-            motor,
+    motor.configure(config, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters);
+    config.apply(
+        SparkUtils.getSignalsConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.INTEGRATED),
             false));
-    check(motor, motor.setIdleMode(IdleMode.kBrake));
-    check(motor, motor.setSmartCurrentLimit(30));
-    check(motor, encoder.setPositionConversionFactor(0.5));
-    check(motor, encoder.setVelocityConversionFactor(0.25));
-    check(motor, encoder.setMeasurementPeriod(8));
-    check(motor, encoder.setAverageDepth(2));
-    check(motor, motor.burnFlash());
+    config.apply(config.idleMode(IdleMode.kBrake).smartCurrentLimit(30));
 
-    assertEquals(IdleMode.kBrake, motor.getIdleMode());
-    assertEquals(0.5, encoder.getPositionConversionFactor());
-    assertEquals(0.25, encoder.getVelocityConversionFactor());
-    assertEquals(8, encoder.getMeasurementPeriod());
-    assertEquals(2, encoder.getAverageDepth());
+    config.apply(
+        config
+            .encoder
+            .positionConversionFactor(0.5)
+            .velocityConversionFactor(0.25)
+            .uvwMeasurementPeriod(8)
+            .uvwAverageDepth(2));
+
+    motor.configure(config, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters);
+
+    assertEquals(IdleMode.kBrake, motor.configAccessor.getIdleMode());
+    assertEquals(0.5, motor.configAccessor.encoder.getPositionConversionFactor());
+    assertEquals(0.25, motor.configAccessor.encoder.getVelocityConversionFactor());
+    assertEquals(8, motor.configAccessor.encoder.getUvwMeasurementPeriod());
+    assertEquals(2, motor.configAccessor.encoder.getUvwAverageDepth());
 
     motor.close();
   }

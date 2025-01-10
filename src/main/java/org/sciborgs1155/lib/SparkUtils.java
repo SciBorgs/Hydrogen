@@ -1,8 +1,7 @@
 package org.sciborgs1155.lib;
 
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkLowLevel.PeriodicFrame;
-import com.revrobotics.REVLibError;
+import com.revrobotics.spark.SparkBase;
+import com.revrobotics.spark.config.SignalsConfig;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -40,7 +39,7 @@ public class SparkUtils {
    * @param spark The spark to find the name of.
    * @return The name of a spark.
    */
-  public static String name(CANSparkBase spark) {
+  public static String name(SparkBase spark) {
     return "Spark [" + spark.getDeviceId() + "]";
   }
 
@@ -63,86 +62,69 @@ public class SparkUtils {
   }
 
   /**
-   * Configures CAN frames periods on a spark to send only specified data at high rates.
+   * Creates a SignalsConfig for a configuring a spark to send only specified data at high rates.
    *
-   * @param spark The Spark MAX or Spark FLEX to configure.
    * @param data The data that the spark needs to send to the RIO.
    * @param sensors The sensors that provide data for the spark needs to send to the RIO.
    * @param withFollower Whether this spark has a following motor via {@link
-   *     CANSparkBase#follow(CANSparkBase)}.
+   *     SparkBase#follow(SparkBase)}.
    * @see Sensor
    * @see Data
    * @see https://docs.revrobotics.com/brushless/spark-max/control-interfaces
    */
-  public static REVLibError configureFrameStrategy(
-      CANSparkBase spark, Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
-    int status0 = FRAME_STRATEGY_MEDIUM; // output, faults
-    int status1 = FRAME_STRATEGY_SLOW;
-    // integrated velocity, temperature, input voltage, current | default 20
-    int status2 = FRAME_STRATEGY_SLOW; // integrated position | default 20
-    int status3 = FRAME_STRATEGY_DISABLED; // analog encoder | default 50
-    int status4 = FRAME_STRATEGY_DISABLED; // alternate quadrature encoder | default 20
-    int status5 = FRAME_STRATEGY_DISABLED; // duty cycle position | default 200
-    int status6 = FRAME_STRATEGY_DISABLED; // duty cycle velocity | default 200
-    int status7 = FRAME_STRATEGY_DISABLED;
-    // // status frame 7 is cursed, the only mention i found of it in rev's docs is at
-    // //
-    // https://docs.revrobotics.com/brushless/spark-flex/revlib/spark-flex-firmware-changelog#breaking-changes
-    // // if it's only IAccum, there's literally no reason to enable the frame
+  public static SignalsConfig getSignalsConfigurationFrameStrategy(
+      Set<Data> data, Set<Sensor> sensors, boolean withFollower) {
+    SignalsConfig config =
+        new SignalsConfig()
+            .appliedOutputPeriodMs(
+                FRAME_STRATEGY_MEDIUM) // 0, output, bus voltage, temperature, limits | default 10
+            .faultsPeriodMs(FRAME_STRATEGY_MEDIUM) // 1, faults, warnings | default 20
+            .primaryEncoderPositionPeriodMs(
+                FRAME_STRATEGY_SLOW) // 2, integrated velocity, position| default 20
+            .analogVoltagePeriodMs(FRAME_STRATEGY_DISABLED) // 3, analog encoder | default 20
+            .externalOrAltEncoderPosition(
+                FRAME_STRATEGY_DISABLED) // 4, external or alternate encoder | default 20
+            .absoluteEncoderPositionPeriodMs(
+                FRAME_STRATEGY_DISABLED) // 5, absolute encoder | default 20
+            // 6, the nonexistent frame 6
+            .iAccumulationPeriodMs(FRAME_STRATEGY_DISABLED); // 7, IAccum  default 20
 
-    if (withFollower || data.contains(Data.APPLIED_OUTPUT)) {
-      status0 = FRAME_STRATEGY_VERY_FAST;
+    if (withFollower || data.contains(Data.APPLIED_OUTPUT) || data.contains(Data.TEMPERATURE)) {
+      config = config.appliedOutputPeriodMs(FRAME_STRATEGY_VERY_FAST); // status 0
     }
 
     if (sensors.contains(Sensor.INTEGRATED) && data.contains(Data.VELOCITY)
+        || sensors.contains(Sensor.INTEGRATED) && data.contains(Data.POSITION)
         || data.contains(Data.INPUT_VOLTAGE)
-        || data.contains(Data.CURRENT)
-        || data.contains(Data.TEMPERATURE)) {
-      status1 = FRAME_STRATEGY_FAST;
-    }
-
-    if (sensors.contains(Sensor.INTEGRATED) && data.contains(Data.POSITION)) {
-      status2 = FRAME_STRATEGY_FAST;
+        || data.contains(Data.CURRENT)) {
+      config = config.primaryEncoderPositionPeriodMs(FRAME_STRATEGY_FAST);
     }
 
     if (sensors.contains(Sensor.ANALOG)
         && (data.contains(Data.VELOCITY) || data.contains(Data.POSITION))) {
-      status3 = FRAME_STRATEGY_FAST;
+      config = config.analogVoltagePeriodMs(FRAME_STRATEGY_FAST);
     }
 
     if (sensors.contains(Sensor.ALTERNATE)
         && (data.contains(Data.VELOCITY) || data.contains(Data.POSITION))) {
-      status4 = FRAME_STRATEGY_FAST;
+      config = config.externalOrAltEncoderPosition(FRAME_STRATEGY_FAST);
     }
 
     if (sensors.contains(Sensor.ABSOLUTE)) {
       if (data.contains(Data.POSITION)) {
-        status5 = FRAME_STRATEGY_FAST;
-      }
-      if (data.contains(Data.VELOCITY)) {
-        status6 = FRAME_STRATEGY_FAST;
+        config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_FAST);
       }
     }
 
-    int[] frames = {status0, status1, status2, status3, status4, status5, status6, status7};
-    REVLibError error = REVLibError.kOk;
-    for (int i = 0; i < frames.length; i++) {
-      REVLibError e = spark.setPeriodicFramePeriod(PeriodicFrame.fromId(i), frames[i]);
-      if (e != REVLibError.kOk) {
-        error = e;
-      }
-    }
-    return error;
+    return config;
   }
 
   /**
-   * Configures a follower spark to send nothing except output and faults. This means most data will
-   * not be accessible.
-   *
-   * @param spark The follower spark.
+   * Configures a SignalsConfig that sends nothing except output and faults. This means most data
+   * will not be accessible.
    */
-  public static REVLibError configureNothingFrameStrategy(CANSparkBase spark) {
-    return configureFrameStrategy(spark, Set.of(), Set.of(), false);
+  public static SignalsConfig getStatusConfigurationOfNothingFrameStrategy() {
+    return getSignalsConfigurationFrameStrategy(Set.of(), Set.of(), false);
   }
 
   /**
@@ -153,7 +135,7 @@ public class SparkUtils {
    * @param value The value to wrap.
    * @return An optional that may contain the value.
    */
-  public static <T> Optional<T> wrapCall(CANSparkBase spark, T value) {
+  public static <T> Optional<T> wrapCall(SparkBase spark, T value) {
     if (FaultLogger.check(spark)) {
       return Optional.of(value);
     }

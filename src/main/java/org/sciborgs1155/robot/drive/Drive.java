@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.Radians;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
@@ -89,7 +90,8 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
           Translation.P,
           Translation.I,
           Translation.D,
-          new TrapezoidProfile.Constraints(MAX_SPEED, MAX_ACCEL));
+          new TrapezoidProfile.Constraints(
+              MAX_SPEED.in(MetersPerSecond), MAX_ACCEL.in(MetersPerSecondPerSecond)));
 
   @Log.NT
   private final PIDController rotationController =
@@ -310,7 +312,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return Math.abs(
             gyro.rotation2d().getRadians()
                 - target.minus(pose().getTranslation()).getAngle().getRadians())
-        < rotationController.getPositionTolerance();
+        < rotationController.getErrorTolerance();
   }
 
   /**
@@ -486,7 +488,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   public Test systemsCheck() {
     ChassisSpeeds speeds = new ChassisSpeeds(1, 1, 0);
     Command testCommand =
-        run(() -> setChassisSpeeds(speeds, ControlMode.OPEN_LOOP_VELOCITY)).withTimeout(0.5);
+        run(() -> setChassisSpeeds(speeds, ControlMode.OPEN_LOOP_VELOCITY)).withTimeout(0.75);
     Function<ModuleIO, TruthAssertion> speedCheck =
         m ->
             tAssert(

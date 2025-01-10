@@ -2,10 +2,10 @@ package org.sciborgs1155.lib;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.TalonFX;
-import com.kauailabs.navx.frc.AHRS;
-import com.revrobotics.CANSparkBase;
-import com.revrobotics.CANSparkBase.FaultID;
+import com.reduxrobotics.sensors.canandgyro.Canandgyro;
 import com.revrobotics.REVLibError;
+import com.revrobotics.spark.SparkBase;
+import com.studica.frc.AHRS;
 import edu.wpi.first.hal.PowerDistributionFaults;
 import edu.wpi.first.networktables.NetworkTable;
 import edu.wpi.first.networktables.NetworkTableInstance;
@@ -179,10 +179,40 @@ public final class FaultLogger {
    *
    * @param spark The Spark Max or Spark Flex to manage.
    */
-  public static void register(CANSparkBase spark) {
-    for (FaultID fault : FaultID.values()) {
-      register(() -> spark.getFault(fault), SparkUtils.name(spark), fault.name(), FaultType.ERROR);
-    }
+  public static void register(SparkBase spark) {
+    register(
+        () -> spark.getFaults().other,
+        SparkUtils.name(spark),
+        "other strange error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().motorType,
+        SparkUtils.name(spark),
+        "motor type error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().sensor, SparkUtils.name(spark), "sensor error", FaultType.ERROR);
+    register(() -> spark.getFaults().can, SparkUtils.name(spark), "CAN error", FaultType.ERROR);
+    register(
+        () -> spark.getFaults().temperature,
+        SparkUtils.name(spark),
+        "temperature error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().gateDriver,
+        SparkUtils.name(spark),
+        "gate driver error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().escEeprom,
+        SparkUtils.name(spark),
+        "escEeprom? error",
+        FaultType.ERROR);
+    register(
+        () -> spark.getFaults().firmware,
+        SparkUtils.name(spark),
+        "firmware error",
+        FaultType.ERROR);
     register(
         () -> spark.getMotorTemperature() > 100,
         SparkUtils.name(spark),
@@ -210,6 +240,50 @@ public final class FaultLogger {
    */
   public static void register(AHRS ahrs) {
     register(() -> !ahrs.isConnected(), "NavX", "disconnected", FaultType.ERROR);
+  }
+
+  /**
+   * Registers Alerts for faults of a Redux Boron CANandGyro.
+   *
+   * @param canandgyro The Redux Boron CANandGyro to manage.
+   */
+  public static void register(Canandgyro canandgyro) {
+    register(() -> !canandgyro.isConnected(), "CANandGyro", "disconnected", FaultType.ERROR);
+    register(
+        () -> canandgyro.getActiveFaults().accelerationSaturation(),
+        "CANandGyro",
+        "acceleration saturated",
+        FaultType.WARNING);
+    register(
+        () -> canandgyro.getActiveFaults().angularVelocitySaturation(),
+        "CANandGyro",
+        "angular velocity saturated",
+        FaultType.WARNING);
+    register(
+        () -> canandgyro.getActiveFaults().calibrating(),
+        "CANandGyro",
+        "calibrating",
+        FaultType.WARNING);
+    register(
+        () -> canandgyro.getActiveFaults().canGeneralError(),
+        "CANandGyro",
+        "general CAN error",
+        FaultType.ERROR);
+    register(
+        () -> canandgyro.getActiveFaults().canIDConflict(),
+        "CANandGyro",
+        "CAN ID conflict",
+        FaultType.ERROR);
+    register(
+        () -> canandgyro.getActiveFaults().outOfTemperatureRange(),
+        "CANandGyro",
+        "temperature error",
+        FaultType.ERROR);
+    register(
+        () -> canandgyro.getActiveFaults().powerCycle(),
+        "CANandGyro",
+        "power cycling",
+        FaultType.WARNING);
   }
 
   /**
@@ -256,9 +330,9 @@ public final class FaultLogger {
   public static void register(TalonFX talon) {
     int id = talon.getDeviceID();
     BiConsumer<StatusSignal<Boolean>, String> regFault =
-        (f, d) -> register((BooleanSupplier) f, "Talon ID: " + id, d, FaultType.ERROR);
+        (f, d) -> register(() -> f.getValue(), "Talon ID: " + id, d, FaultType.ERROR);
 
-    // TODO: Remove all the unnecessary faults
+    // TODO: Remove all the unnecessary faults.
     regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");
     regFault.accept(talon.getFault_ProcTemp(), "Processor temperature exceeded limit");
     regFault.accept(talon.getFault_Hardware(), "Hardware fault occurred");
@@ -316,7 +390,7 @@ public final class FaultLogger {
    * @param spark The spark to report REVLibErrors from.
    * @return If the spark is working without errors.
    */
-  public static boolean check(CANSparkBase spark) {
+  public static boolean check(SparkBase spark) {
     REVLibError error = spark.getLastError();
     return check(spark, error);
   }
@@ -330,7 +404,7 @@ public final class FaultLogger {
    * @param error Any REVLibErrors that may be returned from a method for a spark.
    * @return If the spark is working without errors.
    */
-  public static boolean check(CANSparkBase spark, REVLibError error) {
+  public static boolean check(SparkBase spark, REVLibError error) {
     if (error != REVLibError.kOk) {
       report(SparkUtils.name(spark), error.name(), FaultType.ERROR);
       return false;

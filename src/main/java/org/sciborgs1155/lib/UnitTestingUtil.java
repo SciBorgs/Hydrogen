@@ -3,15 +3,14 @@ package org.sciborgs1155.lib;
 import static edu.wpi.first.units.Units.Seconds;
 
 import edu.wpi.first.hal.HAL;
-import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.Time;
+import edu.wpi.first.units.measure.Time;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import edu.wpi.first.wpilibj.simulation.SimHooks;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
 
 public class UnitTestingUtil {
-  public static final Measure<Time> TICK_RATE = Seconds.of(0.02);
+  public static final Time TICK_RATE = Seconds.of(0.02);
 
   /** Sets up DS and initializes HAL with default values and asserts that it doesn't fail. */
   public static void setupTests() {
@@ -53,7 +52,7 @@ public class UnitTestingUtil {
    *
    * @param time
    */
-  public static void fastForward(Measure<Time> time) {
+  public static void fastForward(Time time) {
     fastForward((int) (time.in(Seconds) / TICK_RATE.in(Seconds)));
   }
 

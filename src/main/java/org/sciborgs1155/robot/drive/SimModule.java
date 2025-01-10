@@ -23,13 +23,11 @@ public class SimModule implements ModuleIO {
         case SPARK ->
             new DCMotorSim(
                 LinearSystemId.createDCMotorSystem(Driving.FF.SPARK.V, Driving.FF.SPARK.A),
-                DCMotor.getNeoVortex(1),
-                1 / Driving.GEARING);
+                DCMotor.getNeoVortex(1));
         case TALON ->
             new DCMotorSim(
                 LinearSystemId.createDCMotorSystem(Driving.FF.TALON.V, Driving.FF.TALON.A),
-                DCMotor.getKrakenX60(1),
-                1 / Driving.GEARING);
+                DCMotor.getKrakenX60(1));
       };
 
   private final PIDController driveFeedback =
@@ -49,9 +47,7 @@ public class SimModule implements ModuleIO {
 
   private final DCMotorSim turn =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A),
-          DCMotor.getNeo550(1),
-          1 / Turning.MOTOR_GEARING);
+          LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A), DCMotor.getNeo550(1));
 
   private final PIDController turnFeedback =
       new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);
@@ -133,9 +129,9 @@ public class SimModule implements ModuleIO {
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
     // Optimize the reference state to avoid spinning further than 90 degrees
-    setpoint = SwerveModuleState.optimize(setpoint, rotation());
+    setpoint.optimize(rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
-    setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
+    setpoint.cosineScale(rotation());
 
     if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
       setDriveVoltage(driveFF.calculate(setpoint.speedMetersPerSecond));

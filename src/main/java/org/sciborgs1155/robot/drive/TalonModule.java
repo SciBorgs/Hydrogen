@@ -9,16 +9,22 @@ import com.ctre.phoenix6.configs.TalonFXConfiguration;
 import com.ctre.phoenix6.controls.VelocityVoltage;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.CANSparkBase.ControlType;
-import com.revrobotics.CANSparkBase.IdleMode;
-import com.revrobotics.CANSparkLowLevel.MotorType;
-import com.revrobotics.CANSparkMax;
-import com.revrobotics.SparkAbsoluteEncoder;
-import com.revrobotics.SparkPIDController;
+import com.revrobotics.spark.SparkAbsoluteEncoder;
+import com.revrobotics.spark.SparkBase.ControlType;
+import com.revrobotics.spark.SparkBase.PersistMode;
+import com.revrobotics.spark.SparkBase.ResetMode;
+import com.revrobotics.spark.SparkClosedLoopController;
+import com.revrobotics.spark.SparkLowLevel.MotorType;
+import com.revrobotics.spark.SparkMax;
+import com.revrobotics.spark.config.ClosedLoopConfig;
+import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
+import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import edu.wpi.first.units.measure.Angle;
+import edu.wpi.first.units.measure.AngularVelocity;
 import java.util.Set;
 import monologue.Annotations.Log;
 import org.sciborgs1155.lib.SparkUtils;
@@ -31,15 +37,16 @@ import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor; // Kraken X60
-  private final CANSparkMax turnMotor; // NEO 550
+  private final SparkMax turnMotor; // NEO 550
+  private final SparkMaxConfig turnMotorConfig;
 
-  private final StatusSignal<Double> drivePos;
-  private final StatusSignal<Double> driveVelocity;
+  private final StatusSignal<Angle> drivePos;
+  private final StatusSignal<AngularVelocity> driveVelocity;
   private final SparkAbsoluteEncoder turningEncoder;
 
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
 
-  private final SparkPIDController turnPID;
+  private final SparkClosedLoopController turnPID;
   private final SimpleMotorFeedforward driveFF;
 
   private final Rotation2d angularOffset;
@@ -51,6 +58,9 @@ public class TalonModule implements ModuleIO {
   private final String name;
 
   public TalonModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
+
+    // Drive Motor
+
     driveMotor = new TalonFX(drivePort);
     drivePos = driveMotor.getPosition();
     driveVelocity = driveMotor.getVelocity();
@@ -76,47 +86,50 @@ public class TalonModule implements ModuleIO {
 
     TalonUtils.addMotor(driveMotor);
 
-    turnMotor = new CANSparkMax(turnPort, MotorType.kBrushless);
+    // Turn Motor
+
+    turnMotor = new SparkMax(turnPort, MotorType.kBrushless);
     turningEncoder = turnMotor.getAbsoluteEncoder();
-    turnPID = turnMotor.getPIDController();
+    turnPID = turnMotor.getClosedLoopController();
+    turnMotorConfig = new SparkMaxConfig();
 
-    check(turnMotor, turnMotor.restoreFactoryDefaults());
-
-    check(turnMotor, turnPID.setP(Turning.PID.P));
-    check(turnMotor, turnPID.setI(Turning.PID.I));
-    check(turnMotor, turnPID.setD(Turning.PID.D));
-    check(turnMotor, turnPID.setPositionPIDWrappingEnabled(true));
-    check(turnMotor, turnPID.setPositionPIDWrappingMinInput(-Math.PI));
-    check(turnMotor, turnPID.setPositionPIDWrappingMaxInput(Math.PI));
-    check(turnMotor, turnPID.setFeedbackDevice(turningEncoder));
-
-    check(turnMotor, turnMotor.setIdleMode(IdleMode.kBrake));
-    check(turnMotor, turnMotor.setSmartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
-    turningEncoder.setInverted(Turning.ENCODER_INVERTED);
-    check(turnMotor);
-    check(
-        turnMotor, turningEncoder.setPositionConversionFactor(Turning.POSITION_FACTOR.in(Radians)));
     check(
         turnMotor,
-        turningEncoder.setVelocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond)));
-    check(turnMotor, turningEncoder.setAverageDepth(2));
-    check(
-        turnMotor,
-        SparkUtils.configureFrameStrategy(
-            turnMotor,
+        turnMotor.configure(
+            turnMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
+
+    turnMotorConfig.apply(
+        turnMotorConfig
+            .closedLoop
+            .pid(Turning.PID.P, Turning.PID.I, Turning.PID.D)
+            .positionWrappingEnabled(true)
+            .positionWrappingInputRange(-Math.PI, Math.PI)
+            .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
+
+    turnMotorConfig.apply(
+        turnMotorConfig
+            .idleMode(IdleMode.kBrake)
+            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
+
+    turnMotorConfig.apply(turnMotorConfig.encoder.inverted(true));
+
+    turnMotorConfig.apply(
+        turnMotorConfig
+            .encoder
+            .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
+            .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
+            .uvwAverageDepth(2));
+
+    turnMotorConfig.apply(
+        SparkUtils.getSignalsConfigurationFrameStrategy(
             Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
             Set.of(Sensor.ABSOLUTE),
             false));
-    SparkUtils.addChecker(
-        () ->
-            check(
-                turnMotor,
-                SparkUtils.configureFrameStrategy(
-                    turnMotor,
-                    Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
-                    Set.of(Sensor.ABSOLUTE),
-                    false)));
-    check(turnMotor, turnMotor.burnFlash());
+
+    check(
+        turnMotor,
+        turnMotor.configure(
+            turnMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
 
     register(turnMotor);
 
@@ -194,7 +207,7 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
-    setpoint = SwerveModuleState.optimize(setpoint, rotation());
+    setpoint.optimize(rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
     setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
 
