@@ -209,7 +209,7 @@ public class TalonModule implements ModuleIO {
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
     setpoint.optimize(rotation());
     // Scale setpoint by cos of turning error to reduce tread wear
-    setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
+    setpoint.cosineScale(rotation());
 
     if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
       setDriveVoltage(driveFF.calculate(setpoint.speedMetersPerSecond));
