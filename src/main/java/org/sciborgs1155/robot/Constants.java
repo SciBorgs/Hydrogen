@@ -49,6 +49,7 @@ public class Constants {
 
   /** Describes physical properites of the robot. */
   public static class Robot {
+    // TODO: UPDATE ALL OF THESE VALUES.
     public static final Mass MASS = Kilograms.of(25);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
   }
