@@ -34,6 +34,19 @@ public class Constants {
     return Rotation2d.fromRotations(alliance() == Alliance.Blue ? 0 : 0.5);
   }
 
+  /** Defines the various types the robot can be. Useful for only using select subsystems. */
+  public static enum RobotType {
+    FULL,
+    CHASSIS,
+    NONE
+  }
+
+  /** The current robot state, as in the type. Remember to update! */
+  public static RobotType ROBOT_TYPE = RobotType.FULL;
+
+  /** States if we are in tuning mode. Ideally, keep it at false when not used. */
+  public static boolean TUNING = false;
+
   /** Describes physical properites of the robot. */
   public static class Robot {
     public static final Mass MASS = Kilograms.of(25);
@@ -41,12 +54,16 @@ public class Constants {
   }
 
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
+  public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 20.0); // 4 ms (speedy!)
   public static final double DEADBAND = 0.15;
   public static final double MAX_RATE =
       DriveConstants.MAX_ACCEL.baseUnitMagnitude()
           / DriveConstants.MAX_ANGULAR_SPEED.baseUnitMagnitude();
   public static final double SLOW_SPEED_MULTIPLIER = 0.33;
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
+
+  // name of seperate canivore, set to rio if no seperate canivore
+  public static final String DRIVE_CANIVORE = "drivetrain";
 
   // Origin at corner of blue alliance side of field
   public static class Field {
