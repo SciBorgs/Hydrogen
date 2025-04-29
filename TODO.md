@@ -3,6 +3,7 @@
 
 Todo:
 - finish updating constants
+- add new lib files
 - update utils
 - add updated odometry
     - faster odometry
@@ -19,3 +20,4 @@ Done:
 - update `build.gradle`
 - update vision constants file (mostly)
 - update ports
+- update old lib files

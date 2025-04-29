@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import org.sciborgs1155.robot.Ports;
 
 /** Utility class for configuration of Spark motor controllers */
 public class SparkUtils {
@@ -28,6 +29,7 @@ public class SparkUtils {
   public static final int FRAME_STRATEGY_MEDIUM = 100;
   public static final int FRAME_STRATEGY_FAST = 20;
   public static final int FRAME_STRATEGY_VERY_FAST = 10;
+  public static final int FRAME_STRATEGY_LUDICROUS = 4;
 
   public static final int THROUGHBORE_CPR = 8192;
 
@@ -40,7 +42,7 @@ public class SparkUtils {
    * @return The name of a spark.
    */
   public static String name(SparkBase spark) {
-    return "Spark [" + spark.getDeviceId() + "]";
+    return "Spark " + Ports.idToName.get(spark.getDeviceId());
   }
 
   /** Represents a type of sensor that can be plugged into the spark */
@@ -97,22 +99,22 @@ public class SparkUtils {
         || sensors.contains(Sensor.INTEGRATED) && data.contains(Data.POSITION)
         || data.contains(Data.INPUT_VOLTAGE)
         || data.contains(Data.CURRENT)) {
-      config = config.primaryEncoderPositionPeriodMs(FRAME_STRATEGY_FAST);
+      config = config.primaryEncoderPositionPeriodMs(FRAME_STRATEGY_LUDICROUS); // status 2
     }
 
     if (sensors.contains(Sensor.ANALOG)
         && (data.contains(Data.VELOCITY) || data.contains(Data.POSITION))) {
-      config = config.analogVoltagePeriodMs(FRAME_STRATEGY_FAST);
+      config = config.analogVoltagePeriodMs(FRAME_STRATEGY_FAST); // status 3
     }
 
     if (sensors.contains(Sensor.ALTERNATE)
         && (data.contains(Data.VELOCITY) || data.contains(Data.POSITION))) {
-      config = config.externalOrAltEncoderPosition(FRAME_STRATEGY_FAST);
+      config = config.externalOrAltEncoderPosition(FRAME_STRATEGY_FAST); // status 4
     }
 
     if (sensors.contains(Sensor.ABSOLUTE)) {
       if (data.contains(Data.POSITION)) {
-        config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_FAST);
+        config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_LUDICROUS); // status 5
       }
     }
 
