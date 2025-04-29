@@ -2,10 +2,8 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
@@ -65,18 +63,4 @@ public class Constants {
 
   // The name of seperate canivore, set to rio if no seperate canivore
   public static final String DRIVE_CANIVORE = "drivetrain";
-
-  // Origin at corner of blue alliance side of field
-  public static class Field {
-    public static final Distance LENGTH = Inches.of(651.223);
-    public static final Distance WIDTH = Inches.of(323.277);
-
-    /** Returns whether the provided position is within the boundaries of the field. */
-    public static boolean inField(Pose3d pose) {
-      return (pose.getX() > 0
-          && pose.getX() < Field.LENGTH.in(Meters)
-          && pose.getY() > 0
-          && pose.getY() < Field.WIDTH.in(Meters));
-    }
-  }
 }
