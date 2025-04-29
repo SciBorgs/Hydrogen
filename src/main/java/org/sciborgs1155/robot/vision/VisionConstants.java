@@ -1,5 +1,8 @@
 package org.sciborgs1155.robot.vision;
 
+import static edu.wpi.first.units.Units.Degrees;
+import static edu.wpi.first.units.Units.Inches;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -18,14 +21,24 @@ public class VisionConstants {
   /** TODO: Create cameras with updated constants; be sure to add in {@link Vision#create} */
   // WARNING: EMPTY TRANSFORMS WILL CRASH SIMULATION UPON TAG DETECTION
   public static final CameraConfig BACK_LEFT_CAMERA =
-      new CameraConfig("back left", new Transform3d(1, 1, 1, new Rotation3d()));
+      new CameraConfig(
+          "back left",
+          new Transform3d(
+              Inches.of(1),
+              Inches.of(1),
+              Inches.of(1),
+              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))));
 
   public static final CameraConfig BACK_RIGHT_CAMERA =
-      new CameraConfig("back right", new Transform3d(1, 1, 1, new Rotation3d()));
-  public static final CameraConfig FRONT_LEFT_CAMERA =
-      new CameraConfig("front left", new Transform3d(1, 1, 1, new Rotation3d()));
-  public static final CameraConfig FRONT_RIGHT_CAMERA =
-      new CameraConfig("front right", new Transform3d(1, 1, 1, new Rotation3d()));
+      new CameraConfig(
+          "back right",
+          new Transform3d(
+              Inches.of(1),
+              Inches.of(1),
+              Inches.of(1),
+              new Rotation3d(Degrees.zero(), Degrees.of(-45), Degrees.zero())
+                  .rotateBy(new Rotation3d(Degrees.zero(), Degrees.zero(), Degrees.of(45)))));
 
   // OV9281 constants for our configuration
   public static final int WIDTH = 1280;
@@ -37,6 +50,7 @@ public class VisionConstants {
 
   public static final double MAX_HEIGHT = 0.305;
   public static final double MAX_ANGLE = 0.3;
+  public static final double MAX_AMBIGUITY = 0.2;
 
   /** TODO: Modify AprilTag information as needed. */
   // Total of n AprilTags
