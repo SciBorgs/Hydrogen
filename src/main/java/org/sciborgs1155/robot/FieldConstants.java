@@ -25,8 +25,9 @@ public class FieldConstants {
 
   /**
    * Rotates a pose 180* with respect to the center of the field, effectively swapping alliances.
-   * TODO: This only work for rotated reflect fields (think Reefscape 2025), not mirrored fields.
-   * (Think Crescendo 2024)
+   *
+   * <p><b> NOTE: This only works for rotated reflect fields like Reefscape, not mirrored fields
+   * like Crescendo. </b>
    *
    * @param pose The pose being reflected.
    * @return The reflected pose.
