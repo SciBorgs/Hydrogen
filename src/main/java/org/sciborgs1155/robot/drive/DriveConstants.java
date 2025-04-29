@@ -2,9 +2,12 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 
+import com.pathplanner.lib.config.ModuleConfig;
+import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
+import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -14,6 +17,7 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import java.util.List;
+import org.sciborgs1155.robot.Constants;
 
 /**
  * Constants for our 2024 MAXSwerve drivetrain. All fields in this file should be updated for the
@@ -28,14 +32,26 @@ public final class DriveConstants {
 
   /** The type of modules being used. */
   public static enum ModuleType {
-    TALON, // Kraken X60 Drive, NEO 550 Turn
+    TALON, // Kraken X60 Drive, Kraken X60 Turn
     SPARK; // NEO Vortex Drive, NEO 550 Turn
   }
 
   // TODO: Change central drivetrain constants as needed.
 
   // The type of module on the chassis
-  public static final ModuleType TYPE = ModuleType.SPARK;
+  public static final ModuleType TYPE = ModuleType.TALON;
+
+  public static final class Assisted {
+    // The angle between the velocity and the displacement from a target, above which the robot will
+    // not use assisted driving to the target. (the driver must be driving in the general direction
+    // of
+    // the assisted driving target.)
+    public static final Angle DRIVING_THRESHOLD = Radians.of(Math.PI / 6);
+
+    // The input of the joystick beyond which the assisted driving will not control the rotation of
+    // the swerve.
+    public static final double ROTATING_THRESHOLD = 0.02;
+  }
 
   // The control loop used by all of the modules when driving
   public static final ControlMode DRIVE_MODE = ControlMode.OPEN_LOOP_VELOCITY;
@@ -57,8 +73,12 @@ public final class DriveConstants {
   public static final Distance CHASSIS_WIDTH = Inches.of(32.645);
 
   // Maximum achievable translational and rotation velocities and accelerations of the robot.
-  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5.74);
-  public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(16.0);
+  public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);
+  public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(40);
+  public static final LinearAcceleration MAX_SKID_ACCEL =
+      MetersPerSecondPerSecond.of(38); // TODO: Tune
+  public static final LinearAcceleration MAX_TILT_ACCEL =
+      MetersPerSecondPerSecond.of(12); // TODO: Tune
   public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
   public static final AngularAcceleration MAX_ANGULAR_ACCEL =
@@ -73,6 +93,20 @@ public final class DriveConstants {
     new Translation2d(WHEEL_BASE.div(-2), TRACK_WIDTH.div(2)), // rear left
     new Translation2d(WHEEL_BASE.div(-2), TRACK_WIDTH.div(-2)) // rear right
   };
+
+  public static final RobotConfig ROBOT_CONFIG =
+      new RobotConfig(
+          Constants.Robot.MASS,
+          Constants.Robot.MOI,
+          new ModuleConfig(
+              WHEEL_RADIUS,
+              MAX_SPEED,
+              WHEEL_COF,
+              DCMotor.getKrakenX60(1),
+              1 / ModuleConstants.Driving.GEARING,
+              ModuleConstants.Driving.STATOR_LIMIT,
+              1),
+          MODULE_OFFSET);
 
   // angular offsets of the modules, since we use absolute encoders
   // ignored (used as 0) in simulation because the simulated robot doesn't have offsets
@@ -107,14 +141,14 @@ public final class DriveConstants {
     public static final double COUPLING_RATIO = 0;
 
     public static final class Driving {
-      // Possible pinion configurations : 12T, 13T, or 14T.
-      public static final int PINION_TEETH = 14;
-
       public static final Distance CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
 
       // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15 teeth on the
       // bevel pinion
       public static final double GEARING = 1.0 / 45.0 / 22.0 * 15.0 * 14.0;
+
+      public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
+      public static final Current SUPPLY_LIMIT = Amps.of(70);
 
       public static final Distance POSITION_FACTOR = CIRCUMFERENCE.times(GEARING);
       public static final LinearVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);

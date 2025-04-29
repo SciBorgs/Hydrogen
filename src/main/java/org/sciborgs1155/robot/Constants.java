@@ -47,9 +47,9 @@ public class Constants {
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
   public static boolean TUNING = false;
 
+  // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */
   public static class Robot {
-    // TODO: UPDATE ALL OF THESE VALUES.
     public static final Mass MASS = Kilograms.of(25);
     public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
   }
@@ -63,7 +63,7 @@ public class Constants {
   public static final double SLOW_SPEED_MULTIPLIER = 0.33;
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
-  // name of seperate canivore, set to rio if no seperate canivore
+  // The name of seperate canivore, set to rio if no seperate canivore
   public static final String DRIVE_CANIVORE = "drivetrain";
 
   // Origin at corner of blue alliance side of field
