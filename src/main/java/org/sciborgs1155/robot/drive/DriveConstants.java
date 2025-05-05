@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
+import static java.lang.Math.PI;
 
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.RobotConfig;
@@ -30,6 +31,8 @@ public final class DriveConstants {
     OPEN_LOOP_VELOCITY;
   }
 
+  public static record FFConstants(double kS, double kV, double kA) {}
+
   /** The type of modules being used. */
   public static enum ModuleType {
     TALON, // Kraken X60 Drive, Kraken X60 Turn
@@ -51,6 +54,10 @@ public final class DriveConstants {
     // The input of the joystick beyond which the assisted driving will not control the rotation of
     // the swerve.
     public static final double ROTATING_THRESHOLD = 0.02;
+  }
+
+  public static final class Skid {
+    public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3); // 3 is random, change
   }
 
   // The control loop used by all of the modules when driving
@@ -82,10 +89,10 @@ public final class DriveConstants {
   public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
   public static final AngularAcceleration MAX_ANGULAR_ACCEL =
-      RadiansPerSecond.per(Second).of(MAX_ACCEL.in(MetersPerSecondPerSecond) / RADIUS.in(Meters));
+      RadiansPerSecondPerSecond.of(MAX_ACCEL.in(MetersPerSecondPerSecond) / RADIUS.in(Meters));
 
   // Arbitrary max rotational velocity for the driver to effectively control the robot
-  public static final AngularVelocity TELEOP_ANGULAR_SPEED = Radians.per(Second).of(2 * Math.PI);
+  public static final AngularVelocity TELEOP_ANGULAR_SPEED = RadiansPerSecond.of(2 * Math.PI);
 
   public static final Translation2d[] MODULE_OFFSET = {
     new Translation2d(WHEEL_BASE.div(2), TRACK_WIDTH.div(2)), // front left
@@ -141,11 +148,9 @@ public final class DriveConstants {
     public static final double COUPLING_RATIO = 0;
 
     public static final class Driving {
-      public static final Distance CIRCUMFERENCE = Meters.of(2.0 * Math.PI * 0.0381);
+      public static final Distance CIRCUMFERENCE = WHEEL_RADIUS.times(2 * PI);
 
-      // 45 teeth on the wheel's bevel gear, 22 teeth on the first-stage spur gear, 15 teeth on the
-      // bevel pinion
-      public static final double GEARING = 1.0 / 45.0 / 22.0 * 15.0 * 14.0;
+      public static final double GEARING = 5.68;
 
       public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
       public static final Current SUPPLY_LIMIT = Amps.of(70);
@@ -156,47 +161,28 @@ public final class DriveConstants {
       public static final Current CURRENT_LIMIT = Amps.of(50);
 
       public static final class PID {
-        public static final class SPARK {
-          public static final double P = 3.2;
-          public static final double I = 0.0;
-          public static final double D = 0.0;
-        }
-
-        public static final class TALON {
-          public static final double P = 3.2;
-          public static final double I = 0.0;
-          public static final double D = 0.0;
-        }
+        public static final double P = 3.2;
+        public static final double I = 0.0;
+        public static final double D = 0.0;
       }
 
-      public static final class FF {
-        public static final class SPARK {
-          public static final double S = 0.088468;
-          public static final double V = 2.1314;
-          public static final double A = 0.33291;
-        }
+      public static final FFConstants FRONT_RIGHT_FF = new FFConstants(0.21459, 2.0025, 0.094773);
+      public static final FFConstants FRONT_LEFT_FF = new FFConstants(0.23328, 2.0243, 0.045604);
+      public static final FFConstants REAR_LEFT_FF = new FFConstants(0.14362, 2.0942, 0.21547);
+      public static final FFConstants REAR_RIGHT_FF = new FFConstants(0.15099, 1.9379, 0.30998);
 
-        public static final class TALON {
-          public static final double S = 0.088468;
-          public static final double V = 2.1314;
-          public static final double A = 0.33291;
-        }
-      }
+      public static final List<FFConstants> FF_CONSTANTS =
+          List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
     }
 
     static final class Turning {
-      public static final double MOTOR_GEARING = 1.0 / 4.0 / 3.0;
-      public static final double ENCODER_GEARING = 1;
-
-      public static final Angle POSITION_FACTOR = Rotations.of(ENCODER_GEARING);
-      public static final AngularVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
-
-      public static final boolean ENCODER_INVERTED = true;
+      public static final double GEARING = 12.1;
+      public static final double CANCODER_GEARING = 1;
 
       public static final Current CURRENT_LIMIT = Amps.of(20);
 
       public static final class PID {
-        public static final double P = 9;
+        public static final double P = 50;
         public static final double I = 0.0;
         public static final double D = 0.05;
       }

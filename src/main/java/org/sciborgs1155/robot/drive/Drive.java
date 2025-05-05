@@ -39,7 +39,6 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.Distance;
-import edu.wpi.first.wpilibj.Tracer;
 import edu.wpi.first.wpilibj.smartdashboard.Field2d;
 import edu.wpi.first.wpilibj.smartdashboard.FieldObject2d;
 import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
@@ -69,6 +68,7 @@ import org.sciborgs1155.lib.Assertion.EqualityAssertion;
 import org.sciborgs1155.lib.Assertion.TruthAssertion;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
+import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.FieldConstants;
@@ -635,7 +635,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
                                 robotRelativeChassisSpeeds().vyMetersPerSecond))
                         .norm())
             .summaryStatistics();
-    return diffs.getMax() - diffs.getMin() > SKIDDING_THRESHOLD.in(MetersPerSecond);
+    return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
   }
 
   /**
