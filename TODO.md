@@ -7,7 +7,8 @@ Todo:
 - update utils
 - add updated odometry
     - faster odometry
-    - assisted driving
+    - assisted driving <-- TODO FUTURE
+    - what ever sample choreo thing <-- TODO FUTURE
     - acceleration limiting
 - vision
     - figure what we changed this year

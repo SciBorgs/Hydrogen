@@ -86,7 +86,7 @@ public interface ModuleIO extends Logged, AutoCloseable {
    *
    * @param angle The angle setpoint.
    */
-  void setTurnSetpoint(double angle);
+  void setTurnSetpoint(Rotation2d angle);
 
   /**
    * Updates controllers based on an optimized desired state and actuates the module accordingly.
@@ -107,6 +107,14 @@ public interface ModuleIO extends Logged, AutoCloseable {
    * @param voltage The voltage to supply to the drive motor.
    */
   void updateInputs(Rotation2d angle, double voltage);
+
+  double[][] moduleOdometryData();
+
+  /** Returns the list of positions of the module for the last tick, from a faster thread. */
+  SwerveModulePosition[] odometryData();
+
+  /** Returns odometry-affiliated timestamps for pose estimation. */
+  double[] timestamps();
 
   @Override
   void close();
