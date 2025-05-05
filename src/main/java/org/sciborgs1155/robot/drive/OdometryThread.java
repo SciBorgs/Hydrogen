@@ -2,7 +2,6 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Milliseconds;
 import static edu.wpi.first.units.Units.Seconds;
-import static org.sciborgs1155.robot.Constants.CANIVORE_NAME;
 import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
 import static org.sciborgs1155.robot.Constants.ODOMETRY_PERIOD;
 
@@ -22,7 +21,7 @@ import java.util.function.DoubleSupplier;
  *
  * <p>Inspired by 6328's PhoenixOdometryThread.
  */
-public class TalonOdometryThread extends Thread {
+public class OdometryThread extends Thread {
   private BaseStatusSignal[] talonSignals = new BaseStatusSignal[0];
   private final List<Queue<Double>> talonQueues = new ArrayList<>();
   private final List<DoubleSupplier> otherSignals = new ArrayList<>();
@@ -30,11 +29,11 @@ public class TalonOdometryThread extends Thread {
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
   private static boolean isCANFD = new CANBus(DRIVE_CANIVORE).isNetworkFD();
-  private static TalonOdometryThread instance = null;
+  private static OdometryThread instance = null;
 
-  public static TalonOdometryThread getInstance() {
+  public static OdometryThread getInstance() {
     if (instance == null) {
-      instance = new TalonOdometryThread();
+      instance = new OdometryThread();
     }
     return instance;
   }
@@ -88,7 +87,7 @@ public class TalonOdometryThread extends Thread {
   public void run() {
     while (true) {
       try {
-        if (TalonOdometryThread.isCANFD && talonSignals.length > 0) {
+        if (OdometryThread.isCANFD && talonSignals.length > 0) {
           BaseStatusSignal.waitForAll(2.0 * ODOMETRY_PERIOD.in(Seconds), talonSignals);
         } else {
           Thread.sleep(Math.round(ODOMETRY_PERIOD.in(Milliseconds)));

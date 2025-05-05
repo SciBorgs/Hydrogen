@@ -2,15 +2,12 @@ package org.sciborgs1155.robot.drive;
 
 import com.studica.frc.AHRS;
 import com.studica.frc.AHRS.NavXComType;
-
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.numbers.N2;
-
 import java.util.Queue;
-
 import org.sciborgs1155.lib.FaultLogger;
 
 /** GyroIO implementation for NavX */
@@ -23,8 +20,8 @@ public class NavXGyro implements GyroIO {
   public NavXGyro() {
     FaultLogger.register(ahrs);
 
-    position = TalonOdometryThread.getInstance().registerSignal(ahrs::getYaw);
-    timestamp = TalonOdometryThread.getInstance().makeTimestampQueue();
+    position = OdometryThread.getInstance().registerSignal(ahrs::getYaw);
+    timestamp = OdometryThread.getInstance().makeTimestampQueue();
   }
 
   @Override
@@ -56,14 +53,13 @@ public class NavXGyro implements GyroIO {
   @Override
   public Vector<N2> acceleration() {
     return VecBuilder.fill(
-      ahrs.getWorldLinearAccelX(),
-      ahrs.getWorldLinearAccelY()
-    ); // .rotateBy(canandgyro.getRotation2d());
+        ahrs.getWorldLinearAccelX(),
+        ahrs.getWorldLinearAccelY()); // .rotateBy(canandgyro.getRotation2d());
 
     // TODO We don't know if this is field relative or robot relative. if robot relative add in the
     // commented code.
   }
-  
+
   @Override
   public void reset(Rotation2d heading) {
     ahrs.setAngleAdjustment(heading.getDegrees());
@@ -72,5 +68,4 @@ public class NavXGyro implements GyroIO {
 
   @Override
   public void close() throws Exception {}
-
 }

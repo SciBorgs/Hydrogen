@@ -14,6 +14,7 @@ import static org.sciborgs1155.robot.Constants.allianceRotation;
 import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
+import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
@@ -47,7 +48,6 @@ import edu.wpi.first.wpilibj2.command.SubsystemBase;
 import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
-
 import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
@@ -77,8 +77,6 @@ import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
-
-import com.ctre.phoenix6.SignalLogger;
 
 public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   // Modules
@@ -215,11 +213,11 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     this.maxSkidAccel =
         Tuning.entry(
             "Robot/tuning/drive/Max Skid Accel", MAX_SKID_ACCEL.in(MetersPerSecondPerSecond));
-    
+
     // Module lists
     modules = List.of(this.frontLeft, this.frontRight, this.rearLeft, this.rearRight);
     modules2d = new FieldObject2d[modules.size()];
-    
+
     // Faster odometry
     lastPositions = modulePositions();
     lastHeading = gyro.rotation2d();
@@ -238,7 +236,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
             .toArray(BooleanSupplier[]::new);
 
     // Characterization
-translationCharacterization =
+    translationCharacterization =
         new SysIdRoutine(
             new SysIdRoutine.Config(
                 null,
@@ -291,7 +289,7 @@ translationCharacterization =
     rotationController.enableContinuousInput(0, 2 * Math.PI);
     rotationController.setTolerance(Rotation.TOLERANCE.in(Radians));
 
-    TalonOdometryThread.getInstance().start();
+    OdometryThread.getInstance().start();
 
     if (TUNING) {
       SmartDashboard.putData(
@@ -305,7 +303,8 @@ translationCharacterization =
       SmartDashboard.putData(
           "translation dynamic backward", translationCharacterization.dynamic(Direction.kReverse));
       SmartDashboard.putData(
-          "rotation quasistatic forward", rotationalCharacterization.quasistatic(Direction.kForward));
+          "rotation quasistatic forward",
+          rotationalCharacterization.quasistatic(Direction.kForward));
       SmartDashboard.putData(
           "rotation dynamic forward", rotationalCharacterization.dynamic(Direction.kForward));
       SmartDashboard.putData(
@@ -433,7 +432,7 @@ translationCharacterization =
                 - target.minus(pose().getTranslation()).getAngle().getRadians())
         < rotationController.getErrorTolerance();
   }
-  
+
   /**
    * Checks whether the robot is at a certain field coordinate.
    *
@@ -481,7 +480,6 @@ translationCharacterization =
     return atPose(pose, Translation.TOLERANCE, Rotation.TOLERANCE);
   }
 
-
   /**
    * Sets the states of each swerve module using target speeds that the drivetrain will work to
    * reach with applied acceleration limits to ensure smooth and safe operation.
@@ -518,7 +516,6 @@ translationCharacterization =
         mode);
   }
 
-  
   /**
    * Applies forward acceleration limiting to the desired acceleration based on the current
    * velocity. Limits the acceleration in the direction of the current velocity to prevent excessive
@@ -558,7 +555,6 @@ translationCharacterization =
         ? deltaV
         : deltaV.unit().times(Math.min(deltaV.norm(), maxSkidAccel.get() * PERIOD.in(Seconds)));
   }
-
 
   /**
    * Sets the states of each of the swerve modules.
@@ -614,16 +610,16 @@ translationCharacterization =
     return driveTo(() -> goal);
   }
 
-    /** Returns the position of each module in radians. */
-    public double[] getWheelRadiusCharacterizationPositions() {
-      double[] values = new double[4];
-      for (int i = 0; i < 4; i++) {
-        values[i] = modules.get(i).drivePosition() / WHEEL_RADIUS.in(Meters);
-      }
-      return values;
+  /** Returns the position of each module in radians. */
+  public double[] getWheelRadiusCharacterizationPositions() {
+    double[] values = new double[4];
+    for (int i = 0; i < 4; i++) {
+      values[i] = modules.get(i).drivePosition() / WHEEL_RADIUS.in(Meters);
     }
+    return values;
+  }
 
-    /**
+  /**
    * @return If the robot is skidding.
    */
   @Logged
@@ -642,7 +638,7 @@ translationCharacterization =
     return diffs.getMax() - diffs.getMin() > SKIDDING_THRESHOLD.in(MetersPerSecond);
   }
 
-    /**
+  /**
    * @return If the robot is colliding.
    */
   @Logged
@@ -657,7 +653,6 @@ translationCharacterization =
         .reduce(false, (a, b) -> a || b);
   }
 
-
   /** Resets all drive encoders to read a position of 0. */
   public void resetEncoders() {
     modules.forEach(ModuleIO::resetEncoders);
@@ -669,9 +664,9 @@ translationCharacterization =
   }
 
   /** Sets the gyro reading of the robot to a specified rotation. */
-    public Command resetGyro(Rotation2d rotation) {
-      return runOnce(() -> gyro.reset(rotation)).withName("gyro reset");
-    }
+  public Command resetGyro(Rotation2d rotation) {
+    return runOnce(() -> gyro.reset(rotation)).withName("gyro reset");
+  }
 
   /** Returns the module states. */
   @Log.NT
@@ -782,8 +777,8 @@ translationCharacterization =
     }
 
     log(
-            "/Robot/drive/command",
-            Optional.ofNullable(getCurrentCommand()).map(Command::getName).orElse("none"));
+        "/Robot/drive/command",
+        Optional.ofNullable(getCurrentCommand()).map(Command::getName).orElse("none"));
 
     Tracer.endTrace();
   }
@@ -791,13 +786,13 @@ translationCharacterization =
   @Override
   public void simulationPeriodic() {
     simRotation =
-    simRotation.rotateBy(
-        Rotation2d.fromRadians(
-            !Double.isNaN(robotRelativeChassisSpeeds().omegaRadiansPerSecond)
-                ? robotRelativeChassisSpeeds().omegaRadiansPerSecond
-                    * Constants.PERIOD.in(Seconds)
-                : 0));
-                }
+        simRotation.rotateBy(
+            Rotation2d.fromRadians(
+                !Double.isNaN(robotRelativeChassisSpeeds().omegaRadiansPerSecond)
+                    ? robotRelativeChassisSpeeds().omegaRadiansPerSecond
+                        * Constants.PERIOD.in(Seconds)
+                    : 0));
+  }
 
   /** Stops the drivetrain. */
   public Command stop() {
