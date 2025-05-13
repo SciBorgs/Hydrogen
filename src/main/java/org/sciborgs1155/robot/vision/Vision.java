@@ -14,6 +14,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
@@ -26,6 +27,7 @@ import org.photonvision.simulation.VisionSystemSim;
 import org.photonvision.targeting.PhotonPipelineResult;
 import org.photonvision.targeting.PhotonTrackedTarget;
 import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 
@@ -103,6 +105,7 @@ public class Vision implements Logged {
    *     used for estimation.
    */
   public PoseEstimate[] estimatedGlobalPoses() {
+    Tracer.startTrace("vision estimatedGlobalPoses");
     List<PoseEstimate> estimates = new ArrayList<>();
     for (int i = 0; i < estimators.length; i++) {
       var unread = cameras[i].getAllUnreadResults();
@@ -141,7 +144,20 @@ public class Vision implements Logged {
                   estimates.add(
                       new PoseEstimate(e, estimationStdDevs(e.estimatedPose.toPose2d(), result))));
     }
+    Tracer.endTrace();
     return estimates.toArray(PoseEstimate[]::new);
+  }
+
+  /**
+   * Sets the pose estimation strategy of relevant cameras. TODO: update this with the actual
+   * cameras!
+   */
+  public void setPoseStrategy(PoseStrategy strategy) {
+    for (int i = 0; i < estimators.length; i++) {
+      if (Set.of("front left", "front right").contains(cameras[i].getName())) {
+        estimators[i].setPrimaryStrategy(strategy);
+      }
+    }
   }
 
   /**
@@ -170,32 +186,36 @@ public class Vision implements Logged {
       Pose2d estimatedPose, PhotonPipelineResult pipelineResult) {
     var estStdDevs = VisionConstants.SINGLE_TAG_STD_DEVS;
     var targets = pipelineResult.getTargets();
-    int numTags = 0;
     double avgDist = 0;
     double avgWeight = 0;
     for (var tgt : targets) {
       var tagPose = TAG_LAYOUT.getTagPose(tgt.getFiducialId());
       if (tagPose.isEmpty()) continue;
-      numTags++;
       avgDist +=
           tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.getTranslation());
       avgWeight += TAG_WEIGHTS[tgt.getFiducialId() - 1];
     }
-    if (numTags == 0) return estStdDevs;
+    if (targets.size() == 0) return estStdDevs;
 
-    avgDist /= numTags;
-    avgWeight /= numTags;
+    avgDist /= targets.size();
+    avgWeight /= targets.size();
 
     // Decrease std devs if multiple targets are visibleX
-    if (numTags > 1) estStdDevs = VisionConstants.MULTIPLE_TAG_STD_DEVS;
+    if (targets.size() > 1) estStdDevs = VisionConstants.MULTIPLE_TAG_STD_DEVS;
     // Increase std devs based on (average) distance
-    if (numTags == 1 && avgDist > 4)
+    if (targets.size() == 1 && avgDist > 4)
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
     else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
 
     estStdDevs = estStdDevs.times(avgWeight);
 
     return estStdDevs;
+  }
+
+  /** Returns all camera transforms from the robot. TODO: update this! */
+  @Log.NT
+  public Transform3d[] cameraTransforms() {
+    return new Transform3d[] {BACK_LEFT_CAMERA.robotToCam(), BACK_RIGHT_CAMERA.robotToCam()};
   }
 
   /**

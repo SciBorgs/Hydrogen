@@ -223,8 +223,8 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
-  public void setTurnSetpoint(double angle) {
-    turnPID.setReference(angle, ControlType.kPosition);
+  public void setTurnSetpoint(Rotation2d angle) {
+    turnPID.setReference(angle.getRadians(), ControlType.kPosition);
   }
 
   @Override
@@ -240,7 +240,7 @@ public class SparkModule implements ModuleIO {
       setDriveSetpoint(setpoint.speedMetersPerSecond);
     }
 
-    setTurnSetpoint(setpoint.angle.getRadians());
+    setTurnSetpoint(new Rotation2d(setpoint.angle.getRadians()));
     this.setpoint = setpoint;
   }
 

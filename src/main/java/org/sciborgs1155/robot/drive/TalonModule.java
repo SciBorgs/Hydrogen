@@ -2,54 +2,48 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.FaultLogger.*;
+import static org.sciborgs1155.robot.Constants.DRIVE_CANIVORE;
+import static org.sciborgs1155.robot.Constants.ODOMETRY_PERIOD;
+import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
-import com.ctre.phoenix6.StatusSignal;
+import com.ctre.phoenix6.BaseStatusSignal;
+import com.ctre.phoenix6.StatusCode;
 import com.ctre.phoenix6.configs.TalonFXConfiguration;
+import com.ctre.phoenix6.controls.PositionVoltage;
 import com.ctre.phoenix6.controls.VelocityVoltage;
+import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.ParentDevice;
 import com.ctre.phoenix6.hardware.TalonFX;
+import com.ctre.phoenix6.signals.FeedbackSensorSourceValue;
+import com.ctre.phoenix6.signals.InvertedValue;
 import com.ctre.phoenix6.signals.NeutralModeValue;
-import com.revrobotics.spark.SparkAbsoluteEncoder;
-import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
-import com.revrobotics.spark.SparkClosedLoopController;
-import com.revrobotics.spark.SparkLowLevel.MotorType;
-import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig;
-import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
-import com.revrobotics.spark.config.SparkMaxConfig;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import edu.wpi.first.units.measure.Angle;
-import edu.wpi.first.units.measure.AngularVelocity;
-import java.util.Set;
+import java.util.Queue;
 import monologue.Annotations.Log;
-import org.sciborgs1155.lib.SparkUtils;
-import org.sciborgs1155.lib.SparkUtils.Data;
-import org.sciborgs1155.lib.SparkUtils.Sensor;
 import org.sciborgs1155.lib.TalonUtils;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
+import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
 public class TalonModule implements ModuleIO {
   private final TalonFX driveMotor; // Kraken X60
-  private final SparkMax turnMotor; // NEO 550
-  private final SparkMaxConfig turnMotorConfig;
-
-  private final StatusSignal<Angle> drivePos;
-  private final StatusSignal<AngularVelocity> driveVelocity;
-  private final SparkAbsoluteEncoder turningEncoder;
+  private final TalonFX turnMotor; // Kraken X60
+  private final CANcoder encoder;
 
   private final VelocityVoltage velocityOut = new VelocityVoltage(0);
+  private final PositionVoltage rotationsIn = new PositionVoltage(0);
 
-  private final SparkClosedLoopController turnPID;
+  private final OdometryThread talonThread;
+  private final Queue<Double> position;
+  private final Queue<Double> rotation;
+  private final Queue<Double> timestamp;
+
   private final SimpleMotorFeedforward driveFF;
-
-  private final Rotation2d angularOffset;
 
   @Log.NT private SwerveModuleState setpoint = new SwerveModuleState();
 
@@ -57,86 +51,95 @@ public class TalonModule implements ModuleIO {
 
   private final String name;
 
-  public TalonModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
+  public TalonModule(
+      int drivePort,
+      int turnPort,
+      int sensorID,
+      Rotation2d angularOffset,
+      FFConstants ff,
+      String name,
+      boolean invert) {
+    // drive motor
+    driveMotor = new TalonFX(drivePort, DRIVE_CANIVORE);
+    driveFF = new SimpleMotorFeedforward(ff.kS(), ff.kV(), ff.kA());
 
-    // Drive Motor
+    TalonFXConfiguration talonDriveConfig = new TalonFXConfiguration();
 
-    driveMotor = new TalonFX(drivePort);
-    drivePos = driveMotor.getPosition();
-    driveVelocity = driveMotor.getVelocity();
-    driveFF =
-        new SimpleMotorFeedforward(Driving.FF.TALON.S, Driving.FF.TALON.V, Driving.FF.TALON.A);
+    talonDriveConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    talonDriveConfig.Feedback.SensorToMechanismRatio =
+        Driving.GEARING / Driving.CIRCUMFERENCE.in(Meters);
+    talonDriveConfig.CurrentLimits.StatorCurrentLimit = Driving.STATOR_LIMIT.in(Amps);
 
-    drivePos.setUpdateFrequency(1 / SENSOR_PERIOD.in(Seconds));
-    driveVelocity.setUpdateFrequency(1 / SENSOR_PERIOD.in(Seconds));
+    talonDriveConfig.MotorOutput.Inverted =
+        invert ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
-    TalonFXConfiguration talonConfig = new TalonFXConfiguration();
-    // reset config
-    driveMotor.getConfigurator().apply(talonConfig);
+    talonDriveConfig.Slot0.kP = Driving.PID.P;
+    talonDriveConfig.Slot0.kI = Driving.PID.I;
+    talonDriveConfig.Slot0.kD = Driving.PID.D;
 
-    talonConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
-    talonConfig.Feedback.SensorToMechanismRatio = Driving.POSITION_FACTOR.in(Meters);
-    talonConfig.CurrentLimits.SupplyCurrentLimit = Driving.CURRENT_LIMIT.in(Amps);
+    turnMotor = new TalonFX(turnPort, DRIVE_CANIVORE);
+    encoder = new CANcoder(sensorID, DRIVE_CANIVORE);
 
-    talonConfig.Slot0.kP = Driving.PID.TALON.P;
-    talonConfig.Slot0.kI = Driving.PID.TALON.I;
-    talonConfig.Slot0.kD = Driving.PID.TALON.D;
+    // turn motor
+    TalonFXConfiguration talonTurnConfig = new TalonFXConfiguration();
 
-    driveMotor.getConfigurator().apply(talonConfig);
+    talonTurnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    talonTurnConfig.MotorOutput.Inverted =
+        invert ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
+
+    talonTurnConfig.Feedback.SensorToMechanismRatio = Turning.CANCODER_GEARING;
+    talonTurnConfig.Feedback.FeedbackSensorSource = FeedbackSensorSourceValue.RemoteCANcoder;
+    talonTurnConfig.Feedback.FeedbackRemoteSensorID = sensorID;
+
+    talonTurnConfig.ClosedLoopGeneral.ContinuousWrap = true;
+
+    talonTurnConfig.Slot0.kP = Turning.PID.P;
+    talonTurnConfig.Slot0.kI = Turning.PID.I;
+    talonTurnConfig.Slot0.kD = Turning.PID.D;
+
+    talonTurnConfig.CurrentLimits.StatorCurrentLimit = Turning.CURRENT_LIMIT.in(Amps);
+
+    for (int i = 0; i < 5; i++) {
+      StatusCode success = driveMotor.getConfigurator().apply(talonDriveConfig);
+      if (success.isOK()) break;
+    }
+
+    for (int i = 0; i < 5; i++) {
+      StatusCode success = turnMotor.getConfigurator().apply(talonTurnConfig);
+      if (success.isOK()) break;
+    }
+
+    // reduces update frequency on unnecessary signals
+    // only reset on robot restart and redeploy or calling motor.resetSignalFrequencies()
+    ParentDevice.optimizeBusUtilizationForAll(driveMotor, turnMotor);
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        1 / ODOMETRY_PERIOD.in(Seconds),
+        driveMotor.getPosition(),
+        driveMotor.getVelocity(),
+        turnMotor.getPosition(),
+        turnMotor.getVelocity());
+
+    BaseStatusSignal.setUpdateFrequencyForAll(
+        1 / PERIOD.in(Seconds), driveMotor.getMotorVoltage(), turnMotor.getMotorVoltage());
+
+    register(driveMotor);
+    register(turnMotor);
+    register(encoder);
 
     TalonUtils.addMotor(driveMotor);
+    TalonUtils.addMotor(turnMotor);
 
-    // Turn Motor
+    talonThread = OdometryThread.getInstance();
 
-    turnMotor = new SparkMax(turnPort, MotorType.kBrushless);
-    turningEncoder = turnMotor.getAbsoluteEncoder();
-    turnPID = turnMotor.getClosedLoopController();
-    turnMotorConfig = new SparkMaxConfig();
+    position = talonThread.registerSignal(driveMotor.getPosition());
+    rotation = talonThread.registerSignal(turnMotor.getPosition());
 
-    check(
-        turnMotor,
-        turnMotor.configure(
-            turnMotorConfig, ResetMode.kResetSafeParameters, PersistMode.kNoPersistParameters));
-
-    turnMotorConfig.apply(
-        turnMotorConfig
-            .closedLoop
-            .pid(Turning.PID.P, Turning.PID.I, Turning.PID.D)
-            .positionWrappingEnabled(true)
-            .positionWrappingInputRange(-Math.PI, Math.PI)
-            .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
-
-    turnMotorConfig.apply(
-        turnMotorConfig
-            .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
-
-    turnMotorConfig.apply(turnMotorConfig.encoder.inverted(true));
-
-    turnMotorConfig.apply(
-        turnMotorConfig
-            .encoder
-            .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
-            .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
-            .uvwAverageDepth(2));
-
-    turnMotorConfig.apply(
-        SparkUtils.getSignalsConfigurationFrameStrategy(
-            Set.of(Data.POSITION, Data.VELOCITY, Data.APPLIED_OUTPUT),
-            Set.of(Sensor.ABSOLUTE),
-            false));
-
-    check(
-        turnMotor,
-        turnMotor.configure(
-            turnMotorConfig, ResetMode.kNoResetSafeParameters, PersistMode.kPersistParameters));
-
-    register(turnMotor);
+    timestamp = talonThread.makeTimestampQueue();
 
     resetEncoders();
 
     this.name = name;
-    this.angularOffset = angularOffset;
   }
 
   @Override
@@ -156,21 +159,17 @@ public class TalonModule implements ModuleIO {
 
   @Override
   public double drivePosition() {
-    return drivePos.getValueAsDouble();
+    return driveMotor.getPosition().getValueAsDouble();
   }
 
   @Override
   public double driveVelocity() {
-    return driveVelocity.getValueAsDouble();
+    return driveMotor.getVelocity().getValueAsDouble();
   }
 
   @Override
   public Rotation2d rotation() {
-    lastRotation =
-        SparkUtils.wrapCall(
-                turnMotor,
-                Rotation2d.fromRadians(turningEncoder.getPosition()).minus(angularOffset))
-            .orElse(lastRotation);
+    lastRotation = Rotation2d.fromRotations(turnMotor.getPosition().getValueAsDouble());
     return lastRotation;
   }
 
@@ -201,15 +200,16 @@ public class TalonModule implements ModuleIO {
   }
 
   @Override
-  public void setTurnSetpoint(double angle) {
-    turnPID.setReference(angle, ControlType.kPosition);
+  public void setTurnSetpoint(Rotation2d angle) {
+    turnMotor.setControl(rotationsIn.withPosition(angle.getRotations()).withSlot(0));
   }
 
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
-    setpoint.optimize(rotation());
+    Rotation2d rotation = rotation();
+    setpoint.optimize(rotation);
     // Scale setpoint by cos of turning error to reduce tread wear
-    setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
+    setpoint.cosineScale(rotation);
 
     if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
       setDriveVoltage(driveFF.calculate(setpoint.speedMetersPerSecond));
@@ -217,7 +217,7 @@ public class TalonModule implements ModuleIO {
       setDriveSetpoint(setpoint.speedMetersPerSecond);
     }
 
-    setTurnSetpoint(setpoint.angle.getRadians());
+    setTurnSetpoint(setpoint.angle);
     this.setpoint = setpoint;
   }
 
@@ -225,7 +225,44 @@ public class TalonModule implements ModuleIO {
   public void updateInputs(Rotation2d angle, double voltage) {
     setpoint.angle = angle;
     setDriveVoltage(voltage);
-    setTurnSetpoint(angle.getRadians());
+    setTurnSetpoint(angle);
+  }
+
+  @Override
+  public double[][] moduleOdometryData() {
+    Drive.lock.lock();
+    try {
+      double[][] data = {
+        position.stream().mapToDouble((Double d) -> d).toArray(),
+        rotation.stream().mapToDouble((Double d) -> d).toArray(),
+        timestamp.stream().mapToDouble((Double d) -> d).toArray()
+      };
+      return data;
+    } finally {
+      Drive.lock.unlock();
+    }
+  }
+
+  public SwerveModulePosition[] odometryData() {
+    SwerveModulePosition[] positions = new SwerveModulePosition[20];
+    Drive.lock.lock();
+
+    var data = moduleOdometryData();
+
+    for (int i = 0; i < data[0].length; i++) {
+      positions[i] = new SwerveModulePosition(data[0][i], Rotation2d.fromRotations(data[1][i]));
+    }
+
+    position.clear();
+    rotation.clear();
+    timestamp.clear();
+
+    Drive.lock.unlock();
+    return positions;
+  }
+
+  public double[] timestamps() {
+    return moduleOdometryData()[2];
   }
 
   @Override
