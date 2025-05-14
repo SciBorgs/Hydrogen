@@ -18,13 +18,14 @@ import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
+import edu.wpi.first.epilogue.Epilogue;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
 import java.util.Queue;
 import java.util.Set;
-import monologue.Annotations.Log;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
@@ -58,7 +59,7 @@ public class SparkModule implements ModuleIO {
   private double lastVelocity;
   private Rotation2d lastRotation;
 
-  @Log.NT private SwerveModuleState setpoint = new SwerveModuleState();
+  @Logged private SwerveModuleState setpoint = new SwerveModuleState();
 
   private final String name;
 
@@ -184,7 +185,7 @@ public class SparkModule implements ModuleIO {
   public void setDriveVoltage(double voltage) {
     driveMotor.setVoltage(voltage);
     check(driveMotor);
-    log("drive current", driveMotor.getOutputCurrent());
+    Epilogue.log("drive current", driveMotor.getOutputCurrent());
   }
 
   @Override

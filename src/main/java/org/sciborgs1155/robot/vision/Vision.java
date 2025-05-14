@@ -15,7 +15,6 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.Set;
-import monologue.Annotations.Log;
 import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
 import org.photonvision.PhotonCamera;
@@ -165,7 +164,7 @@ public class Vision implements Logged {
    *
    * @return An array of Pose3ds.
    */
-  @Log.NT
+  @Logged
   public Pose3d[] getSeenTags() {
     return Arrays.stream(lastResults)
         .flatMap(c -> c.targets.stream())
@@ -213,7 +212,7 @@ public class Vision implements Logged {
   }
 
   /** Returns all camera transforms from the robot. TODO: update this! */
-  @Log.NT
+  @Logged
   public Transform3d[] cameraTransforms() {
     return new Transform3d[] {BACK_LEFT_CAMERA.robotToCam(), BACK_RIGHT_CAMERA.robotToCam()};
   }

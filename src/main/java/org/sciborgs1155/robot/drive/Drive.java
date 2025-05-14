@@ -8,6 +8,7 @@ import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static java.lang.Math.atan;
 import static org.sciborgs1155.lib.Assertion.*;
+import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.Constants.allianceRotation;
@@ -15,6 +16,7 @@ import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
 import com.ctre.phoenix6.SignalLogger;
+import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.MathUtil;
 import edu.wpi.first.math.VecBuilder;
@@ -59,9 +61,6 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
-import monologue.Annotations.IgnoreLogged;
-import monologue.Annotations.Log;
-import monologue.Logged;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.Assertion.EqualityAssertion;
@@ -76,16 +75,17 @@ import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
-public class Drive extends SubsystemBase implements Logged, AutoCloseable {
+public class Drive extends SubsystemBase implements AutoCloseable {
   // Modules
   private final ModuleIO frontLeft;
   private final ModuleIO frontRight;
   private final ModuleIO rearLeft;
   private final ModuleIO rearRight;
 
-  @IgnoreLogged private final List<ModuleIO> modules;
+  private final List<ModuleIO> modules;
 
   private final BooleanSupplier[] modulesStalling;
 
@@ -138,7 +138,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   private Rotation2d lastHeading;
   public static final ReentrantLock lock = new ReentrantLock();
 
-  @Log.NT private final Field2d field2d = new Field2d();
+  @Logged private final Field2d field2d = new Field2d();
   private final FieldObject2d[] modules2d;
 
   // Characterization routines
@@ -146,7 +146,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   private final SysIdRoutine rotationalCharacterization;
 
   // Movement automation
-  @Log.NT
+  @Logged
   private final ProfiledPIDController translationController =
       new ProfiledPIDController(
           translationP.get(),
@@ -155,7 +155,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
           new TrapezoidProfile.Constraints(
               MAX_SPEED.in(MetersPerSecond), MAX_ACCEL.in(MetersPerSecondPerSecond)));
 
-  @Log.NT
+  @Logged
   private final PIDController rotationController =
       new PIDController(rotationP.get(), rotationI.get(), rotationD.get());
 
@@ -168,21 +168,21 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
         case TALON ->
             new Drive(
                 new ReduxGyro(),
-                new TalonModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
+                new TalonModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, FRONT_LEFT_CANCODER, ANGULAR_OFFSETS.get(0), Driving.FF_CONSTANTS.get(0), "FL", false),
                 new TalonModule(
-                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
-                new TalonModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
+                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, FRONT_RIGHT_CANCODER, ANGULAR_OFFSETS.get(1), Driving.FF_CONSTANTS.get(1), "FR", false),
+                new TalonModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, REAR_LEFT_CANCODER, ANGULAR_OFFSETS.get(2), Driving.FF_CONSTANTS.get(2), "RL", false),
                 new TalonModule(
-                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"));
+                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, REAR_RIGHT_CANCODER, ANGULAR_OFFSETS.get(3), Driving.FF_CONSTANTS.get(3), "RR", false));
         case SPARK ->
             new Drive(
                 new NavXGyro(),
-                new SparkModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), "FL"),
+                new SparkModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), Driving.FF_CONSTANTS.get(0), "FL", false),
                 new SparkModule(
-                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), "FR"),
-                new SparkModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), "RL"),
+                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), Driving.FF_CONSTANTS.get(1), "FR", false),
+                new SparkModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), Driving.FF_CONSTANTS.get(2), "RL", false),
                 new SparkModule(
-                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), "RR"));
+                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), Driving.FF_CONSTANTS.get(3), "RR", false));
       };
     } else {
       return new Drive(
@@ -320,7 +320,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    *
    * @return The pose.
    */
-  @Log.NT
+  @Logged
   public Pose2d pose() {
     return odometry.getEstimatedPosition();
   }
@@ -335,7 +335,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    *
    * @return The rotation.
    */
-  @Log.NT
+  @Logged
   public Rotation2d heading() {
     return pose().getRotation();
   }
@@ -348,7 +348,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
    *
    * @return The gyro heading, set after enable to be field-relative after odometry correction.
    */
-  @Log.NT
+  @Logged
   public Rotation2d gyroHeading() {
     return lastHeading;
   }
@@ -415,7 +415,7 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
     return drive(vx, vy, () -> translation.get().minus(pose().getTranslation()).getAngle());
   }
 
-  @Log.NT
+  @Logged
   public boolean atRotationalSetpoint() {
     return rotationController.atSetpoint();
   }
@@ -669,31 +669,31 @@ public class Drive extends SubsystemBase implements Logged, AutoCloseable {
   }
 
   /** Returns the module states. */
-  @Log.NT
+  @Logged
   public SwerveModuleState[] moduleStates() {
     return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module states. */
-  @Log.NT
+  @Logged
   private SwerveModuleState[] moduleSetpoints() {
     return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
   }
 
   /** Returns the module positions. */
-  @Log.NT
+  @Logged
   public SwerveModulePosition[] modulePositions() {
     return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
   }
 
   /** Returns the robot-relative chassis speeds. */
-  @Log.NT
+  @Logged
   public ChassisSpeeds robotRelativeChassisSpeeds() {
     return kinematics.toChassisSpeeds(moduleStates());
   }
 
   /** Returns the field-relative chassis speeds. */
-  @Log.NT
+  @Logged
   public ChassisSpeeds fieldRelativeChassisSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeChassisSpeeds(), heading());
   }

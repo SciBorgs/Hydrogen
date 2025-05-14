@@ -17,10 +17,11 @@ public final class Ports {
           entry(Drive.REAR_LEFT_TURNING, "RL turn"),
           entry(Drive.FRONT_RIGHT_TURNING, "FR turn"),
           entry(Drive.REAR_RIGHT_TURNING, "RR turn")
-          // entry(Drive.FRONT_LEFT_CANCODER, "FL cancoder"),
-          // entry(Drive.REAR_LEFT_CANCODER, "RL cancoder"),
-          // entry(Drive.FRONT_RIGHT_CANCODER, "FR cancoder"),
-          // entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"),
+          // For Talons
+          entry(Drive.FRONT_LEFT_CANCODER, "FL cancoder"),
+          entry(Drive.REAR_LEFT_CANCODER, "RL cancoder"),
+          entry(Drive.FRONT_RIGHT_CANCODER, "FR cancoder"),
+          entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"),
           );
 
   public static final class OI {
@@ -40,9 +41,10 @@ public final class Ports {
     public static final int FRONT_RIGHT_TURNING = 16;
     public static final int REAR_RIGHT_TURNING = 17;
 
-    // public static final int FRONT_LEFT_CANCODER = 5;
-    // public static final int REAR_LEFT_CANCODER = 7;
-    // public static final int FRONT_RIGHT_CANCODER = 6;
-    // public static final int REAR_RIGHT_CANCODER = 8;
+    // For Talons
+    public static final int FRONT_LEFT_CANCODER = 5;
+    public static final int REAR_LEFT_CANCODER = 7;
+    public static final int FRONT_RIGHT_CANCODER = 6;
+    public static final int REAR_RIGHT_CANCODER = 8;
   }
 }

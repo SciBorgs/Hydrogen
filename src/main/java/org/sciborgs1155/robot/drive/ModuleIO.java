@@ -3,11 +3,10 @@ package org.sciborgs1155.robot.drive;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
-import monologue.Logged;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 
 /** Generalized hardware internals for a swerve module */
-public interface ModuleIO extends Logged, AutoCloseable {
+public interface ModuleIO extends AutoCloseable {
   /**
    * Returns the name of the swerve module (e.g. "FR" indicating the front right swerve module.)
    *

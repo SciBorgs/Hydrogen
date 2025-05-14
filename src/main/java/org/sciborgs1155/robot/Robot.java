@@ -21,7 +21,6 @@ import edu.wpi.first.wpilibj2.command.CommandScheduler;
 import edu.wpi.first.wpilibj2.command.Commands;
 import edu.wpi.first.wpilibj2.command.button.CommandXboxController;
 import java.util.Set;
-import monologue.Annotations.Log;
 import monologue.Logged;
 import monologue.Monologue;
 import org.littletonrobotics.urcl.URCL;
@@ -52,9 +51,9 @@ public class Robot extends CommandRobot implements Logged {
   private final Vision vision = Vision.create();
 
   // COMMANDS
-  @Log.NT private final SendableChooser<Command> autos = Autos.configureAutos(drive);
+  @Logged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
-  @Log.NT private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
+  @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 
   /** The robot contains subsystems, OI devices, and commands. */
   public Robot() {
