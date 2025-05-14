@@ -22,12 +22,14 @@ import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.kinematics.SwerveModulePosition;
 import edu.wpi.first.math.kinematics.SwerveModuleState;
+import java.util.Queue;
 import java.util.Set;
 import monologue.Annotations.Log;
 import org.sciborgs1155.lib.SparkUtils;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
+import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 
@@ -43,6 +45,11 @@ public class SparkModule implements ModuleIO {
   private final SparkClosedLoopController drivePID;
   private final SparkClosedLoopController turnPID;
 
+  private final OdometryThread odometryThread;
+  private final Queue<Double> position;
+  private final Queue<Double> rotation;
+  private final Queue<Double> timestamp;
+
   private final SimpleMotorFeedforward driveFF;
 
   private final Rotation2d angularOffset;
@@ -55,15 +62,19 @@ public class SparkModule implements ModuleIO {
 
   private final String name;
 
-  public SparkModule(int drivePort, int turnPort, Rotation2d angularOffset, String name) {
-
+  public SparkModule(
+      int drivePort,
+      int turnPort,
+      Rotation2d angularOffset,
+      FFConstants ff,
+      String name,
+      boolean invert) {
     // Drive Motor
 
     driveMotor = new SparkFlex(drivePort, MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     drivePID = driveMotor.getClosedLoopController();
-    driveFF =
-        new SimpleMotorFeedforward(Driving.FF.SPARK.S, Driving.FF.SPARK.V, Driving.FF.SPARK.A);
+    driveFF = new SimpleMotorFeedforward(ff.kS(), ff.kV(), ff.kA());
     driveMotorConfig = new SparkFlexConfig();
 
     check(
@@ -74,13 +85,14 @@ public class SparkModule implements ModuleIO {
     driveMotorConfig.apply(
         driveMotorConfig
             .closedLoop
-            .pid(Driving.PID.SPARK.P, Driving.PID.SPARK.I, Driving.PID.SPARK.D)
+            .pid(Driving.PID.P, Driving.PID.I, Driving.PID.D)
             .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
 
     driveMotorConfig.apply(
         driveMotorConfig
             .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit((int) Driving.CURRENT_LIMIT.in(Amps)));
+            .smartCurrentLimit((int) Driving.CURRENT_LIMIT.in(Amps))
+            .inverted(invert));
 
     driveMotorConfig.apply(
         driveMotorConfig
@@ -124,15 +136,16 @@ public class SparkModule implements ModuleIO {
     turnMotorConfig.apply(
         turnMotorConfig
             .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
+            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps))
+            .inverted(invert));
 
     turnMotorConfig.apply(turnMotorConfig.encoder.inverted(true));
 
     turnMotorConfig.apply(
         turnMotorConfig
             .encoder
-            .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
-            .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
+            .positionConversionFactor(Driving.POSITION_FACTOR.in(Meters))
+            .velocityConversionFactor(Driving.VELOCITY_FACTOR.in(MetersPerSecond))
             .uvwAverageDepth(2));
 
     turnMotorConfig.apply(
@@ -149,6 +162,13 @@ public class SparkModule implements ModuleIO {
     register(driveMotor);
     register(turnMotor);
 
+    odometryThread = OdometryThread.getInstance();
+
+    position = odometryThread.registerSignal(() -> driveEncoder.getPosition());
+    rotation = odometryThread.registerSignal(() -> turningEncoder.getPosition());
+
+    timestamp = odometryThread.makeTimestampQueue();
+
     resetEncoders();
 
     this.angularOffset = angularOffset;
@@ -164,13 +184,14 @@ public class SparkModule implements ModuleIO {
   public void setDriveVoltage(double voltage) {
     driveMotor.setVoltage(voltage);
     check(driveMotor);
-    log("current", driveMotor.getOutputCurrent());
+    log("drive current", driveMotor.getOutputCurrent());
   }
 
   @Override
   public void setTurnVoltage(double voltage) {
     turnMotor.setVoltage(voltage);
     check(turnMotor);
+    log("turn current", turnMotor.getOutputCurrent());
   }
 
   @Override
@@ -229,10 +250,11 @@ public class SparkModule implements ModuleIO {
 
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
+    Rotation2d rotation = rotation();
     // Optimize the reference state to avoid spinning further than 90 degrees
-    setpoint.optimize(rotation());
+    setpoint.optimize(rotation);
     // Scale setpoint by cos of turning error to reduce tread wear
-    setpoint.speedMetersPerSecond *= setpoint.angle.minus(rotation()).getCos();
+    setpoint.cosineScale(rotation);
 
     if (mode == ControlMode.OPEN_LOOP_VELOCITY) {
       setDriveVoltage(driveFF.calculate(setpoint.speedMetersPerSecond));
@@ -240,7 +262,7 @@ public class SparkModule implements ModuleIO {
       setDriveSetpoint(setpoint.speedMetersPerSecond);
     }
 
-    setTurnSetpoint(new Rotation2d(setpoint.angle.getRadians()));
+    setTurnSetpoint(setpoint.angle);
     this.setpoint = setpoint;
   }
 
@@ -248,7 +270,44 @@ public class SparkModule implements ModuleIO {
   public void updateInputs(Rotation2d angle, double voltage) {
     setpoint.angle = angle;
     setDriveVoltage(voltage);
-    setTurnSetpoint(angle.getRadians());
+    setTurnSetpoint(angle);
+  }
+
+  @Override
+  public double[][] moduleOdometryData() {
+    Drive.lock.lock();
+    try {
+      double[][] data = {
+        position.stream().mapToDouble((Double d) -> d).toArray(),
+        rotation.stream().mapToDouble((Double d) -> d).toArray(),
+        timestamp.stream().mapToDouble((Double d) -> d).toArray()
+      };
+      return data;
+    } finally {
+      Drive.lock.unlock();
+    }
+  }
+
+  public SwerveModulePosition[] odometryData() {
+    SwerveModulePosition[] positions = new SwerveModulePosition[20];
+    Drive.lock.lock();
+
+    var data = moduleOdometryData();
+
+    for (int i = 0; i < data[0].length; i++) {
+      positions[i] = new SwerveModulePosition(data[0][i], Rotation2d.fromRotations(data[1][i]));
+    }
+
+    position.clear();
+    rotation.clear();
+    timestamp.clear();
+
+    Drive.lock.unlock();
+    return positions;
+  }
+
+  public double[] timestamps() {
+    return moduleOdometryData()[2];
   }
 
   @Override

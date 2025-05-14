@@ -207,6 +207,7 @@ public class TalonModule implements ModuleIO {
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {
     Rotation2d rotation = rotation();
+    // Optimize the reference state to avoid spinning further than 90 degrees
     setpoint.optimize(rotation);
     // Scale setpoint by cos of turning error to reduce tread wear
     setpoint.cosineScale(rotation);

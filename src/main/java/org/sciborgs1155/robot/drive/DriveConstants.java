@@ -155,6 +155,7 @@ public final class DriveConstants {
       public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
       public static final Current SUPPLY_LIMIT = Amps.of(70);
 
+      // these factors are for SparkModule only!
       public static final Distance POSITION_FACTOR = CIRCUMFERENCE.times(GEARING);
       public static final LinearVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
