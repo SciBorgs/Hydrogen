@@ -5,6 +5,7 @@ import edu.wpi.first.wpilibj2.command.Command;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 
+// TODO: Update every year. Very important.
 /** Used to tell multiple LEDStrip to do things in a cleaner way. */
 public class LEDs implements AutoCloseable {
   public final LEDStrip leftStrip;

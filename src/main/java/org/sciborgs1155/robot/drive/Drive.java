@@ -763,7 +763,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
           .getObject("Cam " + i + " Est Pose")
           .setPose(poses[i].estimatedPose().estimatedPose.toPose2d());
     }
-    log("estimated poses", loggedEstimates);
+    log("estimated poses", loggedEstimates, Pose3d.struct);
   }
 
   @Override

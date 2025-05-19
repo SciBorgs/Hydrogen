@@ -21,7 +21,6 @@ import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
 import org.sciborgs1155.robot.Constants;
 
-//TODO: Update every year. Very important.
 public class LEDStrip extends SubsystemBase implements AutoCloseable {
   private static final AddressableLED led = new AddressableLED(LED_PORT);
   private static final AddressableLEDBuffer allBuffer = new AddressableLEDBuffer(LED_LENGTH);
@@ -185,8 +184,8 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
   @Override
   public void periodic() {
     log(
-            "/Robot/LEDs/command",
-            Optional.ofNullable(getCurrentCommand()).map(Command::getName).orElse("none"));
+        "/Robot/LEDs/command",
+        Optional.ofNullable(getCurrentCommand()).map(Command::getName).orElse("none"));
   }
 
   @Override
