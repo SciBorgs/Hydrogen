@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.lib.FaultLogger.*;
+import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.COUPLING_RATIO;
 
 import com.revrobotics.RelativeEncoder;
@@ -18,7 +19,6 @@ import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
-import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.math.controller.SimpleMotorFeedforward;
 import edu.wpi.first.math.geometry.Rotation2d;
@@ -185,7 +185,7 @@ public class SparkModule implements ModuleIO {
   public void setDriveVoltage(double voltage) {
     driveMotor.setVoltage(voltage);
     check(driveMotor);
-    Epilogue.log("drive current", driveMotor.getOutputCurrent());
+    log("drive current", driveMotor.getOutputCurrent());
   }
 
   @Override

@@ -50,15 +50,15 @@ public class TuningTest {
     assertEquals("como estas", strEnt.get());
     assertEquals(false, boolEnt.get());
 
-    ArrayList<Double> doubleList = new ArrayList();
+    ArrayList<Double> doubleList = new ArrayList<>();
     doubleList.add(dbleVal);
     doubleList.add(1155.2265);
 
-    ArrayList<Long> intList = new ArrayList();
+    ArrayList<Long> intList = new ArrayList<>();
     intList.add(intVal);
     intList.add((long) 2612668);
 
-    ArrayList<String> strList = new ArrayList();
+    ArrayList<String> strList = new ArrayList<>();
     strList.add(strVal);
     strList.add("como estas");
 

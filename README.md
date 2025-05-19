@@ -22,4 +22,3 @@ This project currently contains drive, vision, and autos. You are expected to ad
 - [Studica](https://pdocs.kauailabs.com/navx-mxp/software/roborio-libraries/java/)
 - [ReduxLib](https://docs.reduxrobotics.com/canandgyro/getting-started)
 - [Spotless](https://github.com/diffplug/spotless/blob/main/plugin-gradle/README.md)
-- [Monologue](https://github.com/shueja/Monologue)

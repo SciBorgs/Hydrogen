@@ -73,9 +73,9 @@ import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
-import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
 public class Drive extends SubsystemBase implements AutoCloseable {
@@ -168,21 +168,69 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         case TALON ->
             new Drive(
                 new ReduxGyro(),
-                new TalonModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, FRONT_LEFT_CANCODER, ANGULAR_OFFSETS.get(0), Driving.FF_CONSTANTS.get(0), "FL", false),
                 new TalonModule(
-                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, FRONT_RIGHT_CANCODER, ANGULAR_OFFSETS.get(1), Driving.FF_CONSTANTS.get(1), "FR", false),
-                new TalonModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, REAR_LEFT_CANCODER, ANGULAR_OFFSETS.get(2), Driving.FF_CONSTANTS.get(2), "RL", false),
+                    FRONT_LEFT_DRIVE,
+                    FRONT_LEFT_TURNING,
+                    FRONT_LEFT_CANCODER,
+                    ANGULAR_OFFSETS.get(0),
+                    Driving.FF_CONSTANTS.get(0),
+                    "FL",
+                    false),
                 new TalonModule(
-                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, REAR_RIGHT_CANCODER, ANGULAR_OFFSETS.get(3), Driving.FF_CONSTANTS.get(3), "RR", false));
+                    FRONT_RIGHT_DRIVE,
+                    FRONT_RIGHT_TURNING,
+                    FRONT_RIGHT_CANCODER,
+                    ANGULAR_OFFSETS.get(1),
+                    Driving.FF_CONSTANTS.get(1),
+                    "FR",
+                    false),
+                new TalonModule(
+                    REAR_LEFT_DRIVE,
+                    REAR_LEFT_TURNING,
+                    REAR_LEFT_CANCODER,
+                    ANGULAR_OFFSETS.get(2),
+                    Driving.FF_CONSTANTS.get(2),
+                    "RL",
+                    false),
+                new TalonModule(
+                    REAR_RIGHT_DRIVE,
+                    REAR_RIGHT_TURNING,
+                    REAR_RIGHT_CANCODER,
+                    ANGULAR_OFFSETS.get(3),
+                    Driving.FF_CONSTANTS.get(3),
+                    "RR",
+                    false));
         case SPARK ->
             new Drive(
                 new NavXGyro(),
-                new SparkModule(FRONT_LEFT_DRIVE, FRONT_LEFT_TURNING, ANGULAR_OFFSETS.get(0), Driving.FF_CONSTANTS.get(0), "FL", false),
                 new SparkModule(
-                    FRONT_RIGHT_DRIVE, FRONT_RIGHT_TURNING, ANGULAR_OFFSETS.get(1), Driving.FF_CONSTANTS.get(1), "FR", false),
-                new SparkModule(REAR_LEFT_DRIVE, REAR_LEFT_TURNING, ANGULAR_OFFSETS.get(2), Driving.FF_CONSTANTS.get(2), "RL", false),
+                    FRONT_LEFT_DRIVE,
+                    FRONT_LEFT_TURNING,
+                    ANGULAR_OFFSETS.get(0),
+                    Driving.FF_CONSTANTS.get(0),
+                    "FL",
+                    false),
                 new SparkModule(
-                    REAR_RIGHT_DRIVE, REAR_RIGHT_TURNING, ANGULAR_OFFSETS.get(3), Driving.FF_CONSTANTS.get(3), "RR", false));
+                    FRONT_RIGHT_DRIVE,
+                    FRONT_RIGHT_TURNING,
+                    ANGULAR_OFFSETS.get(1),
+                    Driving.FF_CONSTANTS.get(1),
+                    "FR",
+                    false),
+                new SparkModule(
+                    REAR_LEFT_DRIVE,
+                    REAR_LEFT_TURNING,
+                    ANGULAR_OFFSETS.get(2),
+                    Driving.FF_CONSTANTS.get(2),
+                    "RL",
+                    false),
+                new SparkModule(
+                    REAR_RIGHT_DRIVE,
+                    REAR_RIGHT_TURNING,
+                    ANGULAR_OFFSETS.get(3),
+                    Driving.FF_CONSTANTS.get(3),
+                    "RR",
+                    false));
       };
     } else {
       return new Drive(

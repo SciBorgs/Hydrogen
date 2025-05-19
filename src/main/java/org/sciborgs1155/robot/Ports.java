@@ -16,13 +16,12 @@ public final class Ports {
           entry(Drive.FRONT_LEFT_TURNING, "FL turn"),
           entry(Drive.REAR_LEFT_TURNING, "RL turn"),
           entry(Drive.FRONT_RIGHT_TURNING, "FR turn"),
-          entry(Drive.REAR_RIGHT_TURNING, "RR turn")
+          entry(Drive.REAR_RIGHT_TURNING, "RR turn"),
           // For Talons
           entry(Drive.FRONT_LEFT_CANCODER, "FL cancoder"),
           entry(Drive.REAR_LEFT_CANCODER, "RL cancoder"),
           entry(Drive.FRONT_RIGHT_CANCODER, "FR cancoder"),
-          entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"),
-          );
+          entry(Drive.REAR_RIGHT_CANCODER, "RR cancoder"));
 
   public static final class OI {
     public static final int OPERATOR = 0;
