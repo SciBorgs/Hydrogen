@@ -47,13 +47,17 @@ public final class DriveConstants {
   public static final class Assisted {
     // The angle between the velocity and the displacement from a target, above which the robot will
     // not use assisted driving to the target. (the driver must be driving in the general direction
-    // of
-    // the assisted driving target.)
+    // of the assisted driving target.)
     public static final Angle DRIVING_THRESHOLD = Radians.of(Math.PI / 6);
 
     // The input of the joystick beyond which the assisted driving will not control the rotation of
     // the swerve.
     public static final double ROTATING_THRESHOLD = 0.02;
+  }
+
+  public static final class Pathfinding {
+    // The number of ticks before pathfinding happens again.
+    public static final int PERIOD = 1;
   }
 
   public static final class Skid {
@@ -119,10 +123,10 @@ public final class DriveConstants {
   // ignored (used as 0) in simulation because the simulated robot doesn't have offsets
   public static final List<Rotation2d> ANGULAR_OFFSETS =
       List.of(
-          Rotation2d.fromRadians(-Math.PI / 2), // front left
-          Rotation2d.fromRadians(0), // front right
-          Rotation2d.fromRadians(Math.PI), // rear left
-          Rotation2d.fromRadians(Math.PI / 2) // rear right
+          Rotation2d.kZero, // front left
+          Rotation2d.kZero, // front right
+          Rotation2d.kZero, // rear left
+          Rotation2d.kZero // rear right
           );
 
   public static final Rotation3d GYRO_OFFSET = new Rotation3d(0, 0, Math.PI);
