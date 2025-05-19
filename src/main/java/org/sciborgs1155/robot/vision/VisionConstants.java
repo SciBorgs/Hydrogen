@@ -3,6 +3,8 @@ package org.sciborgs1155.robot.vision;
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
+import java.util.Set;
+
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
@@ -58,4 +60,6 @@ public class VisionConstants {
   // Tag Locations (1-n) | Description...
 
   public static final double[] TAG_WEIGHTS = {1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1};
+
+  public static final Set<Integer> REPUTABLE_TAGS = Set.of(6, 7, 8, 9, 10, 11, 17, 18, 19, 20, 22);
 }

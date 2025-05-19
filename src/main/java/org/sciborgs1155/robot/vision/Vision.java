@@ -1,6 +1,5 @@
 package org.sciborgs1155.robot.vision;
 
-import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
 
@@ -12,9 +11,12 @@ import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
+import edu.wpi.first.wpilibj.Timer;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 import org.photonvision.EstimatedRobotPose;
@@ -40,6 +42,8 @@ public class Vision {
   private final PhotonPoseEstimator[] estimators;
   private final PhotonCameraSim[] simCameras;
   private final PhotonPipelineResult[] lastResults;
+  private final Map<String, Boolean> camerasEnabled;
+  @Logged private final List<Pose3d> filteredEstimates;
 
   private VisionSystemSim visionSim;
 
@@ -57,6 +61,8 @@ public class Vision {
     estimators = new PhotonPoseEstimator[configs.length];
     simCameras = new PhotonCameraSim[configs.length];
     lastResults = new PhotonPipelineResult[configs.length];
+    filteredEstimates = new ArrayList<>();
+    camerasEnabled = new HashMap<>();
 
     for (int i = 0; i < configs.length; i++) {
       PhotonCamera camera = new PhotonCamera(configs[i].name());
@@ -70,6 +76,7 @@ public class Vision {
       cameras[i] = camera;
       estimators[i] = estimator;
       lastResults[i] = new PhotonPipelineResult();
+      camerasEnabled.put(camera.getName(), true);
 
       FaultLogger.register(camera);
     }
@@ -98,6 +105,16 @@ public class Vision {
     }
   }
 
+  @Logged
+  public boolean[] logCamEnabled() {
+    boolean[] booleanArray = new boolean[camerasEnabled.values().size()];
+    int i = 0;
+    for (Boolean value : camerasEnabled.values()) {
+      booleanArray[i++] = value != null && value;
+    }
+    return booleanArray;
+  }
+
   /**
    * Returns a list of all currently visible pose estimates and their standard deviation vectors.
    *
@@ -107,42 +124,70 @@ public class Vision {
   public PoseEstimate[] estimatedGlobalPoses() {
     Tracer.startTrace("vision estimatedGlobalPoses");
     List<PoseEstimate> estimates = new ArrayList<>();
+    filteredEstimates.clear();
+
     for (int i = 0; i < estimators.length; i++) {
-      var unread = cameras[i].getAllUnreadResults();
-      PhotonPipelineResult result;
-      if (unread.size() > 1) {
-        // gets the latest result if there are multiple unread results
-        int maxIndex = 0;
-        double max = 0;
-        int unreadLength = unread.size();
-        for (int ie = 0; ie < unreadLength; ie++) {
-          double temp = unread.get(ie).getTimestampSeconds();
-          if (temp > max) {
-            max = temp;
-            maxIndex = ie;
-          }
+      if (camerasEnabled.get(cameras[i].getName())) {
+        var unreadChanges = cameras[i].getAllUnreadResults();
+
+        String name = cameras[i].getName();
+
+        Optional<EstimatedRobotPose> estimate = Optional.empty();
+
+        int unreadLength = unreadChanges.size();
+
+        if (estimators[i].getPrimaryStrategy() == PoseStrategy.PNP_DISTANCE_TRIG_SOLVE) {
+          estimators[i].addHeadingData(Timer.getFPGATimestamp(), rotation);
         }
-        result = unread.get(maxIndex);
-        lastResults[i] = result;
-      } else if (unread.size() == 1) {
-        result = unread.get(0);
-        lastResults[i] = result;
-      } else {
-        result = lastResults[i];
+
+        // feeds latest result for visualization; multiple different pos breaks getSeenTags()
+        lastResults[i] = unreadLength == 0 ? lastResults[i] : unreadChanges.get(unreadLength - 1);
+
+        for (int j = 0; j < unreadLength; j++) {
+          var change = unreadChanges.get(j);
+          change.targets.stream()
+              .forEach(
+                  t -> {
+                    t.pitch = -t.pitch;
+                  });
+          change.multitagResult =
+              change.multitagResult.filter(
+                  r ->
+                      r.fiducialIDsUsed.stream()
+                          .map(id -> REPUTABLE_TAGS.contains((int) id))
+                          .reduce(true, (a, b) -> a && b));
+          // remove ambiguity
+          change.targets =
+              change.targets.stream().filter(t -> t.poseAmbiguity < MAX_AMBIGUITY).toList();
+          change.multitagResult =
+              change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
+
+          estimate = estimators[i].update(change);
+          log("Robot/vision/ " + name + " estimates present", estimate.isPresent());
+          estimate
+              .filter(
+                  f -> {
+                    boolean valid =
+                        FieldConstants.inField(f.estimatedPose)
+                            && Math.abs(f.estimatedPose.getZ()) < MAX_HEIGHT
+                            && Math.abs(f.estimatedPose.getRotation().getX()) < MAX_ANGLE
+                            && Math.abs(f.estimatedPose.getRotation().getY()) < MAX_ANGLE;
+                    if (!valid) {
+                      filteredEstimates.add(f.estimatedPose);
+                      log(
+                              "Robot/vision/filtered poses/ " + name,
+                              f.estimatedPose,
+                              Pose3d.struct);
+                    }
+                    return valid;
+                  })
+              .ifPresent(
+                  e ->
+                      estimates.add(
+                          new PoseEstimate(
+                              e, estimationStdDevs(e.estimatedPose.toPose2d(), change))));
+        }
       }
-      var estimate = estimators[i].update(result);
-      log("estimates present " + i, estimate.isPresent());
-      estimate
-          .filter(
-              f ->
-                  FieldConstants.inField(f.estimatedPose)
-                      && Math.abs(f.estimatedPose.getZ()) < MAX_HEIGHT
-                      && Math.abs(f.estimatedPose.getRotation().getX()) < MAX_ANGLE
-                      && Math.abs(f.estimatedPose.getRotation().getY()) < MAX_ANGLE)
-          .ifPresent(
-              e ->
-                  estimates.add(
-                      new PoseEstimate(e, estimationStdDevs(e.estimatedPose.toPose2d(), result))));
     }
     Tracer.endTrace();
     return estimates.toArray(PoseEstimate[]::new);
