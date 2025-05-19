@@ -2,8 +2,7 @@
 *little to do list of whats to do*
 
 Todo:
-- finish updating constants
-- update utils
+- GO OVER DRIVE.JAVA! (should be about it?)
 - add updated odometry
     - faster odometry (should be good?)
     - assisted driving <-- TODO FUTURE
@@ -23,3 +22,5 @@ Done:
 - vision
     - figure what we changed this year
 - LEDSSSSS
+- finish updating constants
+- update utils
