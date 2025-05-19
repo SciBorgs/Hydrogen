@@ -1,5 +1,6 @@
 package org.sciborgs1155.robot.vision;
 
+import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
 
@@ -8,6 +9,7 @@ import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
@@ -121,7 +123,7 @@ public class Vision {
    * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
    *     used for estimation.
    */
-  public PoseEstimate[] estimatedGlobalPoses() {
+  public PoseEstimate[] estimatedGlobalPoses(Rotation2d rotation) {
     Tracer.startTrace("vision estimatedGlobalPoses");
     List<PoseEstimate> estimates = new ArrayList<>();
     filteredEstimates.clear();
@@ -145,17 +147,20 @@ public class Vision {
 
         for (int j = 0; j < unreadLength; j++) {
           var change = unreadChanges.get(j);
-          change.targets.stream()
-              .forEach(
-                  t -> {
-                    t.pitch = -t.pitch;
-                  });
-          change.multitagResult =
-              change.multitagResult.filter(
-                  r ->
-                      r.fiducialIDsUsed.stream()
-                          .map(id -> REPUTABLE_TAGS.contains((int) id))
-                          .reduce(true, (a, b) -> a && b));
+          // THIS NEGATES PITCH!!!
+          if (cameras[i].getName() == "example camera") {
+            change.targets.stream()
+                .forEach(
+                    t -> {
+                      t.pitch = -t.pitch;
+                    });
+            change.multitagResult =
+                change.multitagResult.filter(
+                    r ->
+                        r.fiducialIDsUsed.stream()
+                            .map(id -> REPUTABLE_TAGS.contains((int) id))
+                            .reduce(true, (a, b) -> a && b));
+          }
           // remove ambiguity
           change.targets =
               change.targets.stream().filter(t -> t.poseAmbiguity < MAX_AMBIGUITY).toList();
@@ -174,10 +179,7 @@ public class Vision {
                             && Math.abs(f.estimatedPose.getRotation().getY()) < MAX_ANGLE;
                     if (!valid) {
                       filteredEstimates.add(f.estimatedPose);
-                      log(
-                              "Robot/vision/filtered poses/ " + name,
-                              f.estimatedPose,
-                              Pose3d.struct);
+                      log("Robot/vision/filtered poses/ " + name, f.estimatedPose, Pose3d.struct);
                     }
                     return valid;
                   })
@@ -193,13 +195,25 @@ public class Vision {
     return estimates.toArray(PoseEstimate[]::new);
   }
 
+  public void disableCam(String name) {
+    camerasEnabled.put(name, false);
+  }
+
+  public void enableCam(String name) {
+    camerasEnabled.put(name, true);
+  }
+
+  public boolean getCameraStatus(String name) {
+    return camerasEnabled.get(name);
+  }
+
   /**
    * Sets the pose estimation strategy of relevant cameras. TODO: update this with the actual
    * cameras!
    */
   public void setPoseStrategy(PoseStrategy strategy) {
     for (int i = 0; i < estimators.length; i++) {
-      if (Set.of("front left", "front right").contains(cameras[i].getName())) {
+      if (Set.of("example camera").contains(cameras[i].getName())) {
         estimators[i].setPrimaryStrategy(strategy);
       }
     }
@@ -252,9 +266,7 @@ public class Vision {
       estStdDevs = VecBuilder.fill(Double.MAX_VALUE, Double.MAX_VALUE, Double.MAX_VALUE);
     else estStdDevs = estStdDevs.times(1 + (avgDist * avgDist / 30));
 
-    estStdDevs = estStdDevs.times(avgWeight);
-
-    return estStdDevs;
+    return estStdDevs.times(avgWeight);
   }
 
   /** Returns all camera transforms from the robot. TODO: update this! */
