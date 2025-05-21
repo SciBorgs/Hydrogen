@@ -1,5 +1,6 @@
 package org.sciborgs1155.lib;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 
@@ -15,6 +16,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import org.sciborgs1155.robot.Constants;
+import org.sciborgs1155.robot.FieldConstants;
 
 /**
  * Reuplsor field planner
@@ -177,14 +179,12 @@ public class RepulsorFieldPlanner {
               new Translation2d(4.49, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true),
           new CircleObstacle(
               new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true));
-  static final double FIELD_LENGTH = 16.42;
-  static final double FIELD_WIDTH = 8.16;
   public static final List<Obstacle> WALLS =
       List.of(
           new HorizontalObstacle(0.0, 0.5, true),
-          new HorizontalObstacle(FIELD_WIDTH, 0.5, false),
+          new HorizontalObstacle(FieldConstants.WIDTH.in(Meters), 0.5, false),
           new VerticalObstacle(0.0, 0.5, true),
-          new VerticalObstacle(FIELD_LENGTH, 0.5, false));
+          new VerticalObstacle(FieldConstants.LENGTH.in(Meters), 0.5, false));
 
   private List<Obstacle> fixedObstacles = new ArrayList<>();
   private Optional<Translation2d> goalOpt = Optional.empty();

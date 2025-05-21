@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.*;
+import static org.sciborgs1155.robot.Constants.alliance;
 
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
@@ -55,6 +56,21 @@ public class FieldConstants {
                     new Translation2d(FieldConstants.LENGTH.div(2), FieldConstants.WIDTH.div(2)),
                     Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
+  }
+
+  /**
+   * Reflects width-wise distances through the middle of the field if the alliance is red, otherwise
+   * does nothing
+   *
+   * @param blueDist The input distance, usually for the blue alliance.
+   * @return A reflected distance, only if the alliance is red.
+   */
+  private static Distance reflectDistance(Distance blueDist) {
+    return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
+  }
+
+  public static Alliance allianceFromPose(Pose2d pose) {
+    return pose.getX() > LENGTH.in(Meters) / 2 ? Alliance.Red : Alliance.Blue;
   }
 
   /**

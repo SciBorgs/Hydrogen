@@ -36,6 +36,7 @@ import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
+import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.commands.Autos;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.vision.Vision;
@@ -59,6 +60,8 @@ public class Robot extends CommandRobot {
   private final Vision vision = Vision.create();
 
   // COMMANDS
+  private final Alignment align = new Alignment(drive);
+
   @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
@@ -68,6 +71,9 @@ public class Robot extends CommandRobot {
     super(PERIOD.in(Seconds));
     configureGameBehavior();
     configureBindings();
+
+    // Warms up pathfinding commands, as the first run could have significant delays.
+    align.warmupCommand().schedule();
   }
 
   @Override
