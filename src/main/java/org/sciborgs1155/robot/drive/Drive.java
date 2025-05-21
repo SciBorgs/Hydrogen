@@ -15,6 +15,7 @@ import static org.sciborgs1155.robot.Constants.allianceRotation;
 import static org.sciborgs1155.robot.Ports.Drive.*;
 import static org.sciborgs1155.robot.drive.DriveConstants.*;
 
+import choreo.trajectory.SwerveSample;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Logged;
 import edu.wpi.first.epilogue.NotLogged;
@@ -65,6 +66,8 @@ import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.lib.Assertion;
 import org.sciborgs1155.lib.Assertion.EqualityAssertion;
 import org.sciborgs1155.lib.Assertion.TruthAssertion;
+import org.sciborgs1155.lib.FaultLogger;
+import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
@@ -72,9 +75,11 @@ import org.sciborgs1155.lib.Tuning;
 import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
+import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
+import org.sciborgs1155.robot.drive.DriveConstants.Skid;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
@@ -91,7 +96,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
   // Gyro, navX2-MXP
   private final GyroIO gyro;
-  private static Rotation2d simRotation = new Rotation2d();
+  @Logged private static Rotation2d simRotation = Rotation2d.kZero;
 
   public final SwerveDriveKinematics kinematics = new SwerveDriveKinematics(MODULE_OFFSET);
 
@@ -321,12 +326,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 "rotation"));
 
     gyro.reset(Rotation2d.kZero);
-    odometry =
-        new SwerveDrivePoseEstimator(
-            kinematics,
-            lastHeading,
-            lastPositions,
-            new Pose2d(new Translation2d(), Rotation2d.fromDegrees(180)));
+    odometry = new SwerveDrivePoseEstimator(kinematics, lastHeading, lastPositions, Pose2d.kZero);
 
     for (int i = 0; i < modules.size(); i++) {
       var module = modules.get(i);
@@ -341,25 +341,41 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
     if (TUNING) {
       SmartDashboard.putData(
-          "translation quasistatic forward",
-          translationCharacterization.quasistatic(Direction.kForward));
+          "Robot/translation/quasistatic forward",
+          translationCharacterization
+              .quasistatic(Direction.kForward)
+              .withName("translation quasistatic forward"));
       SmartDashboard.putData(
-          "translation dynamic forward", translationCharacterization.dynamic(Direction.kForward));
+          "Robot/translation/dynamic forward",
+          translationCharacterization
+              .dynamic(Direction.kForward)
+              .withName("translation dynamic forward"));
       SmartDashboard.putData(
-          "translation quasistatic backward",
+          "Robot/translation/quasistatic backward",
           translationCharacterization.quasistatic(Direction.kReverse));
       SmartDashboard.putData(
-          "translation dynamic backward", translationCharacterization.dynamic(Direction.kReverse));
+          "Robot/translation/dynamic backward",
+          translationCharacterization
+              .dynamic(Direction.kReverse)
+              .withName("translation quasistatic backward"));
       SmartDashboard.putData(
-          "rotation quasistatic forward",
+          "Robot/rotation/quasistatic forward",
           rotationalCharacterization.quasistatic(Direction.kForward));
       SmartDashboard.putData(
-          "rotation dynamic forward", rotationalCharacterization.dynamic(Direction.kForward));
+          "Robot/rotation/dynamic forward",
+          rotationalCharacterization
+              .dynamic(Direction.kForward)
+              .withName("rotation quasistatic forward"));
       SmartDashboard.putData(
-          "rotation quasistatic backward",
-          rotationalCharacterization.quasistatic(Direction.kReverse));
+          "Robot/rotation/quasistatic backward",
+          rotationalCharacterization
+              .quasistatic(Direction.kReverse)
+              .withName("rotation quasistatic backward"));
       SmartDashboard.putData(
-          "rotation dynamic backward", rotationalCharacterization.dynamic(Direction.kReverse));
+          "Robot/rotation/dynamic backward",
+          rotationalCharacterization
+              .dynamic(Direction.kReverse)
+              .withName("rotation dynamic backward"));
     }
   }
 
@@ -448,6 +464,81 @@ public class Drive extends SubsystemBase implements AutoCloseable {
             vy,
             () -> rotationController.calculate(heading().getRadians(), heading.get().getRadians()))
         .beforeStarting(rotationController::reset);
+  }
+
+  /**
+   * Drives the robot based in a {@link InputStream} for field-relative x, y, and omega velocities.
+   * Also adds a little extra translational velocity to move the robot to a certain desired position
+   * if the driver is already attempting to move in that general direction. This command does not
+   * assist in controlling the rotation of the robot.
+   *
+   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
+   *     alliance side).
+   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
+   *     side).
+   * @param vOmega A supplier for the angular velocity of the robot.
+   * @param target The target field-relative position for the robot, as a {@link Translation2d}.
+   * @return The assisted driving command.
+   */
+  public Command assistedDrive(
+      DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier vOmega, Translation2d target) {
+    return run(() -> {
+          Vector<N2> driverVel = VecBuilder.fill(vx.getAsDouble(), vy.getAsDouble());
+          Vector<N2> displacement = pose().getTranslation().minus(target).toVector();
+          Vector<N2> perpDisplacement = displacement.projection(driverVel).minus(displacement);
+          Vector<N2> result =
+              driverVel.plus(
+                  perpDisplacement
+                      .unit()
+                      .times(translationController.calculate(perpDisplacement.norm(), 0)));
+          setChassisSpeeds(
+              Math.acos(driverVel.unit().dot(displacement.unit()))
+                          < Assisted.DRIVING_THRESHOLD.in(Radians)
+                      && !Double.isNaN(result.norm())
+                  ? ChassisSpeeds.fromFieldRelativeSpeeds(
+                      result.get(0),
+                      result.get(1),
+                      vOmega.getAsDouble(),
+                      heading().plus(allianceRotation()))
+                  : ChassisSpeeds.fromFieldRelativeSpeeds(
+                      vx.getAsDouble(),
+                      vy.getAsDouble(),
+                      vOmega.getAsDouble(),
+                      heading().plus(allianceRotation())),
+              ControlMode.CLOSED_LOOP_VELOCITY);
+        })
+        .repeatedly();
+  }
+
+  /**
+   * Drives the robot based in a {@link InputStream} for field relative x y and omega velocities.
+   * Also adds a little translational velocity to move the robot to a certain desired position if
+   * the driver is already attempting to move in that general direction. If the driver is not
+   * currently attempting to rotate the robot, this command will also automatically rotate the robot
+   * to a desired heading.
+   *
+   * @param vx A supplier for the velocity of the robot along the x axis (perpendicular to the
+   *     alliance side).
+   * @param vy A supplier for the velocity of the robot along the y axis (parallel to the alliance
+   *     side).
+   * @param vOmega A supplier for the angular velocity of the robot.
+   * @param target The target field-relative position for the robot, as a {@link Pose2d}.
+   * @return The assisted driving command.
+   */
+  public Command assistedDrive(
+      DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier vOmega, Pose2d target) {
+    return assistedDrive(
+            vx,
+            vy,
+            () ->
+                Math.abs(target.getRotation().getRadians() - heading().getRadians())
+                        > Rotation.TOLERANCE.in(Radians)
+                    ? rotationController.calculate(
+                        heading().minus(target.getRotation()).getRadians(), 0)
+                    : vOmega.getAsDouble(),
+            target.getTranslation())
+        .until(() -> vOmega.getAsDouble() > Assisted.ROTATING_THRESHOLD)
+        .andThen(assistedDrive(vx, vy, vOmega, target.getTranslation()));
   }
 
   /**
@@ -724,7 +815,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
   /** Returns the module states. */
   @Logged
-  private SwerveModuleState[] moduleSetpoints() {
+  public SwerveModuleState[] moduleSetpoints() {
     return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
   }
 
@@ -735,15 +826,72 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   /** Returns the robot-relative chassis speeds. */
-  @Logged
   public ChassisSpeeds robotRelativeChassisSpeeds() {
     return kinematics.toChassisSpeeds(moduleStates());
   }
 
   /** Returns the field-relative chassis speeds. */
-  @Logged
   public ChassisSpeeds fieldRelativeChassisSpeeds() {
     return ChassisSpeeds.fromRobotRelativeSpeeds(robotRelativeChassisSpeeds(), heading());
+  }
+
+  /**
+   * Drives the robot to a Choreo {@link SwerveSample}.
+   *
+   * @param sample The SwerveSample to drive the robot to.
+   * @param rotation A goal rotation to drive to.
+   */
+  public void goToSample(SwerveSample sample, Rotation2d rotation) {
+    Vector<N2> displacement =
+        pose().getTranslation().minus(sample.getPose().getTranslation()).toVector();
+
+    Vector<N2> result =
+        VecBuilder.fill(sample.vx, sample.vy)
+            .plus(
+                displacement.norm() > 1e-4
+                    ? displacement
+                        .unit()
+                        .times(translationController.calculate(displacement.norm(), 0))
+                    : displacement.times(0));
+
+    if (Double.isNaN(result.norm())) {
+      FaultLogger.report(
+          "Alignment interference",
+          "Assisted Drive and Pathfinding are interfering with each other, causing a NaN result speed.\nSpeed defaulted to zero.",
+          FaultType.WARNING);
+      result = VecBuilder.fill(0, 0);
+    }
+
+    setChassisSpeeds(
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            result.get(0),
+            result.get(1),
+            rotationController.calculate(heading().minus(rotation).getRadians(), 0),
+            heading()),
+        DRIVE_MODE);
+  }
+
+  /**
+   * Adds on a Choreo {@link SwerveSample} to the drive's desired velocity such that it does not
+   * interfere (as much) with driving.
+   *
+   * @param vx Driver's inputted vx.
+   * @param vy Driver's inputted vy.
+   * @param omega Driver's inputted omega.
+   * @param sample The swerve sample being added on.
+   */
+  public void addOnSample(
+      DoubleSupplier vx, DoubleSupplier vy, DoubleSupplier omega, SwerveSample sample) {
+    Vector<N2> driverSpeeds = VecBuilder.fill(vx.getAsDouble(), vy.getAsDouble());
+    Vector<N2> sampleSpeeds = VecBuilder.fill(sample.vx, sample.vy);
+    Vector<N2> speeds =
+        driverSpeeds.norm() > 1e-3 && driverSpeeds.dot(sampleSpeeds) > 0
+            ? sampleSpeeds.plus(driverSpeeds).projection(driverSpeeds)
+            : VecBuilder.fill(0, 0);
+    setChassisSpeeds(
+        ChassisSpeeds.fromFieldRelativeSpeeds(
+            speeds.get(0), speeds.get(1), omega.getAsDouble(), heading()),
+        DRIVE_MODE);
   }
 
   /**
@@ -763,13 +911,13 @@ public class Drive extends SubsystemBase implements AutoCloseable {
           .getObject("Cam " + i + " Est Pose")
           .setPose(poses[i].estimatedPose().estimatedPose.toPose2d());
     }
-    log("estimated poses", loggedEstimates, Pose3d.struct);
+    log("/Robot/drive/estimated poses", loggedEstimates, Pose3d.struct);
   }
 
   @Override
   public void periodic() {
     // update our heading in reality / sim
-    Tracer.startTrace("drive pd");
+    Tracer.startTrace("drive periodic");
     if (Robot.isReal()) {
       lock.lock();
       try {
@@ -844,7 +992,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
 
   /** Stops the drivetrain. */
   public Command stop() {
-    return runOnce(() -> setChassisSpeeds(new ChassisSpeeds(), ControlMode.OPEN_LOOP_VELOCITY));
+    return runOnce(() -> setChassisSpeeds(new ChassisSpeeds(), DRIVE_MODE));
   }
 
   /** Sets the drivetrain to an "X" configuration, preventing movement. */

@@ -185,14 +185,14 @@ public class SparkModule implements ModuleIO {
   public void setDriveVoltage(double voltage) {
     driveMotor.setVoltage(voltage);
     check(driveMotor);
-    log("drive current", driveMotor.getOutputCurrent());
+    log("/Robot/drive/" + name + "/drive current", driveMotor.getOutputCurrent());
   }
 
   @Override
   public void setTurnVoltage(double voltage) {
     turnMotor.setVoltage(voltage);
     check(turnMotor);
-    log("turn current", turnMotor.getOutputCurrent());
+    log("/Robot/drive/" + name + "/turn current", turnMotor.getOutputCurrent());
   }
 
   @Override

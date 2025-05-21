@@ -14,6 +14,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.*;
 import com.ctre.phoenix6.SignalLogger;
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.Logged;
+import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.wpilibj.DataLogManager;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -45,6 +46,7 @@ import org.sciborgs1155.robot.vision.Vision;
  * periodic methods (other than the scheduler calls). Instead, the structure of the robot (including
  * subsystems, commands, and trigger mappings) should be declared here.
  */
+@Logged
 public class Robot extends CommandRobot {
   // INPUT DEVICES
   private final CommandXboxController operator = new CommandXboxController(OI.OPERATOR);
@@ -57,7 +59,7 @@ public class Robot extends CommandRobot {
   private final Vision vision = Vision.create();
 
   // COMMANDS
-  @Logged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
+  @NotLogged private final SendableChooser<Command> autos = Autos.configureAutos(drive);
 
   @Logged private double speedMultiplier = Constants.FULL_SPEED_MULTIPLIER;
 
@@ -109,7 +111,8 @@ public class Robot extends CommandRobot {
     }
 
     // Configure pose estimation updates every tick
-    addPeriodic(() -> drive.updateEstimates(vision.estimatedGlobalPoses()), PERIOD);
+    addPeriodic(
+        () -> drive.updateEstimates(vision.estimatedGlobalPoses(drive.gyroHeading())), PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -132,12 +135,12 @@ public class Robot extends CommandRobot {
     // Apply speed multiplier, deadband, square inputs, and scale translation to max speed
     InputStream r =
         InputStream.hypot(raw_x, raw_y)
-            .log("Robot/raw joystick")
+            .log("/Robot/raw joystick")
             .scale(() -> speedMultiplier)
             .clamp(1.0)
             .deadband(Constants.DEADBAND, 1.0)
             .signedPow(2.0)
-            .log("Robot/processed joystick")
+            .log("/Robot/processed joystick")
             .scale(MAX_SPEED.in(MetersPerSecond));
 
     InputStream theta = InputStream.atan(raw_x, raw_y);

@@ -9,6 +9,8 @@
   "NTProvider": {
     "types": {
       "/FMSInfo": "FMSInfo",
+      "/Faults/Active Faults": "Alerts",
+      "/Faults/Total Faults": "Alerts",
       "/Robot/autos": "String Chooser",
       "/Robot/drive/field2d": "Field2d",
       "/Robot/drive/frontLeft/driveFeedback": "PIDController",
@@ -21,6 +23,10 @@
       "/Robot/drive/rearRight/turnFeedback": "PIDController",
       "/Robot/drive/rotationController": "PIDController",
       "/Robot/drive/translationController": "ProfiledPIDController",
+      "/SmartDashboard/Auto Chooser": "String Chooser",
+      "/SmartDashboard/Drive Field": "Field2d",
+      "/SmartDashboard/PathPlanner": "Alerts",
+      "/SmartDashboard/PhotonAlerts": "Alerts",
       "/SmartDashboard/Scheduler": "Scheduler",
       "/SmartDashboard/VisionSystemSim-main/Sim Field": "Field2d",
       "/SmartDashboard/drive dynamic backward": "Command",
@@ -38,7 +44,10 @@
       "/SmartDashboard/turn dynamic backward": "Command",
       "/SmartDashboard/turn dynamic forward": "Command",
       "/SmartDashboard/turn quasistatic backward": "Command",
-      "/SmartDashboard/turn quasistatic forward": "Command"
+      "/SmartDashboard/turn quasistatic forward": "Command",
+      "Robot/autos": "String Chooser",
+      "Robot/drive/rotationController": "PIDController",
+      "Robot/drive/translationController": "ProfiledPIDController"
     },
     "windows": {
       "/Robot/autos": {
@@ -47,9 +56,9 @@
         }
       },
       "/Robot/drive/field2d": {
-        "bottom": 1476,
-        "height": 8.210550308227539,
-        "left": 150,
+        "bottom": 1638,
+        "height": 8.051901817321777,
+        "left": 534,
         "module- FL": {
           "style": "Line"
         },
@@ -62,9 +71,9 @@
         "module-RL": {
           "style": "Line"
         },
-        "right": 2961,
-        "top": 79,
-        "width": 16.541748046875,
+        "right": 3466,
+        "top": 291,
+        "width": 17.54825210571289,
         "window": {
           "visible": true
         }
@@ -76,10 +85,12 @@
       "open": false
     },
     "transitory": {
-      "Robot": {
-        "autos": {
+      "Epilogue": {
+        "Stats": {
           "open": true
-        },
+        }
+      },
+      "Robot": {
         "drive": {
           "Pose2d##v_/Robot/drive/getPose": {
             "Rotation2d##v_rotation": {
@@ -152,12 +163,6 @@
           },
           "open": true
         },
-        "open": true,
-        "vision": {
-          "open": true
-        }
-      },
-      "Shuffleboard": {
         "open": true
       }
     }

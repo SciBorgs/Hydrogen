@@ -35,6 +35,7 @@ import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 
+@Logged
 public class Vision {
   public static record CameraConfig(String name, Transform3d robotToCam) {}
 
