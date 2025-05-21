@@ -2,12 +2,10 @@
 *little to do list of whats to do*
 
 Todo:
-- GO OVER DRIVE.JAVA! (should be about it?)
-- add updated odometry
-    - faster odometry (should be good?)
-    - assisted driving <-- TODO FUTURE
-    - what ever sample choreo thing <-- TODO FUTURE
+- make sure all the stuff works
+    - assisted driving
     - acceleration limiting
+- test irl
 
 - probably add a test that notifies you if constants are the default ones
     - sciduck's mass was 25 kg (like 55 pounds), according to the constants
@@ -24,3 +22,9 @@ Done:
 - LEDSSSSS
 - finish updating constants
 - update utils
+- GO OVER DRIVE.JAVA! (should be about it?)
+- add updated odometry
+    - faster odometry (should be good?)
+    - assisted driving
+    - what ever sample choreo thing
+    - acceleration limiting
