@@ -21,7 +21,7 @@ import java.util.List;
 import org.sciborgs1155.robot.Constants;
 
 /**
- * Constants for our 2024 MAXSwerve drivetrain. All fields in this file should be updated for the
+ * Constants for our 2025 Swerve X2t drivetrain! All fields in this file should be updated for the
  * current robot configuration!
  */
 public final class DriveConstants {
@@ -133,11 +133,11 @@ public final class DriveConstants {
 
   // TODO: Change ALL characterization constants for each unique robot as needed.
   public static final class Translation {
-    public static final double P = 3.0;
+    public static final double P = 4.0;
     public static final double I = 0.0;
     public static final double D = 0.05;
 
-    public static final Distance TOLERANCE = Centimeters.of(5);
+    public static final Distance TOLERANCE = Centimeters.of(1);
   }
 
   public static final class Rotation {
@@ -145,7 +145,7 @@ public final class DriveConstants {
     public static final double I = 0.0;
     public static final double D = 0.05;
 
-    public static final Angle TOLERANCE = Degrees.of(3);
+    public static final Angle TOLERANCE = Degrees.of(2);
   }
 
   public static final class ModuleConstants {

@@ -10,10 +10,11 @@ import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
 import edu.wpi.first.hal.AllianceStationID;
 import edu.wpi.first.math.geometry.Pose2d;
+import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.wpilibj.simulation.DriverStationSim;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.api.Test;
 import org.sciborgs1155.robot.commands.Alignment;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
@@ -40,9 +41,9 @@ public class AlignTest {
   }
 
   /** Tests whether the obstacle-avoiding pathing works correctly. */
-  @ParameterizedTest
+  @Test
   public void pathfindTest() throws Exception {
-    Pose2d pose = new Pose2d();
+    Pose2d pose = new Pose2d(Meters.of(1), Meters.of(1), Rotation2d.kZero);
     // Make and run the pathfinding command
     runToCompletion(align.alignTo(() -> pose).withTimeout(Seconds.of(20)));
 
