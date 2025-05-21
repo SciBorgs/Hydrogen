@@ -77,6 +77,17 @@
         "window": {
           "visible": true
         }
+      },
+      "/SmartDashboard/Drive Field": {
+        "bottom": 1638,
+        "height": 8.051901817321777,
+        "left": 534,
+        "right": 3466,
+        "top": 291,
+        "width": 17.54825210571289,
+        "window": {
+          "visible": true
+        }
       }
     }
   },
