@@ -2,9 +2,9 @@ package org.sciborgs1155.robot.commands;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.FieldConstants.allianceFromPose;
 
-import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.epilogue.NotLogged;
 import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Transform2d;
@@ -56,11 +56,7 @@ public class Alignment {
   }
 
   public Command alignTo(Supplier<Pose2d> goal) {
-    return Commands.runOnce(
-            () ->
-                Epilogue.getConfig()
-                    .backend
-                    .log("/Robot/alignment/goal pose", goal.get(), Pose2d.struct))
+    return Commands.runOnce(() -> log("/Robot/alignment/goal pose", goal.get(), Pose2d.struct))
         .andThen(
             pathfind(goal, Meters.of(1))
                 .asProxy()

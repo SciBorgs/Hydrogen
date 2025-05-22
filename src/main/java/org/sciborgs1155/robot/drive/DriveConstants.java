@@ -3,12 +3,9 @@ package org.sciborgs1155.robot.drive;
 import static edu.wpi.first.units.Units.*;
 import static java.lang.Math.PI;
 
-import com.pathplanner.lib.config.ModuleConfig;
-import com.pathplanner.lib.config.RobotConfig;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Rotation3d;
 import edu.wpi.first.math.geometry.Translation2d;
-import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.units.measure.Angle;
 import edu.wpi.first.units.measure.AngularAcceleration;
 import edu.wpi.first.units.measure.AngularVelocity;
@@ -18,7 +15,6 @@ import edu.wpi.first.units.measure.LinearAcceleration;
 import edu.wpi.first.units.measure.LinearVelocity;
 import edu.wpi.first.units.measure.Time;
 import java.util.List;
-import org.sciborgs1155.robot.Constants;
 
 /**
  * Constants for our 2025 Swerve X2t drivetrain! All fields in this file should be updated for the
@@ -104,20 +100,6 @@ public final class DriveConstants {
     new Translation2d(WHEEL_BASE.div(-2), TRACK_WIDTH.div(2)), // rear left
     new Translation2d(WHEEL_BASE.div(-2), TRACK_WIDTH.div(-2)) // rear right
   };
-
-  public static final RobotConfig ROBOT_CONFIG =
-      new RobotConfig(
-          Constants.Robot.MASS,
-          Constants.Robot.MOI,
-          new ModuleConfig(
-              WHEEL_RADIUS,
-              MAX_SPEED,
-              WHEEL_COF,
-              DCMotor.getKrakenX60(1),
-              1 / ModuleConstants.Driving.GEARING,
-              ModuleConstants.Driving.STATOR_LIMIT,
-              1),
-          MODULE_OFFSET);
 
   // angular offsets of the modules, since we use absolute encoders
   // ignored (used as 0) in simulation because the simulated robot doesn't have offsets
