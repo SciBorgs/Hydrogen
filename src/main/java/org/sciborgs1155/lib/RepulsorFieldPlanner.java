@@ -173,12 +173,14 @@ public class RepulsorFieldPlanner {
 
   public static final double GOAL_STRENGTH = 0.65;
 
+  /** TODO: Update this yearly to define the physcial field for pathing! */
   public static final List<Obstacle> FIELD_OBSTACLES =
       List.of(
           new CircleObstacle(
               new Translation2d(4.49, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true),
           new CircleObstacle(
               new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true));
+
   public static final List<Obstacle> WALLS =
       List.of(
           new HorizontalObstacle(0.0, 0.5, true),

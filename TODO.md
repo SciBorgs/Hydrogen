@@ -2,9 +2,6 @@
 *little to do list of whats to do*
 
 Todo:
-- make sure all the stuff works
-    - assisted driving
-    - acceleration limiting
 - test irl
 
 Done:
@@ -24,3 +21,7 @@ Done:
     - assisted driving
     - what ever sample choreo thing
     - acceleration limiting
+- make sure all the stuff works
+    - assisted driving
+    - acceleration limiting
+    - pathing
