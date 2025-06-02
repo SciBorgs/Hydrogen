@@ -126,39 +126,6 @@ public class Alignment {
     return pathfind(goal, Translation.TOLERANCE);
   }
 
-  /**
-   * Moves the robot (unobtrusively) around while slowing down when about to ram into a field
-   * element.
-   *
-   * @param x Driver's vx input.
-   * @param y Driver's vy input.
-   * @param omega Driver's omega input.
-   * @return A command to thoretically drive without worry of ramming into things.
-   */
-  public Command freeDrive(DoubleSupplier x, DoubleSupplier y, DoubleSupplier omega) {
-    return drive.run(
-        () -> {
-          Tracer.startTrace("repulsor pathfinding");
-          planner.setGoal(
-              drive
-                  .pose()
-                  .getTranslation()
-                  .plus(new Translation2d(x.getAsDouble(), y.getAsDouble())));
-          // TODO this makes no sense! -- siggy
-          // hi im updating hydrogen and this is funny -- henry
-          drive.addOnSample(
-              x,
-              y,
-              omega,
-              planner.getCmd(
-                  drive.pose(),
-                  drive.fieldRelativeChassisSpeeds(),
-                  DriveConstants.MAX_SPEED.in(MetersPerSecond),
-                  true));
-          Tracer.endTrace();
-        });
-  }
-
   // * Warms up the pathfind command by telling drive to drive to itself. */
   public Command warmupCommand() {
     return pathfind(() -> drive.pose(), MetersPerSecond.of(0))

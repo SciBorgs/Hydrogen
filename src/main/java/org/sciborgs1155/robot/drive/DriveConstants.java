@@ -51,13 +51,9 @@ public final class DriveConstants {
     public static final double ROTATING_THRESHOLD = 0.02;
   }
 
-  public static final class Pathfinding {
-    // The number of ticks before pathfinding happens again.
-    public static final int PERIOD = 1;
-  }
-
   public static final class Skid {
-    public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3); // 3 is random, change
+    // TODO: find a value (3 is currently random, should change)
+    public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3);
   }
 
   // The control loop used by all of the modules when driving
