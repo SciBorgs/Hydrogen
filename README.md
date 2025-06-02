@@ -15,6 +15,7 @@ This project currently contains drive, vision, autos, pathing, and LEDs. You are
 - **[FieldConstants.java](src/main/java/org/sciborgs1155/robot/FieldConstants.java)** Modify this to be updated for each year's game, as it defines the field.
 - **[Ports.java](src/main/java/org/sciborgs1155/robot/Ports.java)** Modify existing OI and drive ports, as well as adding new ports and their names.
 - **[Robot.java](src/main/java/org/sciborgs1155/robot/Robot.java)** A lot: subsystems, command files, related triggers & bindings, interactions with other subsystems & files, library configurations/starting, etc..
+- **[Scisoc](<resources/calibrations/Scisoc - The Borg's Prayer.md>)** Update yearly.
 
 ## Dependencies
 - General
