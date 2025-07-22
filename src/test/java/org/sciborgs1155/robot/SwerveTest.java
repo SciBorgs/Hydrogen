@@ -60,7 +60,7 @@ public class SwerveTest {
                     new ChassisSpeeds(xVelocitySetpoint, yVelocitySetpoint, 0),
                     ControlMode.CLOSED_LOOP_VELOCITY)));
     run(drive.drive(() -> xVelocitySetpoint, () -> yVelocitySetpoint, drive::heading));
-    fastForward(500);
+    fastForward(1000);
 
     ChassisSpeeds chassisSpeed = drive.fieldRelativeChassisSpeeds();
 

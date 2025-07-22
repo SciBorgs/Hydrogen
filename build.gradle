@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2025.1.1"
+    id "edu.wpi.first.GradleRIO" version "2025.3.2"
     id 'com.diffplug.spotless' version '6.24.0'
 }
 
@@ -80,6 +80,8 @@ dependencies {
     testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
     testImplementation 'org.junit.jupiter:junit-jupiter-params:5.+'
     testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5+'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+
 
     // Monologue
     implementation 'com.github.shueja:Monologue:+'
