@@ -349,7 +349,7 @@ public final class FaultLogger {
   /**
    * Registers fault suppliers for a CANcoder.
    *
-   * @param camera The camera to manage.
+   * @param cancoder The CANcoder to manage.
    */
   public static void register(CANcoder cancoder) {
     String nickname = Ports.idToName.get(cancoder.getDeviceID());
