@@ -137,7 +137,7 @@ public final class DriveConstants {
       public static final Current STATOR_LIMIT = Amps.of(80); // 120A max slip current
       public static final Current SUPPLY_LIMIT = Amps.of(70);
 
-      // these factors are for SparkModule only!
+      // TODO these factors are for SparkModule only!
       public static final Distance POSITION_FACTOR = CIRCUMFERENCE.times(GEARING);
       public static final LinearVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
@@ -160,9 +160,13 @@ public final class DriveConstants {
 
     static final class Turning {
       public static final double GEARING = 12.1;
-      public static final double CANCODER_GEARING = 1;
+      public static final double ENCODER_GEARING = 1;
 
       public static final Current CURRENT_LIMIT = Amps.of(20);
+
+      // TODO these factors are for SparkModule only!
+      public static final Angle POSITION_FACTOR = Rotations.of(ENCODER_GEARING);
+      public static final AngularVelocity VELOCITY_FACTOR = POSITION_FACTOR.per(Minute);
 
       public static final class PID {
         public static final double P = 50;

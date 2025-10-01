@@ -145,8 +145,8 @@ public class SparkModule implements ModuleIO {
     turnMotorConfig.apply(
         turnMotorConfig
             .encoder
-            .positionConversionFactor(Driving.POSITION_FACTOR.in(Meters))
-            .velocityConversionFactor(Driving.VELOCITY_FACTOR.in(MetersPerSecond))
+            .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
+            .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
             .uvwAverageDepth(2));
 
     turnMotorConfig.apply(

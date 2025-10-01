@@ -13,13 +13,11 @@ import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
 import com.pathplanner.lib.controllers.PPHolonomicDriveController;
 import edu.wpi.first.epilogue.NotLogged;
-import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.system.plant.DCMotor;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 import edu.wpi.first.wpilibj.smartdashboard.SendableChooser;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.Commands;
-import java.util.Optional;
 import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
@@ -27,8 +25,6 @@ import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 
 public class Autos {
-  private static Optional<Rotation2d> rotation = Optional.empty();
-
   @NotLogged
   public static SendableChooser<Command> configureAutos(Drive drive) {
     AutoBuilder.configure(
@@ -46,15 +42,14 @@ public class Autos {
                 WHEEL_RADIUS,
                 MAX_SPEED,
                 WHEEL_COF,
-                DCMotor.getKrakenX60(1),
-                1 / Driving.GEARING,
+                DCMotor.getKrakenX60(1).withReduction(Driving.GEARING),
                 Driving.STATOR_LIMIT,
                 1),
             MODULE_OFFSET),
         () -> alliance() == Alliance.Red,
         drive);
 
-    PPHolonomicDriveController.overrideRotationFeedback(() -> rotation.get().getRadians());
+    PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
 
     SendableChooser<Command> chooser = AutoBuilder.buildAutoChooser();
     chooser.addOption("no auto", Commands.none());
