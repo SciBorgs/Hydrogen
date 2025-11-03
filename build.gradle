@@ -190,7 +190,7 @@ tasks.register("fullPush") {
 
     doFirst {
         println("")
-        print "Enter commit message: "
+        print "\n\033[1;96mEnter commit message:\033[0m "
         System.out.flush()
         def msg = new BufferedReader(new InputStreamReader(System.in)).readLine()
 
@@ -211,6 +211,27 @@ tasks.register("fullPush") {
         exec {
             commandLine "git", "fetch"
             ignoreExitValue = true
+        }
+
+        // Stage all changes
+        exec {
+            commandLine "git", "add", "-A"
+        }
+
+        // Check if there’s anything to commit
+        def diffCheck = exec {
+            commandLine "git", "diff", "--cached", "--quiet"
+            ignoreExitValue = true
+        }
+
+        if (diffCheck.exitValue == 0) {
+            println "No changes to commit."
+            return
+        }
+
+        // Commit changes
+        exec {
+            commandLine "git", "commit", "-m", commitMessage
         }
 
         // Collect hashes to check sync status
@@ -242,33 +263,12 @@ tasks.register("fullPush") {
         if (!remoteHash) {
             throw new GradleException("No upstream branch set, please manually push using set-upstream for a new branch")
         } else if (localHash == remoteHash) {
-            println "Already up-to-date — nothing to push."
+            println "Already up-to-date - nothing to push."
             return
         } else if (localHash == baseHash) {
-            throw new GradleException("Local branch is behind remote — pull first.")
+            throw new GradleException("Local branch is behind remote - pull first.")
         } else if (remoteHash != baseHash) {
-            throw new GradleException("Branch has diverged — manual merge/rebase required.")
-        }
-
-        // Stage all changes
-        exec {
-            commandLine "git", "add", "-A"
-        }
-
-        // Check if there’s anything to commit
-        def diffCheck = exec {
-            commandLine "git", "diff", "--cached", "--quiet"
-            ignoreExitValue = true
-        }
-
-        if (diffCheck.exitValue == 0) {
-            println "No changes to commit."
-            return
-        }
-
-        // Commit changes
-        exec {
-            commandLine "git", "commit", "-m", commitMessage
+            throw new GradleException("Branch has diverged - manual merge/rebase required.")
         }
 
         // Push safely
