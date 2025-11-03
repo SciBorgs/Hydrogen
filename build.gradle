@@ -183,3 +183,99 @@ spotless {
         endWithNewline()
     }
 }
+
+tasks.register("fullPush") {
+    group = "git"
+    description = "Runs spotless, builds, commits, and safely pushes changes."
+
+    doFirst {
+        println("")
+        print "Enter commit message: "
+        System.out.flush()
+        def msg = new BufferedReader(new InputStreamReader(System.in)).readLine()
+
+        if (!msg?.trim()) {
+            throw new GradleException("No commit message provided.")
+        }
+
+        project.ext.commitMessage = msg.trim()
+    }
+
+    // Run formatting and build before pushing
+    dependsOn("spotlessApply", "build")
+
+    doLast {
+        def commitMessage = project.ext.commitMessage
+
+        // Fetch latest changes first
+        exec {
+            commandLine "git", "fetch"
+            ignoreExitValue = true
+        }
+
+        // Collect hashes to check sync status
+        def local = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "rev-parse", "@"
+            standardOutput = local
+        }
+
+        def remote = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "rev-parse", "@{u}"
+            standardOutput = remote
+            ignoreExitValue = true
+        }
+
+        def base = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "merge-base", "@", "@{u}"
+            standardOutput = base
+            ignoreExitValue = true
+        }
+
+        def localHash = local.toString().trim()
+        def remoteHash = remote.toString().trim()
+        def baseHash = base.toString().trim()
+
+        // Pre-commit checks
+        if (!remoteHash) {
+            throw new GradleException("No upstream branch set, please manually push using set-upstream for a new branch")
+        } else if (localHash == remoteHash) {
+            println "Already up-to-date — nothing to push."
+            return
+        } else if (localHash == baseHash) {
+            throw new GradleException("Local branch is behind remote — pull first.")
+        } else if (remoteHash != baseHash) {
+            throw new GradleException("Branch has diverged — manual merge/rebase required.")
+        }
+
+        // Stage all changes
+        exec {
+            commandLine "git", "add", "-A"
+        }
+
+        // Check if there’s anything to commit
+        def diffCheck = exec {
+            commandLine "git", "diff", "--cached", "--quiet"
+            ignoreExitValue = true
+        }
+
+        if (diffCheck.exitValue == 0) {
+            println "No changes to commit."
+            return
+        }
+
+        // Commit changes
+        exec {
+            commandLine "git", "commit", "-m", commitMessage
+        }
+
+        // Push safely
+        exec {
+            commandLine "git", "push"
+        }
+
+        println "Successfully committed and pushed!"
+    }
+}
