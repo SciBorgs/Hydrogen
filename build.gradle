@@ -225,7 +225,7 @@ tasks.register("fullPush") {
         }
 
         if (diffCheck.exitValue == 0) {
-            println "No changes to commit."
+            println "\nNo changes to commit."
             return
         }
 
@@ -263,7 +263,7 @@ tasks.register("fullPush") {
         if (!remoteHash) {
             throw new GradleException("No upstream branch set, please manually push using set-upstream for a new branch")
         } else if (localHash == remoteHash) {
-            println "Already up-to-date - nothing to push."
+            println "\nAlready up-to-date - nothing to push."
             return
         } else if (localHash == baseHash) {
             throw new GradleException("Local branch is behind remote - pull first.")
