@@ -268,7 +268,7 @@ tasks.register("fullPush") {
         // Push safely
         def pushResult = exec {
             commandLine "git", "push"
-            isIgnoreExitValue = true
+            ignoreExitValue = true
         }
         if (pushResult.exitValue != 0) {
             println "\033[1;91m Push failed — rolling back commit.\033[0m"
