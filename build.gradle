@@ -220,12 +220,10 @@ tasks.register("fullPush") {
 
         if (diffCheck.exitValue == 0) {
             println "\nNo changes to commit."
-            return
-        }
-
-        // Commit changes
-        exec {
-            commandLine "git", "commit", "-m", commitMessage
+        } else {
+            exec {
+                commandLine "git", "commit", "-m", commitMessage
+            }
         }
 
         // Collect hashes to check sync status
