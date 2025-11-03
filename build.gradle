@@ -193,7 +193,7 @@ tasks.register("fullPush") {
 
     doLast {
         if (!project.hasProperty("m")) {
-            throw new GradleException("You mus pass in your commit message using ./gradlew fullPush \"<message>\"");
+            throw new GradleException("You must pass in your commit message using ./gradlew fullPush -Pm=\"<message>\"");
         }
 
         def commitMessage = project.getProperty("m").trim();
