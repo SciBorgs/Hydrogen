@@ -188,24 +188,18 @@ tasks.register("fullPush") {
     group = "git"
     description = "Runs spotless, builds, commits, and safely pushes changes."
 
-    doFirst {
-        println("")
-        print "\n\033[1;96mEnter commit message:\033[0m "
-        System.out.flush()
-        def msg = new BufferedReader(new InputStreamReader(System.in)).readLine()
-
-        if (!msg?.trim()) {
-            throw new GradleException("No commit message provided.")
-        }
-
-        project.ext.commitMessage = msg.trim()
-    }
-
     // Run formatting and build before pushing
     dependsOn("spotlessApply", "build")
 
     doLast {
-        def commitMessage = project.ext.commitMessage
+        println("")
+        print "\n\033[1;96mEnter commit message:\033[0m "
+        System.out.flush()
+        def commitMessage = new BufferedReader(new InputStreamReader(System.in)).readLine()
+
+        if (!commitMessage?.trim()) {
+            throw new GradleException("No commit message provided.")
+        }
 
         // Fetch latest changes first
         exec {
@@ -272,8 +266,17 @@ tasks.register("fullPush") {
         }
 
         // Push safely
-        exec {
+        def pushResult = exec {
             commandLine "git", "push"
+            isIgnoreExitValue = true
+        }
+        if (pushResult.exitValue != 0) {
+            println "\033[1;91m Push failed — rolling back commit.\033[0m"
+            exec {
+                commandLine "git", "reset", "--soft", "HEAD~1"
+            }
+            println "\033[1;93m Commit undone (changes preserved). Fix the issue and re-run fullPush.\033[0m"
+            return
         }
 
         println "Successfully committed and pushed!"
