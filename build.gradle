@@ -192,14 +192,11 @@ tasks.register("fullPush") {
     dependsOn("spotlessApply", "build")
 
     doLast {
-        println("")
-        print "\n\033[1;96mEnter commit message:\033[0m "
-        System.out.flush()
-        def commitMessage = new BufferedReader(new InputStreamReader(System.in)).readLine()
-
-        if (!commitMessage?.trim()) {
-            throw new GradleException("No commit message provided.")
+        if (!project.hasProperty("m")) {
+            throw new GradleException("You mus pass in your commit message using ./gradlew fullPush \"<message>\"");
         }
+
+        def commitMessage = project.getProperty("m").trim();
 
         // Fetch latest changes first
         exec {
