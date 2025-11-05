@@ -196,7 +196,7 @@ tasks.register("fullPush") {
             throw new GradleException("You must pass in your commit message using ./gradlew fullPush -Pm=\"<message>\"");
         }
 
-        def commitMessage = project.getProperty("m").trim();
+        def commitMessage = project.getProperty("m").trim()
 
         // Fetch latest changes first
         exec {
@@ -279,19 +279,16 @@ tasks.register("fullPush") {
 }
 
 tasks.register("fp") {
+    // Abbreviated
     group = "git"
-    // basically the other full push but shorter
     description = "Runs spotless, builds, commits, and safely pushes changes."
-
-    // A bit goofy, uses gradles task names to get the second "parameter"
-    def params = project.gradle.startParameter.taskNames.size()
-    if (params == 2) {
-        project.ext.m = project.gradle.startParameter.taskNames[1]
-    } else if (params < 2) {
-        println "\033[1;91m Commit message not specified. \033[0m"
-    } else {
-        println "\033[1;91m Too many parameters! Only use one (the commit message). \033[0m"
+    doLast {
+        if (!project.hasProperty("m")) {
+            throw new GradleException("You must pass in your commit message using ./gradlew fp -Pm=\"<message>\"");
+        }
+        exec {
+            commandLine "./gradlew", "fullPush", project.getProperty("m").trim()
+        }
     }
-
     dependsOn("fullPush")
 }
