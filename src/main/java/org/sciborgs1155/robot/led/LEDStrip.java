@@ -82,8 +82,8 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * A color gradient representing the progress towards a target, like an elevator.   
-   * When the goal is reached, it becomes a solid line.
+   * A color gradient representing the progress towards a target, like an elevator. When the goal is
+   * reached, it becomes a solid line.
    *
    * @param percent A double supplier for the current progress percentage.
    * @param atGoal A boolean supplier that supplies whether the mechanism is at its goal.
