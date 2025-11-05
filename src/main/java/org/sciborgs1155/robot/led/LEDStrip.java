@@ -82,11 +82,11 @@ public class LEDStrip extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * A gradient of red to green LEDs representing how much the elevator is raised, until the
-   * elevator reaches its setpoint, where it then solid lime.
+   * A color gradient representing the progress towards a target, like an elevator. When the goal is
+   * reached, it becomes a solid line.
    *
-   * @param percent A double supplier that supplies the elevator's percent raised.
-   * @param atGoal A boolean supplier that supplies whether the elevator is at its goal.
+   * @param percent A double supplier for the current progress percentage.
+   * @param atGoal A boolean supplier that supplies whether the mechanism is at its goal.
    */
   public Command progressGradient(DoubleSupplier percent, BooleanSupplier atGoal) {
     return set(solidGradient(percent)
