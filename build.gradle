@@ -277,3 +277,21 @@ tasks.register("fullPush") {
         println "Successfully committed and pushed!"
     }
 }
+
+tasks.register("fp") {
+    group = "git"
+    // basically the other full push but shorter
+    description = "Runs spotless, builds, commits, and safely pushes changes."
+
+    // A bit goofy, uses gradles task names to get the second "parameter"
+    def params = project.gradle.startParameter.taskNames.size()
+    if (params == 2) {
+        project.ext.m = project.gradle.startParameter.taskNames[1]
+    } else if (params < 2) {
+        println "\033[1;91m Commit message not specified. \033[0m"
+    } else {
+        println "\033[1;91m Too many parameters! Only use one (the commit message). \033[0m"
+    }
+
+    dependsOn("fullPush")
+}
