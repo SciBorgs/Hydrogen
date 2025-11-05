@@ -282,13 +282,12 @@ tasks.register("fp") {
     // Abbreviated
     group = "git"
     description = "Runs spotless, builds, commits, and safely pushes changes."
-    doLast {
+
+    doFirst {
         if (!project.hasProperty("m")) {
             throw new GradleException("You must pass in your commit message using ./gradlew fp -Pm=\"<message>\"");
         }
-        exec {
-            commandLine "./gradlew", "fullPush", project.getProperty("m").trim()
-        }
     }
+
     dependsOn("fullPush")
 }
