@@ -140,14 +140,14 @@ public class SparkModule implements ModuleIO {
             .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps))
             .inverted(invert));
 
-    turnMotorConfig.apply(turnMotorConfig.encoder.inverted(true));
+    turnMotorConfig.apply(turnMotorConfig.absoluteEncoder.inverted(true));
 
     turnMotorConfig.apply(
         turnMotorConfig
-            .encoder
+            .absoluteEncoder
             .positionConversionFactor(Turning.POSITION_FACTOR.in(Radians))
             .velocityConversionFactor(Turning.VELOCITY_FACTOR.in(RadiansPerSecond))
-            .uvwAverageDepth(2));
+            .averageDepth(2));
 
     turnMotorConfig.apply(
         SparkUtils.getSignalsConfigurationFrameStrategy(
