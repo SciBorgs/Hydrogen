@@ -44,6 +44,12 @@ public class Alignment {
     this.drive = drive;
   }
 
+  /**
+   * Moves the robot relative to the current pose, given a transform.
+   *
+   * @param transform A transform to move by.
+   * @return A Command that drives to the transformed pose.
+   */
   public Command moveRobotRelative(Transform2d transform) {
     return Commands.defer(
         () -> {
@@ -53,6 +59,12 @@ public class Alignment {
         Set.of(drive));
   }
 
+  /**
+   * Aligns to a supplied goal pose.
+   *
+   * @param goal The field pose to align to.
+   * @return A Command to pathfind align to the pose.
+   */
   public Command alignTo(Supplier<Pose2d> goal) {
     return Commands.runOnce(() -> log("/Robot/alignment/goal pose", goal.get(), Pose2d.struct))
         .andThen(
