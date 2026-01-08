@@ -214,28 +214,28 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     ANGULAR_OFFSETS.get(0),
                     Driving.FF_CONSTANTS.get(0),
                     "FL",
-                    false),
+                    true),
                 new SparkModule(
                     FRONT_RIGHT_DRIVE,
                     FRONT_RIGHT_TURNING,
                     ANGULAR_OFFSETS.get(1),
                     Driving.FF_CONSTANTS.get(1),
                     "FR",
-                    false),
+                    true),
                 new SparkModule(
                     REAR_LEFT_DRIVE,
                     REAR_LEFT_TURNING,
                     ANGULAR_OFFSETS.get(2),
                     Driving.FF_CONSTANTS.get(2),
                     "RL",
-                    false),
+                    true),
                 new SparkModule(
                     REAR_RIGHT_DRIVE,
                     REAR_RIGHT_TURNING,
                     ANGULAR_OFFSETS.get(3),
                     Driving.FF_CONSTANTS.get(3),
                     "RR",
-                    false));
+                    true));
       };
     } else {
       return new Drive(
