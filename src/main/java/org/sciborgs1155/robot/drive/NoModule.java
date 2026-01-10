@@ -29,7 +29,7 @@ public class NoModule implements ModuleIO {
 
   @Override
   public Rotation2d rotation() {
-    return new Rotation2d();
+    return Rotation2d.kZero;
   }
 
   @Override
@@ -54,13 +54,26 @@ public class NoModule implements ModuleIO {
   public void setDriveSetpoint(double velocity) {}
 
   @Override
-  public void setTurnSetpoint(double angle) {}
+  public void setTurnSetpoint(Rotation2d angle) {}
 
   @Override
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {}
 
   @Override
   public void updateInputs(Rotation2d angle, double voltage) {}
+
+  @Override
+  public double[][] moduleOdometryData() {
+    return new double[0][0];
+  }
+
+  public SwerveModulePosition[] odometryData() {
+    return new SwerveModulePosition[0];
+  }
+
+  public double[] timestamps() {
+    return new double[0];
+  }
 
   @Override
   public void close() {}

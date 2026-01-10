@@ -2,10 +2,8 @@ package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.*;
 
-import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.util.Units;
-import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.units.measure.Mass;
 import edu.wpi.first.units.measure.MomentOfInertia;
 import edu.wpi.first.units.measure.Time;
@@ -34,6 +32,20 @@ public class Constants {
     return Rotation2d.fromRotations(alliance() == Alliance.Blue ? 0 : 0.5);
   }
 
+  /** Defines the various types the robot can be. Useful for only using select subsystems. */
+  public static enum RobotType {
+    FULL,
+    CHASSIS,
+    NONE
+  }
+
+  /** The current robot state, as in the type. Remember to update! */
+  public static RobotType ROBOT_TYPE = RobotType.FULL;
+
+  /** States if we are in tuning mode. Ideally, keep it at false when not used. */
+  public static boolean TUNING = false;
+
+  // TODO: UPDATE ALL OF THESE VALUES.
   /** Describes physical properites of the robot. */
   public static class Robot {
     public static final Mass MASS = Kilograms.of(25);
@@ -41,6 +53,7 @@ public class Constants {
   }
 
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
+  public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 20.0); // 4 ms (speedy!)
   public static final double DEADBAND = 0.15;
   public static final double MAX_RATE =
       DriveConstants.MAX_ACCEL.baseUnitMagnitude()
@@ -48,17 +61,6 @@ public class Constants {
   public static final double SLOW_SPEED_MULTIPLIER = 0.33;
   public static final double FULL_SPEED_MULTIPLIER = 1.0;
 
-  // Origin at corner of blue alliance side of field
-  public static class Field {
-    public static final Distance LENGTH = Inches.of(651.223);
-    public static final Distance WIDTH = Inches.of(323.277);
-
-    /** Returns whether the provided position is within the boundaries of the field. */
-    public static boolean inField(Pose3d pose) {
-      return (pose.getX() > 0
-          && pose.getX() < Field.LENGTH.in(Meters)
-          && pose.getY() > 0
-          && pose.getY() < Field.WIDTH.in(Meters));
-    }
-  }
+  // The name of seperate canivore, set to rio if no seperate canivore
+  public static final String DRIVE_CANIVORE = "drivetrain";
 }

@@ -74,8 +74,8 @@ public class InputStreamTest {
     InputStream stream = of(() -> MathSharedStore.getTimestamp() * 2);
     InputStream limited = stream.rateLimit(1);
     double initial = limited.get();
-    UnitTestingUtil.fastForward(Seconds.of(2));
-    assertEquals(4, stream.get() - initial, 0.1);
-    assertEquals(2, limited.get() - initial, 0.1);
+    UnitTestingUtil.fastForward(Seconds.of(15));
+    assertEquals(30, stream.get() - initial, 0.2);
+    assertEquals(15, limited.get() - initial, 0.2);
   }
 }

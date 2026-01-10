@@ -1,6 +1,6 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2025.1.1"
+    id "edu.wpi.first.GradleRIO" version "2025.3.2"
     id 'com.diffplug.spotless' version '6.24.0'
 }
 
@@ -28,13 +28,32 @@ deploy {
                 // getTargetTypeClass is a shortcut to get the class type using a string
 
                 frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
+
+                    jvmArgs.add("-XX:+UnlockExperimentalVMOptions")
+                    jvmArgs.add("-XX:GCTimeRatio=5")
+                    jvmArgs.add("-XX:+UseSerialGC")
+                    jvmArgs.add("-XX:MaxGCPauseMillis=50")
+
+                    // RIO 2 only
+                    final MAX_JAVA_HEAP_SIZE_MB = 100;
+                    jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    jvmArgs.add("-XX:+AlwaysPreTouch")
+
+                    // Enable VisualVM connection
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote=true")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.port=1198")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.local.only=false")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.ssl=false")
+                    // jvmArgs.add("-Dcom.sun.management.jmxremote.authenticate=false")
+                    // jvmArgs.add("-Djava.rmi.server.hostname=10.11.55.2") // Replace TE.AM with team number
                 }
 
                 // Static files artifact
                 frcStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
                     files = project.fileTree('src/main/deploy')
                     directory = '/home/lvuser/deploy'
-                    deleteOldFiles = false // Change to true to delete files on roboRIO that no
+                    deleteOldFiles = true // Change to true to delete files on roboRIO that no
                     // longer exist in deploy directory of this project
                 }
             }
@@ -60,7 +79,7 @@ dependencies {
     annotationProcessor wpi.java.deps.wpilibAnnotations()
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
-    implementation 'org.junit.jupiter:junit-jupiter-api:5.+'
+    implementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
 
     roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
     roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
@@ -77,12 +96,9 @@ dependencies {
     simulationRelease wpi.sim.enableRelease()
 
     // Junit testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.+'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.+'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5+'
-
-    // Monologue
-    implementation 'com.github.shueja:Monologue:+'
+    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
+    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
 
     // Gson
     // Remove this once choreolib changes get upstreamed
@@ -165,5 +181,99 @@ spotless {
         trimTrailingWhitespace()
         indentWithSpaces(4)
         endWithNewline()
+    }
+}
+
+tasks.register("fullPush") {
+    group = "git"
+    description = "Runs spotless, builds, commits, and safely pushes changes."
+
+    // Run formatting and build before pushing
+    dependsOn("spotlessApply", "build")
+
+    doLast {
+        if (!project.hasProperty("m")) {
+            throw new GradleException("You must pass in your commit message using ./gradlew fullPush -Pm=\"<message>\"");
+        }
+
+        def commitMessage = project.getProperty("m").trim()
+
+        // Fetch latest changes first
+        exec {
+            commandLine "git", "fetch"
+            ignoreExitValue = true
+        }
+
+        // Stage all changes
+        exec {
+            commandLine "git", "add", "-A"
+        }
+
+        // Check if there’s anything to commit
+        def diffCheck = exec {
+            commandLine "git", "diff", "--cached", "--quiet"
+            ignoreExitValue = true
+        }
+
+        if (diffCheck.exitValue == 0) {
+            println "\nNo changes to commit."
+        } else {
+            exec {
+                commandLine "git", "commit", "-m", commitMessage
+            }
+        }
+
+        // Collect hashes to check sync status
+        def local = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "rev-parse", "@"
+            standardOutput = local
+        }
+
+        def remote = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "rev-parse", "@{u}"
+            standardOutput = remote
+            ignoreExitValue = true
+        }
+
+        def base = new ByteArrayOutputStream()
+        exec {
+            commandLine "git", "merge-base", "@", "@{u}"
+            standardOutput = base
+            ignoreExitValue = true
+        }
+
+        def localHash = local.toString().trim()
+        def remoteHash = remote.toString().trim()
+        def baseHash = base.toString().trim()
+
+        // Pre-commit checks
+        if (!remoteHash) {
+            throw new GradleException("No upstream branch set, please manually push using set-upstream for a new branch")
+        } else if (localHash == remoteHash) {
+            println "\nAlready up-to-date - nothing to push."
+            return
+        } else if (localHash == baseHash) {
+            throw new GradleException("Local branch is behind remote - pull first.")
+        } else if (remoteHash != baseHash) {
+            throw new GradleException("Branch has diverged - manual merge/rebase required.")
+        }
+
+        // Push safely
+        def pushResult = exec {
+            commandLine "git", "push"
+            ignoreExitValue = true
+        }
+        if (pushResult.exitValue != 0) {
+            println "\033[1;91m Push failed — rolling back commit.\033[0m"
+            exec {
+                commandLine "git", "reset", "--soft", "HEAD~1"
+            }
+            println "\033[1;93m Commit undone (changes preserved). Fix the issue and re-run fullPush.\033[0m"
+            return
+        }
+
+        println "Successfully committed and pushed!"
     }
 }

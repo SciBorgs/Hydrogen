@@ -1,6 +1,8 @@
 package org.sciborgs1155.lib;
 
+import com.ctre.phoenix6.BaseStatusSignal;
 import com.ctre.phoenix6.Orchestra;
+import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.configs.AudioConfigs;
 import com.ctre.phoenix6.hardware.TalonFX;
 import edu.wpi.first.wpilibj.DriverStation;
@@ -9,15 +11,28 @@ import java.util.ArrayList;
 public class TalonUtils {
   private static final Orchestra orchestra = new Orchestra();
   private static final ArrayList<TalonFX> talons = new ArrayList<>(4);
+  private static BaseStatusSignal[] talonSignals = new BaseStatusSignal[0];
+
   private static boolean fileLoaded = false;
 
   /**
-   * Adds motor to the orchestra.
+   * Adds motor to the processing list.
    *
    * @param talon The motor to add.
    */
   public static void addMotor(TalonFX talon) {
     talons.add(talon);
+  }
+
+  public static void addSignal(StatusSignal signal) {
+    BaseStatusSignal[] newSignals = new BaseStatusSignal[talonSignals.length + 1];
+    System.arraycopy(talonSignals, 0, newSignals, 0, talonSignals.length);
+    newSignals[talonSignals.length] = signal;
+    talonSignals = newSignals;
+  }
+
+  public static void refreshAll() {
+    BaseStatusSignal.refreshAll(talonSignals);
   }
 
   /**

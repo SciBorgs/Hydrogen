@@ -15,11 +15,13 @@ public class UnitTestingUtil {
   /** Sets up DS and initializes HAL with default values and asserts that it doesn't fail. */
   public static void setupTests() {
     assert HAL.initialize(500, 0);
+    DriverStationSim.resetData();
     DriverStationSim.setEnabled(true);
     DriverStationSim.setTest(true);
     DriverStationSim.notifyNewData();
     FaultLogger.clear();
     FaultLogger.unregisterAll();
+    SimHooks.restartTiming();
   }
 
   /**

@@ -24,7 +24,6 @@ public class FaultLoggerTest {
   @BeforeEach
   public void setup() {
     setupTests();
-    FaultLogger.clear();
   }
 
   @Test
