@@ -2,7 +2,6 @@ package org.sciborgs1155.lib;
 
 import edu.wpi.first.epilogue.Epilogue;
 import edu.wpi.first.units.Measure;
-import edu.wpi.first.units.measure.Unit;
 import edu.wpi.first.util.struct.Struct;
 import java.util.Collection;
 
@@ -87,10 +86,6 @@ public class LoggingUtils {
   }
 
   public static void log(String identifier, Measure<?> value) {
-    Epilogue.getConfig().backend.log(identifier, value);
-  }
-
-  public static void log(String identifier, Unit value, Unit unit) {
     Epilogue.getConfig().backend.log(identifier, value);
   }
 

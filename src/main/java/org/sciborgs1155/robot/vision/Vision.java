@@ -1,7 +1,6 @@
 package org.sciborgs1155.robot.vision;
 
 import static org.sciborgs1155.lib.LoggingUtils.*;
-import static org.sciborgs1155.robot.Constants.*;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
