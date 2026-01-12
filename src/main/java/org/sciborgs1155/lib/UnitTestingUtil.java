@@ -94,7 +94,7 @@ public class UnitTestingUtil {
    * @param command
    */
   public static void runToCompletion(Command command) {
-    command.schedule();
+    CommandScheduler.getInstance().schedule(command);
     fastForward(1);
     while (command.isScheduled()) {
       fastForward(1);
