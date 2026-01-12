@@ -136,7 +136,7 @@ public class Alignment {
     return pathfind(goal, Translation.TOLERANCE);
   }
 
-  // * Warms up the pathfind command by telling drive to drive to itself. */
+  /** Warms up the pathfind command by telling drive to drive to itself. */
   public Command warmupCommand() {
     return pathfind(() -> drive.pose(), MetersPerSecond.of(0))
         .withTimeout(3)
