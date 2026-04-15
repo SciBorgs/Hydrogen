@@ -33,7 +33,6 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
@@ -216,7 +215,7 @@ public class Robot extends CommandRobot {
   }
 
   public Command systemsCheck() {
-    return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
+    return Commands.sequence(drive.systemsCheck()).withName("Test Mechanisms");
   }
 
   @Override

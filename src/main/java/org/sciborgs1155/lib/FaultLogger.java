@@ -14,6 +14,8 @@ import edu.wpi.first.networktables.StringArrayPublisher;
 import edu.wpi.first.wpilibj.DriverStation;
 import edu.wpi.first.wpilibj.DutyCycleEncoder;
 import edu.wpi.first.wpilibj.PowerDistribution;
+import edu.wpi.first.wpilibj2.command.Command;
+import edu.wpi.first.wpilibj2.command.Commands;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -22,6 +24,7 @@ import java.util.Optional;
 import java.util.Set;
 import java.util.function.BiConsumer;
 import java.util.function.BooleanSupplier;
+import java.util.function.DoubleSupplier;
 import java.util.function.Supplier;
 import org.photonvision.PhotonCamera;
 import org.sciborgs1155.robot.Ports;
@@ -35,7 +38,17 @@ import org.sciborgs1155.robot.Ports;
  * FaultLogger.check(spark); // checks that the previous set call did not encounter an error.
  * </pre>
  */
-public final class FaultLogger {
+ public final class FaultLogger {
+  // DATA
+  private static final List<Supplier<Optional<Fault>>> FAULT_REPORTERS = new ArrayList<>();
+  private static final Set<Fault> ACTIVE_FAULTS = new HashSet<>();
+  private static final Set<Fault> TOTAL_FAULTS = new HashSet<>();
+
+  // NETWORK TABLES
+  private static final NetworkTable BASE = NetworkTableInstance.getDefault().getTable("Faults");
+  private static final Alerts ACTIVE_ALERTS = new Alerts(BASE, "Active Faults");
+  private static final Alerts TOTAL_ALERTS = new Alerts(BASE, "Total Faults");
+
   /** An individual fault, containing necessary information. */
   public static record Fault(String name, String description, FaultType type) {
     @Override
@@ -61,6 +74,12 @@ public final class FaultLogger {
     private StringArrayPublisher warnings;
     private StringArrayPublisher infos;
 
+    /**
+     * Creates a new Alerts widget on NetworkTables.
+     *
+     * @param base The base NetworkTable to create the subtable in.
+     * @param name The name of the alerts subtable.
+     */
     public Alerts(NetworkTable base, String name) {
       table = base.getSubTable(name);
       table.getStringTopic(".type").publish().set("Alerts");
@@ -69,12 +88,18 @@ public final class FaultLogger {
       infos = table.getStringArrayTopic("infos").publish();
     }
 
+    /**
+     * Sets the alerts from the given set of faults.
+     *
+     * @param faults The set of faults to display.
+     */
     public void set(Set<Fault> faults) {
       errors.set(filteredStrings(faults, FaultType.ERROR));
       warnings.set(filteredStrings(faults, FaultType.WARNING));
       infos.set(filteredStrings(faults, FaultType.INFO));
     }
 
+    /** Resets the alerts by closing and recreating the publishers. */
     public void reset() {
       errors.close();
       warnings.close();
@@ -86,40 +111,30 @@ public final class FaultLogger {
     }
   }
 
-  // DATA
-  private static final List<Supplier<Optional<Fault>>> faultReporters = new ArrayList<>();
-  private static final Set<Fault> activeFaults = new HashSet<>();
-  private static final Set<Fault> totalFaults = new HashSet<>();
-
-  // NETWORK TABLES
-  private static final NetworkTable base = NetworkTableInstance.getDefault().getTable("Faults");
-  private static final Alerts activeAlerts = new Alerts(base, "Active Faults");
-  private static final Alerts totalAlerts = new Alerts(base, "Total Faults");
-
   /** Polls registered fallibles. This method should be called periodically. */
   public static void update() {
-    faultReporters.forEach(r -> r.get().ifPresent(fault -> report(fault)));
+    FAULT_REPORTERS.forEach(r -> r.get().ifPresent(fault -> report(fault)));
 
-    totalFaults.addAll(activeFaults);
+    TOTAL_FAULTS.addAll(ACTIVE_FAULTS);
 
-    activeAlerts.set(activeFaults);
-    totalAlerts.set(totalFaults);
+    ACTIVE_ALERTS.set(ACTIVE_FAULTS);
+    TOTAL_ALERTS.set(TOTAL_FAULTS);
 
-    activeFaults.clear();
+    ACTIVE_FAULTS.clear();
   }
 
   /** Clears total faults. */
   public static void clear() {
-    totalFaults.clear();
-    activeFaults.clear();
+    TOTAL_FAULTS.clear();
+    ACTIVE_FAULTS.clear();
 
-    totalAlerts.reset();
-    activeAlerts.reset();
+    TOTAL_ALERTS.reset();
+    ACTIVE_ALERTS.reset();
   }
 
   /** Clears fault suppliers. */
   public static void unregisterAll() {
-    faultReporters.clear();
+    FAULT_REPORTERS.clear();
   }
 
   /**
@@ -128,7 +143,7 @@ public final class FaultLogger {
    * @return The set of all current faults.
    */
   public static Set<Fault> activeFaults() {
-    return activeFaults;
+    return ACTIVE_FAULTS;
   }
 
   /**
@@ -137,7 +152,7 @@ public final class FaultLogger {
    * @return The set of all total faults.
    */
   public static Set<Fault> totalFaults() {
-    return totalFaults;
+    return TOTAL_FAULTS;
   }
 
   /**
@@ -146,11 +161,11 @@ public final class FaultLogger {
    * @param fault The fault to report.
    */
   public static void report(Fault fault) {
-    activeFaults.add(fault);
+    ACTIVE_FAULTS.add(fault);
     switch (fault.type) {
       case ERROR -> DriverStation.reportError(fault.toString(), false);
       case WARNING -> DriverStation.reportWarning(fault.toString(), false);
-      case INFO -> System.out.println(fault.toString());
+      case INFO -> System.out.println(fault);
     }
   }
 
@@ -174,12 +189,42 @@ public final class FaultLogger {
   }
 
   /**
+   * Asserts that a condition is true and reports as either Fault or Info. Used expressedly for
+   * systems checks
+   */
+  public static Command reportTrue(
+      BooleanSupplier condition, String faultName, Supplier<String> description) {
+    return Commands.runOnce(
+        () ->
+            report(
+                faultName,
+                (condition.getAsBoolean() ? "success! " : "") + description.get(),
+                condition.getAsBoolean() ? FaultType.INFO : FaultType.WARNING));
+  }
+
+  /**
+   * Asserts that two values are equal (with some tolerance) and reports as either Fault or Info.
+   * Used expressedly for systems checks.
+   *
+   * @param delta tolerance
+   */
+  public static Command reportEquals(
+      String faultName, DoubleSupplier expected, DoubleSupplier actual, double delta) {
+    return Commands.runOnce(
+        () ->
+            reportTrue(
+                () -> Math.abs(expected.getAsDouble() - actual.getAsDouble()) <= delta,
+                faultName,
+                () -> "expected: " + expected.getAsDouble() + "; actual: " + actual.getAsDouble()));
+  }
+
+  /**
    * Registers a new fault supplier.
    *
    * @param supplier A supplier of an optional fault.
    */
   public static void register(Supplier<Optional<Fault>> supplier) {
-    faultReporters.add(supplier);
+    FAULT_REPORTERS.add(supplier);
   }
 
   /**
@@ -330,7 +375,6 @@ public final class FaultLogger {
             return Optional.empty();
           });
     }
-    ;
   }
 
   /**
@@ -352,7 +396,7 @@ public final class FaultLogger {
    * @param cancoder The CANcoder to manage.
    */
   public static void register(CANcoder cancoder) {
-    String nickname = Ports.idToName.get(cancoder.getDeviceID());
+    String nickname = Ports.ID_TO_NAME.get(cancoder.getDeviceID());
     register(
         () -> cancoder.getFault_BadMagnet().getValue(),
         "CANcoder " + nickname,
@@ -383,7 +427,7 @@ public final class FaultLogger {
   public static void register(TalonFX talon) {
     register(
         () -> !talon.isConnected(),
-        "Talon " + Ports.idToName.get(talon.getDeviceID()),
+        "Talon " + Ports.ID_TO_NAME.get(talon.getDeviceID()),
         "disconnected",
         FaultType.ERROR);
 
@@ -391,7 +435,7 @@ public final class FaultLogger {
         (f, d) ->
             register(
                 () -> f.getValue(),
-                "Talon " + Ports.idToName.get(talon.getDeviceID()),
+                "Talon " + Ports.ID_TO_NAME.get(talon.getDeviceID()),
                 d,
                 FaultType.ERROR);
 

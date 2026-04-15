@@ -46,7 +46,7 @@ public class OdometryThread extends Thread {
 
   public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
-    Drive.lock.lock();
+    Drive.LOCK.lock();
     try {
       BaseStatusSignal[] newSignals = new BaseStatusSignal[talonSignals.length + 1];
       System.arraycopy(talonSignals, 0, newSignals, 0, talonSignals.length);
@@ -54,30 +54,30 @@ public class OdometryThread extends Thread {
       talonSignals = newSignals;
       talonQueues.add(queue);
     } finally {
-      Drive.lock.unlock();
+      Drive.LOCK.unlock();
     }
     return queue;
   }
 
   public Queue<Double> registerSignal(DoubleSupplier signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
-    Drive.lock.lock();
+    Drive.LOCK.lock();
     try {
       otherSignals.add(signal);
       otherQueues.add(queue);
     } finally {
-      Drive.lock.unlock();
+      Drive.LOCK.unlock();
     }
     return queue;
   }
 
   public Queue<Double> makeTimestampQueue() {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
-    Drive.lock.lock();
+    Drive.LOCK.lock();
     try {
       timestampQueues.add(queue);
     } finally {
-      Drive.lock.unlock();
+      Drive.LOCK.unlock();
     }
     return queue;
   }
@@ -96,7 +96,7 @@ public class OdometryThread extends Thread {
         e.printStackTrace();
       }
 
-      Drive.lock.lock();
+      Drive.LOCK.lock();
 
       try {
         // FPGA returns in microseconds (1000000 microseconds in a second)
@@ -121,7 +121,7 @@ public class OdometryThread extends Thread {
           timestampQueues.get(i).offer(timestamp);
         }
       } finally {
-        Drive.lock.unlock();
+        Drive.LOCK.unlock();
       }
     }
   }

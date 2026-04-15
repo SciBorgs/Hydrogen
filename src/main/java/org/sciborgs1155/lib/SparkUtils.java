@@ -42,7 +42,7 @@ public class SparkUtils {
    * @return The name of a spark.
    */
   public static String name(SparkBase spark) {
-    return "Spark " + Ports.idToName.get(spark.getDeviceId());
+    return "Spark " + Ports.ID_TO_NAME.get(spark.getDeviceId());
   }
 
   /** Represents a type of sensor that can be plugged into the spark */
