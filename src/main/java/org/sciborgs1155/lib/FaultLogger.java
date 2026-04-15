@@ -2,6 +2,7 @@ package org.sciborgs1155.lib;
 
 import com.ctre.phoenix6.StatusSignal;
 import com.ctre.phoenix6.hardware.CANcoder;
+import com.ctre.phoenix6.hardware.Pigeon2;
 import com.ctre.phoenix6.hardware.TalonFX;
 import com.reduxrobotics.sensors.canandgyro.Canandgyro;
 import com.revrobotics.REVLibError;
@@ -353,6 +354,12 @@ public final class FaultLogger {
         "CANandGyro",
         "power cycling",
         FaultType.WARNING);
+  }
+
+  public static void register(Pigeon2 pigeon2) {
+    register(() -> pigeon2.isConnected(), "Pigeon2", "disconnected", FaultType.ERROR);
+    register(
+        () -> pigeon2.getFault_Hardware().getValue(), "Pigeon2", "hardware fault", FaultType.ERROR);
   }
 
   /**

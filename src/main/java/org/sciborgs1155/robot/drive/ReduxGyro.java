@@ -2,7 +2,7 @@ package org.sciborgs1155.robot.drive;
 
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.robot.Constants.ODOMETRY_PERIOD;
-import static org.sciborgs1155.robot.Ports.Drive.CANANDGYRO;
+import static org.sciborgs1155.robot.Ports.Drive.GYRO;
 
 import com.reduxrobotics.sensors.canandgyro.Canandgyro;
 import com.reduxrobotics.sensors.canandgyro.CanandgyroSettings;
@@ -16,7 +16,7 @@ import org.sciborgs1155.lib.FaultLogger;
 
 /** GyroIO implementation for Canandgyro */
 public class ReduxGyro implements GyroIO {
-  private final Canandgyro canandgyro = new Canandgyro(CANANDGYRO);
+  private final Canandgyro canandgyro = new Canandgyro(GYRO);
 
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
