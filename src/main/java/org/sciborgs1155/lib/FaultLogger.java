@@ -38,7 +38,7 @@ import org.sciborgs1155.robot.Ports;
  * FaultLogger.check(spark); // checks that the previous set call did not encounter an error.
  * </pre>
  */
- public final class FaultLogger {
+public final class FaultLogger {
   // DATA
   private static final List<Supplier<Optional<Fault>>> FAULT_REPORTERS = new ArrayList<>();
   private static final Set<Fault> ACTIVE_FAULTS = new HashSet<>();

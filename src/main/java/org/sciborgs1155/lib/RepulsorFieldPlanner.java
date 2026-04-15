@@ -46,11 +46,9 @@ public class RepulsorFieldPlanner {
   private SwerveSample prevSample;
 
   @NotLogged private boolean useGoalInArrows;
-  @NotLogged
-  private boolean useObstaclesInArrows = true;
+  @NotLogged private boolean useObstaclesInArrows = true;
 
-  @NotLogged
-  private boolean useWallsInArrows = true;
+  @NotLogged private boolean useWallsInArrows = true;
 
   public double pathLength;
 

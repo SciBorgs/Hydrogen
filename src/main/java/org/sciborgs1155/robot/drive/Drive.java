@@ -8,7 +8,6 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static java.lang.Math.atan;
-import static org.sciborgs1155.lib.Assertion.*;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
@@ -55,14 +54,10 @@ import java.util.Arrays;
 import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Optional;
-import java.util.Set;
 import java.util.concurrent.locks.ReentrantLock;
 import java.util.function.BooleanSupplier;
 import java.util.function.DoubleSupplier;
-import java.util.function.Function;
 import java.util.function.Supplier;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 import org.photonvision.EstimatedRobotPose;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
@@ -413,7 +408,6 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return fieldRelativeChassisSpeeds().omegaRadiansPerSecond;
   }
 
-
   /** Returns a Pose3D of the estimated pose of the robot. */
   public Pose3d pose3d() {
     return new Pose3d(odometry.getEstimatedPosition());
@@ -660,9 +654,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     desiredSpeeds = desired;
     ChassisSpeeds speeds = robotRelativeChassisSpeeds();
     Vector<N2> currentVelocity =
-        VecBuilder.fill(
-            speeds.vxMetersPerSecond,
-            speeds.vyMetersPerSecond);
+        VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
 
     Vector<N2> deltaV =
         VecBuilder.fill(desired.vxMetersPerSecond, desired.vyMetersPerSecond)
@@ -945,11 +937,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         // get the positions of all modules at a given timestamp [[module0 odometry], [module1
         // odometry], ...]
         SwerveModulePosition[][] allPositions = {
-              modules.get(0).odometryData(),
-              modules.get(1).odometryData(),
-              modules.get(2).odometryData(),
-              modules.get(3).odometryData(),
-            };
+          modules.get(0).odometryData(),
+          modules.get(1).odometryData(),
+          modules.get(2).odometryData(),
+          modules.get(3).odometryData(),
+        };
         double[][] allGyro = gyro.odometryData();
 
         SwerveModulePosition[] modulePositions = new SwerveModulePosition[4];

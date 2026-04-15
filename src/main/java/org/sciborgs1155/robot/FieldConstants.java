@@ -32,10 +32,7 @@ public class FieldConstants {
 
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {
-    return (pose.getX() > 0
-        && pose.getX() < LENGTH
-        && pose.getY() > 0
-        && pose.getY() < WIDTH);
+    return (pose.getX() > 0 && pose.getX() < LENGTH && pose.getY() > 0 && pose.getY() < WIDTH);
   }
 
   /**
