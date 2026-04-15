@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.commands;
 
-import static org.sciborgs1155.robot.Constants.Robot.*;
+import static org.sciborgs1155.robot.Constants.Robot.MASS;
+import static org.sciborgs1155.robot.Constants.Robot.MOI;
 import static org.sciborgs1155.robot.Constants.alliance;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.MODULE_OFFSET;
@@ -50,7 +51,7 @@ public class Autos {
         () -> alliance() != Alliance.Blue,
         drive);
 
-    // NamedCommands.registerCommand("example", Commands.run(() -> {}));
+    NamedCommands.registerCommand("example", Commands.run(() -> {}));
 
     SendableChooser<Command> chooser = AutoBuilder.buildAutoChooser();
     chooser.addOption("no auto", Commands.none());

@@ -1,6 +1,6 @@
 package org.sciborgs1155.robot.vision;
 
-import static org.sciborgs1155.lib.LoggingUtils.*;
+import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.vision.VisionConstants.*;
 
 import edu.wpi.first.epilogue.Logged;
@@ -42,6 +42,7 @@ public class Vision {
 
   private final PhotonCamera[] cameras;
   private final PhotonPoseEstimator[] estimators;
+  private final PoseStrategy[] estimatorStrategies;
   private final PhotonCameraSim[] simCameras;
   private final PhotonPipelineResult[] lastResults;
   private final Map<String, Boolean> camerasEnabled;
@@ -61,6 +62,7 @@ public class Vision {
   public Vision(CameraConfig... configs) {
     cameras = new PhotonCamera[configs.length];
     estimators = new PhotonPoseEstimator[configs.length];
+    estimatorStrategies = new PoseStrategy[configs.length];
     simCameras = new PhotonCameraSim[configs.length];
     lastResults = new PhotonPipelineResult[configs.length];
     filteredEstimates = new ArrayList<>();
@@ -69,12 +71,8 @@ public class Vision {
     for (int i = 0; i < configs.length; i++) {
       PhotonCamera camera = new PhotonCamera(configs[i].name());
       PhotonPoseEstimator estimator =
-          new PhotonPoseEstimator(
-              VisionConstants.TAG_LAYOUT,
-              PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR,
-              configs[i].robotToCam());
+          new PhotonPoseEstimator(VisionConstants.TAG_LAYOUT, configs[i].robotToCam());
 
-      estimator.setMultiTagFallbackStrategy(PoseStrategy.LOWEST_AMBIGUITY);
       cameras[i] = camera;
       estimators[i] = estimator;
       lastResults[i] = new PhotonPipelineResult();
@@ -142,7 +140,8 @@ public class Vision {
           estimators[i].addHeadingData(Timer.getFPGATimestamp(), rotation);
         }
 
-        // feeds latest result for visualization; multiple different pos breaks getSeenTags()
+        // feeds latest result for visualization; multiple different pos breaks
+        // getSeenTags()
         lastResults[i] = unreadLength == 0 ? lastResults[i] : unreadChanges.get(unreadLength - 1);
 
         for (int j = 0; j < unreadLength; j++) {
