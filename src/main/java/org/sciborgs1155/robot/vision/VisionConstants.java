@@ -30,22 +30,14 @@ public final class VisionConstants {
       new CameraConfig(
           "FL cam",
           78,
-          new Transform3d(
-              Inches.of(1),
-              Inches.of(1),
-              Inches.of(1),
-              yawPitchRoll(90, -20, 180)),
+          new Transform3d(Inches.of(1), Inches.of(1), Inches.of(1), yawPitchRoll(90, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   public static final CameraConfig FR_CAMERA =
       new CameraConfig(
           "FR cam",
           78,
-          new Transform3d(
-              Inches.of(1),
-              Inches.of(-1),
-              Inches.of(1),
-              yawPitchRoll(-90, -20, 180)),
+          new Transform3d(Inches.of(1), Inches.of(-1), Inches.of(1), yawPitchRoll(-90, -20, 180)),
           PoseStrategy.MULTI_TAG_PNP_ON_COPROCESSOR);
 
   // Camera constants for our configuration

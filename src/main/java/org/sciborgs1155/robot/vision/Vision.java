@@ -181,7 +181,6 @@ public class Vision {
           change.multitagResult =
               change.multitagResult.filter(r -> r.estimatedPose.ambiguity < MAX_AMBIGUITY);
 
-            
           estimate = updateEstimate(estimators[i], change, estimatorStrategies[i]);
 
           log("Robot/vision/ " + name + " estimates present", estimate.isPresent());
@@ -337,9 +336,7 @@ public class Vision {
   /** Returns all camera transforms from the robot. TODO: update this! */
   @Logged
   public Transform3d[] cameraTransforms() {
-    return new Transform3d[] {
-      FL_CAMERA.robotToCam(), FR_CAMERA.robotToCam()
-    };
+    return new Transform3d[] {FL_CAMERA.robotToCam(), FR_CAMERA.robotToCam()};
   }
 
   /**
