@@ -8,6 +8,7 @@ The SciBorgs' base repository. It is a living document that should be updated ye
 Our robot code is centered around [Robot.java](<src/main/java/org/sciborgs1155/robot/Robot.java>).
 
 This project currently contains drive, vision, autos, pathing, and LEDs. You are expected to add/modify code supporting existing files and new subsystems when using this template! Some of these files include but are not limited to:
+
 - **[Autos.java](src/main/java/org/sciborgs1155/robot/commands/Autos.java)** Add code for new subsystems in `configureAutos`, such as commands for `NamedCommands`
 - **[DriveConstants.java](src/main/java/org/sciborgs1155/robot/drive/DriveConstants.java)** Modify control constants yearly for each new robot, and all drivetrain constants for each new drivetrain as needed.
 - **[VisionConstants.java](src/main/java/org/sciborgs1155/robot/vision/VisionConstants.java)** Add new `CameraConfig` fields representing cameras on the robot, and change the `create` method in [Vision](<src/main/java/org/sciborgs1155/robot/vision/Vision.java>). Also modify any camera configurations, AprilTag information, and constants if needed.
