@@ -4,7 +4,6 @@ import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
-import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.Matrix;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.geometry.Rotation3d;
@@ -17,8 +16,7 @@ import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public final class VisionConstants {
-  public static final AprilTagFieldLayout TAG_LAYOUT =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+  public static final AprilTagFieldLayout TAG_LAYOUT = FieldConstants.FIELD_LAYOUT;
 
   // The PoseStrategy in multitag mode when only one tag is seen. Do NOT use MULTI_TAG_PNP varients.
   public static final PoseStrategy SINGLE_TAG_FALLBACK = PoseStrategy.LOWEST_AMBIGUITY;
