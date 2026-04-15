@@ -3,6 +3,8 @@ package org.sciborgs1155.robot;
 import static edu.wpi.first.units.Units.*;
 import static org.sciborgs1155.robot.Constants.alliance;
 
+import edu.wpi.first.apriltag.AprilTagFieldLayout;
+import edu.wpi.first.apriltag.AprilTagFields;
 import edu.wpi.first.math.VecBuilder;
 import edu.wpi.first.math.Vector;
 import edu.wpi.first.math.geometry.Pose2d;
@@ -11,20 +13,29 @@ import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform2d;
 import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N2;
+import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
 public class FieldConstants {
   // Origin at corner of blue alliance side of field
-  public static final Distance LENGTH = Centimeters.of(1755);
-  public static final Distance WIDTH = Centimeters.of(805);
+
+  // AprilTag related constants
+  public static final AprilTagFieldLayout FIELD_LAYOUT =
+      AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+  public static final int TAG_COUNT = FIELD_LAYOUT.getTags().size();
+  public static final double TAG_WIDTH = Units.inchesToMeters(6.5);
+
+  // Field dimensions
+  public static final double LENGTH = FIELD_LAYOUT.getFieldLength(); // METERS
+  public static final double WIDTH = FIELD_LAYOUT.getFieldWidth(); // METERS
 
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {
     return (pose.getX() > 0
-        && pose.getX() < LENGTH.in(Meters)
+        && pose.getX() < LENGTH
         && pose.getY() > 0
-        && pose.getY() < WIDTH.in(Meters));
+        && pose.getY() < WIDTH);
   }
 
   /**
@@ -53,7 +64,7 @@ public class FieldConstants {
         : new Pose2d(
             pose.getTranslation()
                 .rotateAround(
-                    new Translation2d(FieldConstants.LENGTH.div(2), FieldConstants.WIDTH.div(2)),
+                    new Translation2d(FieldConstants.LENGTH / 2.0, FieldConstants.WIDTH / 2.0),
                     Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
   }
@@ -66,11 +77,11 @@ public class FieldConstants {
    * @return A reflected distance, only if the alliance is red.
    */
   private static Distance reflectDistance(Distance blueDist) {
-    return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
+    return alliance() == Alliance.Blue ? blueDist : Meters.of(WIDTH - blueDist.in(Meters));
   }
 
   public static Alliance allianceFromPose(Pose2d pose) {
-    return pose.getX() > LENGTH.in(Meters) / 2 ? Alliance.Red : Alliance.Blue;
+    return pose.getX() > LENGTH / 2.0 ? Alliance.Red : Alliance.Blue;
   }
 
   /**

@@ -53,7 +53,7 @@ public class SwerveTest {
   @Disabled
   @Test
   public void systemCheck() {
-    runUnitTest(drive.systemsCheck());
+    runToCompletion(drive.systemsCheck());
   }
 
   @RepeatedTest(5)
