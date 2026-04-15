@@ -22,7 +22,7 @@ public class FieldConstants {
 
   // AprilTag related constants
   public static final AprilTagFieldLayout FIELD_LAYOUT =
-      AprilTagFieldLayout.loadField(AprilTagFields.k2026RebuiltWelded);
+      AprilTagFieldLayout.loadField(AprilTagFields.kDefaultField);
   public static final int TAG_COUNT = FIELD_LAYOUT.getTags().size();
   public static final double TAG_WIDTH = Units.inchesToMeters(6.5);
 
