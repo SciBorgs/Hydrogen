@@ -8,7 +8,7 @@ import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
 import static edu.wpi.first.units.Units.Volts;
 import static java.lang.Math.atan;
-import static org.sciborgs1155.lib.LoggingUtils.*;
+import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Constants.TUNING;
 import static org.sciborgs1155.robot.Constants.allianceRotation;
@@ -51,7 +51,6 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Arrays;
-import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
@@ -64,14 +63,12 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
-import org.sciborgs1155.robot.Constants;
-import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
+import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
-import org.sciborgs1155.robot.drive.DriveConstants.Skid;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 import org.sciborgs1155.robot.vision.Vision.PoseEstimate;
 
@@ -131,6 +128,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   private final SwerveDrivePoseEstimator odometry;
 
   private ChassisSpeeds desiredSpeeds = new ChassisSpeeds();
+  private ChassisSpeeds prevSpeeds = new ChassisSpeeds();
 
   // Faster Odometry
   private SwerveModulePosition[] lastPositions;
@@ -173,6 +171,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     FRONT_LEFT_CANCODER,
                     ANGULAR_OFFSETS.get(0),
                     Driving.FF_CONSTANTS.get(0),
+                    Turning.FF_CONSTANTS.get(0),
+                    Turning.PID_CONSTANTS.get(0),
                     "FL",
                     false),
                 new TalonModule(
@@ -181,14 +181,18 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     FRONT_RIGHT_CANCODER,
                     ANGULAR_OFFSETS.get(1),
                     Driving.FF_CONSTANTS.get(1),
+                    Turning.FF_CONSTANTS.get(1),
+                    Turning.PID_CONSTANTS.get(1),
                     "FR",
-                    false),
+                    true),
                 new TalonModule(
                     REAR_LEFT_DRIVE,
                     REAR_LEFT_TURNING,
                     REAR_LEFT_CANCODER,
                     ANGULAR_OFFSETS.get(2),
                     Driving.FF_CONSTANTS.get(2),
+                    Turning.FF_CONSTANTS.get(2),
+                    Turning.PID_CONSTANTS.get(2),
                     "RL",
                     false),
                 new TalonModule(
@@ -197,8 +201,11 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     REAR_RIGHT_CANCODER,
                     ANGULAR_OFFSETS.get(3),
                     Driving.FF_CONSTANTS.get(3),
+                    Turning.FF_CONSTANTS.get(3),
+                    Turning.PID_CONSTANTS.get(3),
                     "RR",
-                    false));
+                    true));
+
         case SPARK ->
             new Drive(
                 new NavXGyro(),
@@ -207,6 +214,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     FRONT_LEFT_TURNING,
                     ANGULAR_OFFSETS.get(0),
                     Driving.FF_CONSTANTS.get(0),
+                    Turning.FF_CONSTANTS.get(0),
+                    Turning.PID_CONSTANTS.get(0),
                     "FL",
                     true),
                 new SparkModule(
@@ -214,6 +223,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     FRONT_RIGHT_TURNING,
                     ANGULAR_OFFSETS.get(1),
                     Driving.FF_CONSTANTS.get(1),
+                    Turning.FF_CONSTANTS.get(1),
+                    Turning.PID_CONSTANTS.get(1),
                     "FR",
                     true),
                 new SparkModule(
@@ -221,6 +232,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     REAR_LEFT_TURNING,
                     ANGULAR_OFFSETS.get(2),
                     Driving.FF_CONSTANTS.get(2),
+                    Turning.FF_CONSTANTS.get(2),
+                    Turning.PID_CONSTANTS.get(2),
                     "RL",
                     true),
                 new SparkModule(
@@ -228,6 +241,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     REAR_RIGHT_TURNING,
                     ANGULAR_OFFSETS.get(3),
                     Driving.FF_CONSTANTS.get(3),
+                    Turning.FF_CONSTANTS.get(3),
+                    Turning.PID_CONSTANTS.get(3),
                     "RR",
                     true));
       };
@@ -293,7 +308,9 @@ public class Drive extends SubsystemBase implements AutoCloseable {
             new SysIdRoutine.Mechanism(
                 volts ->
                     modules.forEach(
-                        m -> m.updateInputs(Rotation2d.fromRadians(0), volts.in(Volts))),
+                        m ->
+                            m.updateInputsDrive(
+                                new SwerveModuleState(volts.in(Volts), Rotation2d.kZero))),
                 null,
                 this,
                 "drive"));
@@ -306,14 +323,10 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 (state) -> SignalLogger.writeString("rotation state", state.toString())),
             new SysIdRoutine.Mechanism(
                 volts -> {
-                  this.frontLeft.updateInputs(
-                      Rotation2d.fromRadians(3 * Math.PI / 4), volts.in(Volts));
-                  this.frontRight.updateInputs(
-                      Rotation2d.fromRadians(Math.PI / 4), volts.in(Volts));
-                  this.rearLeft.updateInputs(
-                      Rotation2d.fromRadians(-3 * Math.PI / 4), volts.in(Volts));
-                  this.rearRight.updateInputs(
-                      Rotation2d.fromRadians(-Math.PI / 4), volts.in(Volts));
+                  modules.forEach(
+                      module ->
+                          module.updateInputsTurn(
+                              new SwerveModuleState(0.0, Rotation2d.fromRadians(volts.in(Volts)))));
                 },
                 null,
                 this,
@@ -374,9 +387,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   }
 
   /**
-   * Returns the currently-estimated pose of the robot.
-   *
-   * @return The pose.
+   * @return The currently-estimated pose of the robot.
    */
   @Logged
   public Pose2d pose() {
@@ -408,15 +419,15 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return fieldRelativeChassisSpeeds().omegaRadiansPerSecond;
   }
 
-  /** Returns a Pose3D of the estimated pose of the robot. */
+  /**
+   * @return A Pose3D of the estimated pose of the robot.
+   */
   public Pose3d pose3d() {
     return new Pose3d(odometry.getEstimatedPosition());
   }
 
   /**
-   * Returns the currently-estimated field-relative yaw of the robot.
-   *
-   * @return The rotation.
+   * @return The currently-estimated field-relative yaw of the robot.
    */
   @Logged
   public Rotation2d heading() {
@@ -464,7 +475,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                     vy.getAsDouble(),
                     vOmega.getAsDouble(),
                     heading().plus(allianceRotation())),
-                ControlMode.OPEN_LOOP_VELOCITY));
+                ControlMode.CLOSED_LOOP_VELOCITY));
   }
 
   /**
@@ -652,7 +663,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
    */
   public void setChassisSpeeds(ChassisSpeeds desired, ControlMode mode) {
     desiredSpeeds = desired;
-    ChassisSpeeds speeds = robotRelativeChassisSpeeds();
+    ChassisSpeeds speeds = prevSpeeds;
     Vector<N2> currentVelocity =
         VecBuilder.fill(speeds.vxMetersPerSecond, speeds.vyMetersPerSecond);
 
@@ -670,13 +681,21 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         new ChassisSpeeds(
             limitedVelocity.get(0), limitedVelocity.get(1), desired.omegaRadiansPerSecond);
 
+    log(
+        "/Robot/tuning/drive/changeInSpeeds",
+        newSpeeds.minus(
+            new ChassisSpeeds(
+                currentVelocity.get(0), currentVelocity.get(1), desired.omegaRadiansPerSecond)),
+        ChassisSpeeds.struct);
+
     SwerveModuleState[] states = kinematics.toSwerveModuleStates(newSpeeds);
     SwerveDriveKinematics.desaturateWheelSpeeds(states, MAX_SPEED.in(MetersPerSecond));
     setModuleStates(
         kinematics.toSwerveModuleStates(
-            ChassisSpeeds.discretize(
-                kinematics.toChassisSpeeds(states), Constants.PERIOD.in(Seconds))),
+            ChassisSpeeds.discretize(kinematics.toChassisSpeeds(states), PERIOD.in(Seconds))),
         mode);
+
+    prevSpeeds = newSpeeds;
   }
 
   /**
@@ -695,7 +714,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     double limit =
         maxAccel.get()
             * PERIOD.in(Seconds)
-            * (1 - Math.min(1, (currVel.norm() / MAX_SPEED.in(MetersPerSecond))));
+            * (1 - Math.min(1, currVel.norm() / MAX_SPEED.in(MetersPerSecond)));
     log("/Robot/drive/accel limit", limit);
     Vector<N2> proj = deltaV.projection(currVel);
     if (proj.norm() > limit && proj.dot(currVel) > 0) {
@@ -769,6 +788,13 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         .withName("drive to pose");
   }
 
+  /**
+   * Command factory that automatically path-follows, in a straight line, to a position on the
+   * field.
+   *
+   * @param goal The pose to reach.
+   * @return The command to run the control loop until the pose is reached.
+   */
   public Command driveTo(Pose2d goal) {
     return driveTo(() -> goal);
   }
@@ -782,24 +808,25 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return values;
   }
 
-  /**
-   * @return If the robot is skidding.
-   */
-  @Logged
-  public boolean isSkidding() {
-    DoubleSummaryStatistics diffs =
-        Arrays.stream(moduleStates())
-            .mapToDouble(
-                s ->
-                    FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
-                        .minus(
-                            VecBuilder.fill(
-                                robotRelativeChassisSpeeds().vxMetersPerSecond,
-                                robotRelativeChassisSpeeds().vyMetersPerSecond))
-                        .norm())
-            .summaryStatistics();
-    return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
-  }
+  // TODO decide to split file, keep, or change/remove?
+  // /**
+  // * @return If the robot is skidding.
+  // */
+  // @Logged
+  // public boolean isSkidding() {
+  // DoubleSummaryStatistics diffs =
+  // Arrays.stream(moduleStates())
+  // .mapToDouble(
+  // s ->
+  // FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
+  // .minus(
+  // VecBuilder.fill(
+  // robotRelativeChassisSpeeds().vxMetersPerSecond,
+  // robotRelativeChassisSpeeds().vyMetersPerSecond))
+  // .norm())
+  // .summaryStatistics();
+  // return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
+  // }
 
   /**
    * @return If the robot is colliding.
@@ -934,8 +961,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       try {
         double[] timestamps = modules.get(2).timestamps();
 
-        // get the positions of all modules at a given timestamp [[module0 odometry], [module1
-        // odometry], ...]
+        // get the positions of all modules at a given timestamp
+        // [[module0 odometry], [module1 odometry], ...]
         SwerveModulePosition[][] allPositions = {
           modules.get(0).odometryData(),
           modules.get(1).odometryData(),
@@ -956,7 +983,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
           lastPositions = modulePositions;
           lastHeading = angle;
         }
-      } catch (Exception e) {
+      } catch (RuntimeException e) {
         e.printStackTrace();
       } finally {
         LOCK.unlock();
@@ -965,6 +992,8 @@ public class Drive extends SubsystemBase implements AutoCloseable {
       odometry.update(simRotation, modulePositions());
       lastPositions = modulePositions();
     }
+
+    gyro.periodic();
 
     // update our simulated field poses
     field2d.setRobotPose(pose());
@@ -995,8 +1024,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         simRotation.rotateBy(
             Rotation2d.fromRadians(
                 !Double.isNaN(robotRelativeChassisSpeeds().omegaRadiansPerSecond)
-                    ? robotRelativeChassisSpeeds().omegaRadiansPerSecond
-                        * Constants.PERIOD.in(Seconds)
+                    ? robotRelativeChassisSpeeds().omegaRadiansPerSecond * PERIOD.in(Seconds)
                     : 0));
   }
 
@@ -1054,6 +1082,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
         .andThen(atAngle);
   }
 
+  @Override
   public void close() throws Exception {
     frontLeft.close();
     frontRight.close();

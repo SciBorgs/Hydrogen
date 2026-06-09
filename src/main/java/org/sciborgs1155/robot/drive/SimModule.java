@@ -22,7 +22,6 @@ public class SimModule implements ModuleIO {
           LinearSystemId.createDCMotorSystem(
               Driving.FRONT_LEFT_FF.kV(), Driving.FRONT_LEFT_FF.kA()),
           DCMotor.getKrakenX60(1));
-
   private final PIDController driveFeedback =
       new PIDController(Driving.PID.P, Driving.PID.I, Driving.PID.D);
 
@@ -32,15 +31,22 @@ public class SimModule implements ModuleIO {
 
   private final DCMotorSim turn =
       new DCMotorSim(
-          LinearSystemId.createDCMotorSystem(Turning.FF.V, Turning.FF.A), DCMotor.getNeo550(1));
+          LinearSystemId.createDCMotorSystem(Turning.SIM.kV(), Turning.SIM.kA()),
+          DCMotor.getKrakenX60(1));
 
   private final PIDController turnFeedback =
-      new PIDController(Turning.PID.P, Turning.PID.I, Turning.PID.D);
+      new PIDController(
+          Turning.FRONT_LEFT_PID.kP(), Turning.FRONT_LEFT_PID.kI(), Turning.FRONT_LEFT_PID.kD());
 
   private SwerveModuleState setpoint = new SwerveModuleState();
 
   private final String name;
 
+  /**
+   * Creates a new simulated swerve module.
+   *
+   * @param name The name of the module.
+   */
   public SimModule(String name) {
     this.name = name;
 
@@ -129,24 +135,29 @@ public class SimModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {
-    setpoint.angle = angle;
+  public void updateInputsDrive(SwerveModuleState voltage) {
+    setpoint.angle = voltage.angle;
 
     double turnVolts = turnFeedback.calculate(rotation().getRadians(), setpoint.angle.getRadians());
 
-    setDriveVoltage(voltage);
+    setDriveVoltage(voltage.speedMetersPerSecond);
     setTurnVoltage(turnVolts);
   }
+
+  @Override
+  public void updateInputsTurn(SwerveModuleState voltage) {}
 
   @Override
   public double[][] moduleOdometryData() {
     return new double[][] {};
   }
 
+  @Override
   public SwerveModulePosition[] odometryData() {
     return new SwerveModulePosition[] {};
   }
 
+  @Override
   public double[] timestamps() {
     return new double[] {};
   }

@@ -33,6 +33,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
+import org.sciborgs1155.robot.drive.DriveConstants.PIDConstants;
 
 public class SparkModule implements ModuleIO {
   private final SparkFlex driveMotor; // NEO Vortex
@@ -67,7 +68,9 @@ public class SparkModule implements ModuleIO {
       int drivePort,
       int turnPort,
       Rotation2d angularOffset,
-      FFConstants ff,
+      FFConstants driveFFConstants,
+      FFConstants turnFFConstants,
+      PIDConstants turnFBConstants,
       String name,
       boolean invert) {
     // Drive Motor
@@ -75,7 +78,9 @@ public class SparkModule implements ModuleIO {
     driveMotor = new SparkFlex(drivePort, MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     drivePID = driveMotor.getClosedLoopController();
-    driveFF = new SimpleMotorFeedforward(ff.kS(), ff.kV(), ff.kA());
+    driveFF =
+        new SimpleMotorFeedforward(
+            driveFFConstants.kS(), driveFFConstants.kV(), driveFFConstants.kA());
     driveMotorConfig = new SparkFlexConfig();
 
     check(
@@ -128,7 +133,7 @@ public class SparkModule implements ModuleIO {
     turnMotorConfig.apply(
         turnMotorConfig
             .closedLoop
-            .pid(Turning.PID.P, Turning.PID.I, Turning.PID.D)
+            .pid(turnFBConstants.kP(), turnFBConstants.kI(), turnFBConstants.kD())
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(-Math.PI, Math.PI)
             .feedbackSensor(FeedbackSensor.kAbsoluteEncoder));
@@ -266,10 +271,16 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {
-    setpoint.angle = angle;
-    setDriveVoltage(voltage);
-    setTurnSetpoint(angle);
+  public void updateInputsDrive(SwerveModuleState voltage) {
+    setDriveVoltage(voltage.speedMetersPerSecond);
+    setTurnSetpoint(voltage.angle);
+    this.setpoint.angle = voltage.angle;
+  }
+
+  @Override
+  public void updateInputsTurn(SwerveModuleState voltage) {
+    setDriveSetpoint(voltage.speedMetersPerSecond);
+    setTurnVoltage(voltage.angle.getRadians());
   }
 
   @Override

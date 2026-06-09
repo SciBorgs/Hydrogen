@@ -98,15 +98,23 @@ public interface ModuleIO extends AutoCloseable {
   void updateSetpoint(SwerveModuleState setpoint, ControlMode mode);
 
   /**
-   * Updates the drive voltage and turn angle.
+   * Updates the drive voltage and turn angle. Treats SwerveModuleState speed as voltage instead.
    *
    * <p>This is useful for SysId characterization and should not be used otherwise.
    *
-   * @param angle The desired angle of the module.
-   * @param voltage The voltage to supply to the drive motor.
+   * @param voltage The voltage to supply to the drive motor, with the angle of the
+   *     SwerveModuleState being the direction of the module.
    */
-  void updateInputs(Rotation2d angle, double voltage);
+  void updateInputsDrive(SwerveModuleState voltage);
 
+  /** this is sped and i apoligize as ethan jones. */
+  void updateInputsTurn(SwerveModuleState voltage);
+
+  /**
+   * Returns raw odometry data from the module.
+   *
+   * @return A 2D array containing odometry data.
+   */
   double[][] moduleOdometryData();
 
   /** Returns the list of positions of the module for the last tick, from a faster thread. */

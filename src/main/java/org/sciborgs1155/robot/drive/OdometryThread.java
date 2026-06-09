@@ -28,9 +28,9 @@ public class OdometryThread extends Thread {
   private final List<Queue<Double>> timestampQueues = new ArrayList<>();
 
   private static boolean isCANFD = DRIVE_CANIVORE.isNetworkFD();
-  private static OdometryThread instance = null;
+  private static OdometryThread instance;
 
-  public static OdometryThread getInstance() {
+  public static synchronized OdometryThread getInstance() {
     if (instance == null) {
       instance = new OdometryThread();
     }
@@ -39,11 +39,17 @@ public class OdometryThread extends Thread {
 
   @Override
   public synchronized void start() {
-    if (timestampQueues.size() > 0) {
+    if (!timestampQueues.isEmpty()) {
       super.start();
     }
   }
 
+  /**
+   * Registers a Talon status signal for odometry updates.
+   *
+   * @param signal The status signal to register.
+   * @return A queue containing the signal values.
+   */
   public Queue<Double> registerSignal(StatusSignal<Angle> signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.LOCK.lock();
@@ -59,6 +65,12 @@ public class OdometryThread extends Thread {
     return queue;
   }
 
+  /**
+   * Registers a generic double supplier for odometry updates.
+   *
+   * @param signal The double supplier to register.
+   * @return A queue containing the signal values.
+   */
   public Queue<Double> registerSignal(DoubleSupplier signal) {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.LOCK.lock();
@@ -71,6 +83,11 @@ public class OdometryThread extends Thread {
     return queue;
   }
 
+  /**
+   * Creates a new timestamp queue for odometry timing.
+   *
+   * @return A queue that will receive timestamps.
+   */
   public Queue<Double> makeTimestampQueue() {
     Queue<Double> queue = new ArrayBlockingQueue<>(20);
     Drive.LOCK.lock();
@@ -86,10 +103,10 @@ public class OdometryThread extends Thread {
   public void run() {
     while (true) {
       try {
-        if (OdometryThread.isCANFD && talonSignals.length > 0) {
+        if (isCANFD && talonSignals.length > 0) {
           BaseStatusSignal.waitForAll(2.0 * ODOMETRY_PERIOD.in(Seconds), talonSignals);
         } else {
-          Thread.sleep(Math.round(ODOMETRY_PERIOD.in(Milliseconds)));
+          sleep(Math.round(ODOMETRY_PERIOD.in(Milliseconds)));
           if (talonSignals.length > 0) BaseStatusSignal.refreshAll(talonSignals);
         }
       } catch (Exception e) {
@@ -117,8 +134,8 @@ public class OdometryThread extends Thread {
         for (int i = 0; i < otherSignals.size(); i++) {
           otherQueues.get(i).offer(otherSignals.get(i).getAsDouble());
         }
-        for (int i = 0; i < timestampQueues.size(); i++) {
-          timestampQueues.get(i).offer(timestamp);
+        for (Queue<Double> timestampQueue : timestampQueues) {
+          timestampQueue.offer(timestamp);
         }
       } finally {
         Drive.LOCK.unlock();

@@ -1,5 +1,7 @@
 package org.sciborgs1155.robot.drive;
 
+import static edu.wpi.first.units.Units.Seconds;
+import static org.sciborgs1155.robot.Constants.PERIOD;
 import static org.sciborgs1155.robot.Ports.Drive.GYRO;
 
 import com.ctre.phoenix6.hardware.Pigeon2;
@@ -17,6 +19,9 @@ public class PigeonGyro implements GyroIO {
 
   private final Queue<Double> position;
   private final Queue<Double> timestamp;
+
+  private double lastAngularVelocity;
+  private double alpha;
 
   public PigeonGyro() {
     FaultLogger.register(gyro);
@@ -60,10 +65,23 @@ public class PigeonGyro implements GyroIO {
   }
 
   @Override
+  public double alpha() {
+    return alpha;
+  }
+
+  @Override
   public void reset(Rotation2d heading) {
     gyro.setYaw(heading.getDegrees());
   }
 
   @Override
   public void close() throws Exception {}
+
+  @Override
+  public void periodic() {
+    alpha =
+        (gyro.getAngularVelocityZWorld().getValueAsDouble() / 360.0 - lastAngularVelocity)
+            / PERIOD.in(Seconds);
+    lastAngularVelocity = gyro.getAngularVelocityZWorld().getValueAsDouble() / 360.0;
+  }
 }
