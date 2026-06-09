@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -149,7 +150,8 @@ public class Robot extends CommandRobot {
             .deadband(Constants.DEADBAND, 1.0)
             .signedPow(2.0)
             .log("/Robot/processed joystick")
-            .scale(MAX_SPEED.in(MetersPerSecond));
+            .scale(MAX_SPEED.in(MetersPerSecond))
+            .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
 
     InputStream theta = InputStream.atan(raw_x, raw_y);
 

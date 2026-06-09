@@ -68,6 +68,7 @@ public class TalonModule implements ModuleIO {
     talonDriveConfig.Feedback.SensorToMechanismRatio =
         Driving.GEARING / Driving.CIRCUMFERENCE.in(Meters);
     talonDriveConfig.CurrentLimits.StatorCurrentLimit = Driving.STATOR_LIMIT.in(Amps);
+    talonDriveConfig.CurrentLimits.SupplyCurrentLimit = Driving.SUPPLY_LIMIT.in(Amps);
 
     talonDriveConfig.MotorOutput.Inverted =
         invert ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
@@ -82,7 +83,7 @@ public class TalonModule implements ModuleIO {
     // turn motor
     TalonFXConfiguration talonTurnConfig = new TalonFXConfiguration();
 
-    talonTurnConfig.MotorOutput.NeutralMode = NeutralModeValue.Brake;
+    talonTurnConfig.MotorOutput.NeutralMode = NeutralModeValue.Coast;
     talonTurnConfig.MotorOutput.Inverted =
         invert ? InvertedValue.Clockwise_Positive : InvertedValue.CounterClockwise_Positive;
 
@@ -96,7 +97,7 @@ public class TalonModule implements ModuleIO {
     talonTurnConfig.Slot0.kI = Turning.PID.I;
     talonTurnConfig.Slot0.kD = Turning.PID.D;
 
-    talonTurnConfig.CurrentLimits.StatorCurrentLimit = Turning.CURRENT_LIMIT.in(Amps);
+    talonTurnConfig.CurrentLimits.SupplyCurrentLimit = Turning.SUPPLY_LIMIT.in(Amps);
 
     for (int i = 0; i < 5; i++) {
       StatusCode success = driveMotor.getConfigurator().apply(talonDriveConfig);

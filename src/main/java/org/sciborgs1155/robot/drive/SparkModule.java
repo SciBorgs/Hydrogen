@@ -136,7 +136,7 @@ public class SparkModule implements ModuleIO {
     turnMotorConfig.apply(
         turnMotorConfig
             .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
+            .smartCurrentLimit((int) Turning.SUPPLY_LIMIT.in(Amps)));
 
     turnMotorConfig.apply(turnMotorConfig.absoluteEncoder.inverted(invert));
 

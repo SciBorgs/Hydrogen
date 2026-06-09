@@ -79,9 +79,9 @@ public final class DriveConstants {
   public static final LinearVelocity MAX_SPEED = MetersPerSecond.of(5);
   public static final LinearAcceleration MAX_ACCEL = MetersPerSecondPerSecond.of(40);
   public static final LinearAcceleration MAX_SKID_ACCEL =
-      MetersPerSecondPerSecond.of(38); // TODO: Tune
+      MetersPerSecondPerSecond.of(28); // TODO: Tune
   public static final LinearAcceleration MAX_TILT_ACCEL =
-      MetersPerSecondPerSecond.of(12); // TODO: Tune
+      MetersPerSecondPerSecond.of(20); // TODO: Tune
   public static final AngularVelocity MAX_ANGULAR_SPEED =
       RadiansPerSecond.of(MAX_SPEED.in(MetersPerSecond) / RADIUS.in(Meters));
   public static final AngularAcceleration MAX_ANGULAR_ACCEL =
@@ -162,7 +162,7 @@ public final class DriveConstants {
       public static final double GEARING = 12.1;
       public static final double ENCODER_GEARING = 1;
 
-      public static final Current CURRENT_LIMIT = Amps.of(20);
+      public static final Current SUPPLY_LIMIT = Amps.of(20);
 
       // TODO these factors are for SparkModule only!
       public static final Angle POSITION_FACTOR = Rotations.of(ENCODER_GEARING);
