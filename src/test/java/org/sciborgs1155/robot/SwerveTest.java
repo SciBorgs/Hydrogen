@@ -86,9 +86,9 @@ public class SwerveTest {
 
   @RepeatedTest(value = 5, failureThreshold = 1)
   public void testModuleDistance() throws Exception {
-    assertEquals(drive.pose().getX(), 0);
-    assertEquals(drive.pose().getY(), 0);
-    assertEquals(drive.pose().getRotation().getRadians(), 0);
+    assertEquals(0, drive.pose().getX());
+    assertEquals(0, drive.pose().getY());
+    assertEquals(0, drive.pose().getRotation().getRadians());
     double xVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
     double yVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
 
