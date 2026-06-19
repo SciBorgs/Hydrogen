@@ -51,6 +51,7 @@ import edu.wpi.first.wpilibj2.command.button.Trigger;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine;
 import edu.wpi.first.wpilibj2.command.sysid.SysIdRoutine.Direction;
 import java.util.Arrays;
+import java.util.DoubleSummaryStatistics;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.locks.ReentrantLock;
@@ -63,6 +64,7 @@ import org.sciborgs1155.lib.FaultLogger.FaultType;
 import org.sciborgs1155.lib.InputStream;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.lib.Tuning;
+import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.Robot;
 import org.sciborgs1155.robot.drive.DriveConstants.Assisted;
 import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
@@ -802,25 +804,24 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     return values;
   }
 
-  // TODO decide to split file, keep, or change/remove?
-  // /**
-  // * @return If the robot is skidding.
-  // */
-  // @Logged
-  // public boolean isSkidding() {
-  // DoubleSummaryStatistics diffs =
-  // Arrays.stream(moduleStates())
-  // .mapToDouble(
-  // s ->
-  // FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
-  // .minus(
-  // VecBuilder.fill(
-  // robotRelativeChassisSpeeds().vxMetersPerSecond,
-  // robotRelativeChassisSpeeds().vyMetersPerSecond))
-  // .norm())
-  // .summaryStatistics();
-  // return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
-  // }
+  /**
+   * @return If the robot is skidding.
+   */
+  @Logged
+  public boolean isSkidding() {
+    DoubleSummaryStatistics diffs =
+        Arrays.stream(moduleStates())
+            .mapToDouble(
+                s ->
+                    FieldConstants.fromPolarCoords(s.speedMetersPerSecond, s.angle)
+                        .minus(
+                            VecBuilder.fill(
+                                robotRelativeChassisSpeeds().vxMetersPerSecond,
+                                robotRelativeChassisSpeeds().vyMetersPerSecond))
+                        .norm())
+            .summaryStatistics();
+    return diffs.getMax() - diffs.getMin() > Skid.THRESHOLD.in(MetersPerSecond);
+  }
 
   /**
    * @return If the robot is colliding.

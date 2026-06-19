@@ -135,6 +135,8 @@ public class Vision {
   /**
    * Returns a list of all currently visible pose estimates and their standard deviation vectors.
    *
+   * @param rotation The field relative robot heading
+   * @param overtrust Whether or not to use the overtrust standard deviations
    * @return An {@link EstimatedRobotPose} with an estimated pose, estimate timestamp, and targets
    *     used for estimation.
    */

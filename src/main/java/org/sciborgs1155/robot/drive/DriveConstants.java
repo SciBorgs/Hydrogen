@@ -38,10 +38,10 @@ public final class DriveConstants {
     SPARK; // NEO Vortex Drive, NEO 550 Turn
   }
 
+  // TODO: Change central drivetrain constants as needed.
+
   // The type of module on the chassis
   public static final ModuleType TYPE = ModuleType.TALON;
-
-  // TODO: Change central drivetrain constants as needed.
 
   // The control loop used by all of the modules when driving
   public static final ControlMode DRIVE_MODE = ControlMode.OPEN_LOOP_VELOCITY;
@@ -107,10 +107,10 @@ public final class DriveConstants {
     public static final double ROTATING_THRESHOLD = 0.02;
   }
 
-  // public static final class Skid {
-  //   // TODO: find a value (3 is currently random, should change)
-  //   public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3);
-  // }
+  public static final class Skid {
+    // TODO: find a value (3 is currently random, should change)
+    public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3);
+  }
 
   // TODO: Change ALL characterization constants for each unique robot as needed.
   public static final class Translation {
