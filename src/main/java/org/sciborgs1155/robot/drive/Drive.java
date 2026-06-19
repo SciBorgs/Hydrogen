@@ -307,10 +307,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 (state) -> SignalLogger.writeString("translation state", state.toString())),
             new SysIdRoutine.Mechanism(
                 volts ->
-                    modules.forEach(
-                        m ->
-                            m.updateInputsDrive(
-                                new SwerveModuleState(volts.in(Volts), Rotation2d.kZero))),
+                    modules.forEach(m -> m.updateInputsDrive(Rotation2d.kZero, volts.in(Volts))),
                 null,
                 this,
                 "drive"));
@@ -323,10 +320,7 @@ public class Drive extends SubsystemBase implements AutoCloseable {
                 (state) -> SignalLogger.writeString("rotation state", state.toString())),
             new SysIdRoutine.Mechanism(
                 volts -> {
-                  modules.forEach(
-                      module ->
-                          module.updateInputsTurn(
-                              new SwerveModuleState(0.0, Rotation2d.fromRadians(volts.in(Volts)))));
+                  modules.forEach(module -> module.updateInputsTurn(volts.in(Volts)));
                 },
                 null,
                 this,
@@ -866,19 +860,31 @@ public class Drive extends SubsystemBase implements AutoCloseable {
   /** Returns the module states. */
   @Logged
   public SwerveModuleState[] moduleStates() {
-    return modules.stream().map(ModuleIO::state).toArray(SwerveModuleState[]::new);
+    SwerveModuleState[] states = new SwerveModuleState[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      states[i] = modules.get(i).state();
+    }
+    return states;
   }
 
   /** Returns the module states. */
   @Logged
   public SwerveModuleState[] moduleSetpoints() {
-    return modules.stream().map(ModuleIO::desiredState).toArray(SwerveModuleState[]::new);
+    SwerveModuleState[] states = new SwerveModuleState[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      states[i] = modules.get(i).desiredState();
+    }
+    return states;
   }
 
   /** Returns the module positions. */
   @Logged
   public SwerveModulePosition[] modulePositions() {
-    return modules.stream().map(ModuleIO::position).toArray(SwerveModulePosition[]::new);
+    SwerveModulePosition[] positions = new SwerveModulePosition[modules.size()];
+    for (int i = 0; i < modules.size(); i++) {
+      positions[i] = modules.get(i).position();
+    }
+    return positions;
   }
 
   @Logged

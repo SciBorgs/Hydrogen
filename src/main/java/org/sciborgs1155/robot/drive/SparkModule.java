@@ -271,16 +271,16 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputsDrive(SwerveModuleState voltage) {
-    setDriveVoltage(voltage.speedMetersPerSecond);
-    setTurnSetpoint(voltage.angle);
-    this.setpoint.angle = voltage.angle;
+  public void updateInputsDrive(Rotation2d angle, double voltage) {
+    setDriveVoltage(voltage);
+    setTurnSetpoint(angle);
+    this.setpoint.angle = angle;
   }
 
   @Override
-  public void updateInputsTurn(SwerveModuleState voltage) {
-    setDriveSetpoint(voltage.speedMetersPerSecond);
-    setTurnVoltage(voltage.angle.getRadians());
+  public void updateInputsTurn(double voltage) {
+    setDriveVoltage(0.0);
+    setTurnVoltage(voltage);
   }
 
   @Override

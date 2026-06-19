@@ -60,10 +60,10 @@ public class NoModule implements ModuleIO {
   public void updateSetpoint(SwerveModuleState setpoint, ControlMode mode) {}
 
   @Override
-  public void updateInputsDrive(SwerveModuleState voltage) {}
+  public void updateInputsDrive(Rotation2d angle, double voltage) {}
 
   @Override
-  public void updateInputsTurn(SwerveModuleState voltage) {}
+  public void updateInputsTurn(double voltage) {}
 
   @Override
   public double[][] moduleOdometryData() {
