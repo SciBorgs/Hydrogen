@@ -38,7 +38,7 @@ public class Force implements Interpolatable<Force>, ProtobufSerializable, Struc
    *
    * <p>This exists to avoid allocations for common translations.
    */
-  public static final Force K_ZERO = new Force();
+  public static final Force kZero = new Force();
 
   private final double mX;
   private final double mY;

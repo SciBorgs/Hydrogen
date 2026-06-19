@@ -10,7 +10,7 @@ import java.util.function.BooleanSupplier;
  * resources as necessary.
  */
 public class Beambreak {
-  private final BooleanSupplier beambreakState;
+  private final BooleanSupplier state;
   private final Runnable close;
 
   /**
@@ -20,7 +20,7 @@ public class Beambreak {
    * @param close A runnable that closes all resources as necessary.
    */
   public Beambreak(BooleanSupplier beambreak, Runnable close) {
-    this.beambreakState = beambreak;
+    this.state = beambreak;
     this.close = close;
   }
 
@@ -46,7 +46,7 @@ public class Beambreak {
    */
   @Logged
   public boolean getState() {
-    return beambreakState.getAsBoolean();
+    return state.getAsBoolean();
   }
 
   /** Closes all resources as necessary */

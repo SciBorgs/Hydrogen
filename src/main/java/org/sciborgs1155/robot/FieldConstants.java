@@ -26,13 +26,16 @@ public class FieldConstants {
   public static final int TAG_COUNT = FIELD_LAYOUT.getTags().size();
   public static final double TAG_WIDTH = Units.inchesToMeters(6.5);
 
-  // Field dimensions
-  public static final double LENGTH = FIELD_LAYOUT.getFieldLength(); // METERS
-  public static final double WIDTH = FIELD_LAYOUT.getFieldWidth(); // METERS
+  // Field dimensions (METERS, TYPICALLY ONLY USED IN METERS)
+  public static final Distance LENGTH = Meters.of(FIELD_LAYOUT.getFieldLength());
+  public static final Distance WIDTH = Meters.of(FIELD_LAYOUT.getFieldWidth());
 
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {
-    return (pose.getX() > 0 && pose.getX() < LENGTH && pose.getY() > 0 && pose.getY() < WIDTH);
+    return (pose.getX() > 0
+        && pose.getX() < LENGTH.in(Meters)
+        && pose.getY() > 0
+        && pose.getY() < WIDTH.in(Meters));
   }
 
   /**
@@ -61,7 +64,9 @@ public class FieldConstants {
         : new Pose2d(
             pose.getTranslation()
                 .rotateAround(
-                    new Translation2d(FieldConstants.LENGTH / 2.0, FieldConstants.WIDTH / 2.0),
+                    new Translation2d(
+                        FieldConstants.LENGTH.in(Meters) / 2.0,
+                        FieldConstants.WIDTH.in(Meters) / 2.0),
                     Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
   }
@@ -74,11 +79,11 @@ public class FieldConstants {
    * @return A reflected distance, only if the alliance is red.
    */
   private static Distance reflectDistance(Distance blueDist) {
-    return alliance() == Alliance.Blue ? blueDist : Meters.of(WIDTH - blueDist.in(Meters));
+    return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
   }
 
   public static Alliance allianceFromPose(Pose2d pose) {
-    return pose.getX() > LENGTH / 2.0 ? Alliance.Red : Alliance.Blue;
+    return pose.getX() > LENGTH.in(Meters) / 2.0 ? Alliance.Red : Alliance.Blue;
   }
 
   /**

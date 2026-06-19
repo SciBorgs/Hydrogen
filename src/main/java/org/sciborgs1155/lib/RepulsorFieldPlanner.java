@@ -1,5 +1,6 @@
 package org.sciborgs1155.lib;
 
+import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.sciborgs1155.lib.LoggingUtils.*;
 
@@ -36,9 +37,9 @@ public class RepulsorFieldPlanner {
   public static final List<Obstacle> WALLS =
       List.of(
           new HorizontalObstacle(0.0, 0.5, true),
-          new HorizontalObstacle(FieldConstants.WIDTH, 0.5, false),
+          new HorizontalObstacle(FieldConstants.WIDTH.in(Meters), 0.5, false),
           new VerticalObstacle(0.0, 0.5, true),
-          new VerticalObstacle(FieldConstants.LENGTH, 0.5, false));
+          new VerticalObstacle(FieldConstants.LENGTH.in(Meters), 0.5, false));
 
   private final List<Obstacle> fixedObstacles = new ArrayList<>();
   private Optional<Translation2d> goalOpt = Optional.empty();
@@ -318,7 +319,7 @@ public class RepulsorFieldPlanner {
    * @return The force from the walls.
    */
   Force getWallForce(Translation2d curLocation, Translation2d target) {
-    var force = Force.K_ZERO;
+    var force = Force.kZero;
     for (Obstacle obs : WALLS) {
       force = force.plus(obs.getForceAtPosition(curLocation, target));
     }
@@ -333,7 +334,7 @@ public class RepulsorFieldPlanner {
    * @return The force from the obstacles.
    */
   Force getObstacleForce(Translation2d curLocation, Translation2d target) {
-    var force = Force.K_ZERO;
+    var force = Force.kZero;
     for (Obstacle obs : FIELD_OBSTACLES) {
       force = force.plus(obs.getForceAtPosition(curLocation, target));
     }
@@ -441,7 +442,7 @@ public class RepulsorFieldPlanner {
         Force netForce =
             getObstacleForce(position, goal)
                 .plus(getWallForce(position, goal))
-                .plus(useGoal ? getGoalForce(position, goal) : Force.K_ZERO);
+                .plus(useGoal ? getGoalForce(position, goal) : Force.kZero);
 
         // Change stepSizeM if we are using goal
         stepSizeM =

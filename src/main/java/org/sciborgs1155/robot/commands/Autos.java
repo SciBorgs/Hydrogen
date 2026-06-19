@@ -48,7 +48,7 @@ public class Autos {
                 Driving.STATOR_LIMIT,
                 1),
             MODULE_OFFSET),
-        () -> alliance() != Alliance.Blue,
+        () -> alliance() == Alliance.Red,
         drive);
 
     NamedCommands.registerCommand("example", Commands.run(() -> {}));

@@ -2,6 +2,7 @@ package org.sciborgs1155.robot.vision;
 
 import static edu.wpi.first.units.Units.Degrees;
 import static edu.wpi.first.units.Units.Inches;
+import static edu.wpi.first.units.Units.Meters;
 
 import edu.wpi.first.apriltag.AprilTagFieldLayout;
 import edu.wpi.first.math.Matrix;
@@ -50,7 +51,7 @@ public final class VisionConstants {
   public static final double MAX_HEIGHT = 0.305;
   public static final double MAX_ANGLE = Math.PI;
   public static final double MAX_AMBIGUITY = 0.20;
-  public static final double MAX_DISTANCE = FieldConstants.LENGTH / 2.0;
+  public static final double MAX_DISTANCE = FieldConstants.LENGTH.in(Meters) / 2.0;
 
   /** TODO: Modify AprilTag information as needed. */
   // Total of n AprilTags
