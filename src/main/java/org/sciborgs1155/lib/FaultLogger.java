@@ -357,7 +357,7 @@ public final class FaultLogger {
   }
 
   public static void register(Pigeon2 pigeon2) {
-    register(() -> pigeon2.isConnected(), "Pigeon2", "disconnected", FaultType.ERROR);
+    register(() -> !pigeon2.isConnected(), "Pigeon2", "disconnected", FaultType.ERROR);
     register(
         () -> pigeon2.getFault_Hardware().getValue(), "Pigeon2", "hardware fault", FaultType.ERROR);
   }
