@@ -1,4 +1,4 @@
-package org.sciborgs1155.lib;
+package org.sciborgs1155.lib.pathfinding;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
@@ -19,7 +19,7 @@ import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.FieldConstants;
 
 /**
- * Reuplsor field planner
+ * Repulsor field planner
  *
  * <p>Taken directly from 6995's code. Big thanks! :D
  */
