@@ -12,6 +12,7 @@ import java.util.function.DoubleSupplier;
 import java.util.function.Predicate;
 import java.util.function.Supplier;
 import java.util.function.ToDoubleFunction;
+import static org.sciborgs1155.lib.LoggingUtils.log;
 
 @SuppressWarnings("PMD")
 public abstract class ProjectileVisualizer {
@@ -95,6 +96,24 @@ public abstract class ProjectileVisualizer {
     this.initialRotationalVelocity = initialRotationalVelocity;
 
     recomputeFrameLimits();
+  }
+
+  protected ProjectileVisualizer(
+    CachedVector initialTranslation, 
+    CachedVector initialVelocity,
+    CachedVector initialRotation,
+    DoubleSupplier initialRotationalVelocity
+  ) {
+    this.initialTranslationX = initialTranslation.x();
+    this.initialTranslationY = initialTranslation.y();
+    this.initialTranslationZ = initialTranslation.z();
+    this.initialVelocityX = initialVelocity.x();
+    this.initialVelocityY = initialVelocity.y();
+    this.initialVelocityZ = initialVelocity.z();
+    this.initialRotationX = initialRotation.x();
+    this.initialRotationY = initialRotation.y();
+    this.initialRotationZ = initialRotation.z();
+    this.initialRotationalVelocity = initialRotationalVelocity;
   }
 
   private void recomputeFrameLimits() {
@@ -433,15 +452,15 @@ public abstract class ProjectileVisualizer {
 
   /** Logs visualizer data to NetworkTables. */
   public void updateLogging() {
-    LoggingUtils.log("Projectile Visualizer/Trajectory", trajectory(), Pose3d.struct);
-    LoggingUtils.log("Projectile Visualizer/Will score", willScore);
-    LoggingUtils.log("Projectile Visualizer/Will miss", willMiss);
-    LoggingUtils.log("Projectile Visualizer/Air Time", airTime);
-    LoggingUtils.log("Projectile Visualizer/Scores", scores);
-    LoggingUtils.log("Projectile Visualizer/Misses", misses);
-    LoggingUtils.log("Projectile Visualizer/Projectiles", poses(), Pose3d.struct);
-    LoggingUtils.log("Projectile Visualizer/Launch pose", initial, Pose3d.struct);
-    LoggingUtils.log("Projectile Visualizer/Ending pose", ending, Pose3d.struct);
+    log("Projectile Visualizer/Trajectory", trajectory(), Pose3d.struct);
+    log("Projectile Visualizer/Will score", willScore);
+    log("Projectile Visualizer/Will miss", willMiss);
+    log("Projectile Visualizer/Air Time", airTime);
+    log("Projectile Visualizer/Scores", scores);
+    log("Projectile Visualizer/Misses", misses);
+    log("Projectile Visualizer/Projectiles", poses(), Pose3d.struct);
+    log("Projectile Visualizer/Launch pose", initial, Pose3d.struct);
+    log("Projectile Visualizer/Ending pose", ending, Pose3d.struct);
   }
 
   public static class Projectile {
@@ -793,7 +812,10 @@ public abstract class ProjectileVisualizer {
     }
   }
 
-  /** Caches a recomputed double[3] and exposes per-component DoubleSuppliers. */
+  /** 
+   * Caches a recomputed double[3] and exposes per-component DoubleSuppliers.
+   * Changes to the output are made per call of the refresh method.
+   */
   protected static final class CachedVector {
     private final Supplier<double[]> source;
     private final double[] cache = new double[3];
