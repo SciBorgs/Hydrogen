@@ -105,8 +105,22 @@ public interface ModuleIO extends AutoCloseable {
    * @param angle The desired angle of the module.
    * @param voltage The voltage to supply to the drive motor.
    */
-  void updateInputs(Rotation2d angle, double voltage);
+  void updateInputsDrive(Rotation2d angle, double voltage);
 
+  /**
+   * Updates the turn voltage and sets drive voltage to 0.
+   *
+   * <p>This is useful for SysId characterization and should not be used otherwise.
+   *
+   * @param voltage The voltage to supply the turn motor.
+   */
+  void updateInputsTurn(double voltage);
+
+  /**
+   * Returns raw odometry data from the module.
+   *
+   * @return A 2D array containing odometry data.
+   */
   double[][] moduleOdometryData();
 
   /** Returns the list of positions of the module for the last tick, from a faster thread. */

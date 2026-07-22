@@ -76,12 +76,10 @@ public class LoggingUtils {
     Epilogue.getConfig().backend.log(identifier, value);
   }
 
-  @SuppressWarnings("unchecked")
   public static <S> void log(String identifier, S value, Struct<S> struct) {
     Epilogue.getConfig().backend.log(identifier, value, struct);
   }
 
-  @SuppressWarnings("unchecked")
   public static <S> void log(String identifier, S[] value, Struct<S> struct) {
     Epilogue.getConfig().backend.log(identifier, value, struct);
   }

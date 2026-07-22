@@ -25,10 +25,24 @@ public interface InputStream extends DoubleSupplier {
     return base::getAsDouble;
   }
 
+  /**
+   * Creates an input stream that returns the hypotenuse of two streams.
+   *
+   * @param x The x component stream.
+   * @param y The y component stream.
+   * @return A new input stream.
+   */
   public static InputStream hypot(InputStream x, InputStream y) {
     return () -> Math.hypot(x.get(), y.get());
   }
 
+  /**
+   * Creates an input stream that returns the angle from the positive x-axis to the point (x, y).
+   *
+   * @param x The x component stream.
+   * @param y The y component stream.
+   * @return A new input stream.
+   */
   public static InputStream atan(InputStream x, InputStream y) {
     return () -> Math.atan2(y.get(), x.get());
   }
@@ -84,7 +98,7 @@ public interface InputStream extends DoubleSupplier {
   /**
    * Offsets the stream by a factor.
    *
-   * @param factor A supplier of offset values.
+   * @param offset A supplier of offset values.
    * @return An offset stream.
    */
   public default InputStream add(DoubleSupplier offset) {
@@ -94,7 +108,7 @@ public interface InputStream extends DoubleSupplier {
   /**
    * Offsets the stream by a factor.
    *
-   * @param factor An offset.
+   * @param offset An offset.
    * @return An offset stream.
    */
   public default InputStream add(double offset) {
@@ -134,7 +148,7 @@ public interface InputStream extends DoubleSupplier {
   /**
    * Deadbands the stream outputs by a minimum bound and scales them from 0 to a maximum bound.
    *
-   * @param bound The lower bound to deadband with.
+   * @param deadband The lower bound to deadband with.
    * @param max The maximum value to scale with.
    * @return A deadbanded stream.
    */

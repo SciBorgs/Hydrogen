@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot.commands;
 
-import static org.sciborgs1155.robot.Constants.Robot.*;
+import static org.sciborgs1155.robot.Constants.Robot.MASS;
+import static org.sciborgs1155.robot.Constants.Robot.MOI;
 import static org.sciborgs1155.robot.Constants.alliance;
 import static org.sciborgs1155.robot.drive.DriveConstants.MAX_SPEED;
 import static org.sciborgs1155.robot.drive.DriveConstants.MODULE_OFFSET;
@@ -8,6 +9,7 @@ import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_COF;
 import static org.sciborgs1155.robot.drive.DriveConstants.WHEEL_RADIUS;
 
 import com.pathplanner.lib.auto.AutoBuilder;
+import com.pathplanner.lib.auto.NamedCommands;
 import com.pathplanner.lib.config.ModuleConfig;
 import com.pathplanner.lib.config.PIDConstants;
 import com.pathplanner.lib.config.RobotConfig;
@@ -31,7 +33,7 @@ public class Autos {
         drive::pose,
         drive::resetOdometry,
         drive::robotRelativeChassisSpeeds,
-        (s, g) -> drive.setChassisSpeeds(s, ControlMode.CLOSED_LOOP_VELOCITY),
+        (s, g) -> drive.setChassisSpeeds(s, ControlMode.OPEN_LOOP_VELOCITY),
         new PPHolonomicDriveController(
             new PIDConstants(Translation.P, Translation.I, Translation.D),
             new PIDConstants(Rotation.P, Rotation.I, Rotation.D)),
@@ -49,7 +51,7 @@ public class Autos {
         () -> alliance() == Alliance.Red,
         drive);
 
-    PPHolonomicDriveController.overrideRotationFeedback(() -> drive.heading().getRadians());
+    NamedCommands.registerCommand("example", Commands.run(() -> {}));
 
     SendableChooser<Command> chooser = AutoBuilder.buildAutoChooser();
     chooser.addOption("no auto", Commands.none());

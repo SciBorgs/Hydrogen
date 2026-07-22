@@ -9,17 +9,7 @@ import java.util.Set;
 import org.sciborgs1155.robot.Ports;
 
 /** Utility class for configuration of Spark motor controllers */
-public class SparkUtils {
-  private static final List<Runnable> runnables = new ArrayList<>();
-
-  public static void addChecker(Runnable runnable) {
-    runnables.add(runnable);
-  }
-
-  public static List<Runnable> getRunnables() {
-    return runnables;
-  }
-
+public final class SparkUtils {
   // REV's docs have the size of a signed value of 65535ms for the max period
   // https://docs.revrobotics.com/brushless/spark-max/control-interfaces#periodic-status-frames
   // The actual max is half of this (32767ms)
@@ -35,6 +25,26 @@ public class SparkUtils {
 
   public static final int MAX_ATTEMPTS = 3;
 
+  private static final List<Runnable> RUNNABLES = new ArrayList<>();
+
+  /**
+   * Adds a checker runnable to the list of checkers.
+   *
+   * @param runnable The runnable to add.
+   */
+  public static void addChecker(Runnable runnable) {
+    RUNNABLES.add(runnable);
+  }
+
+  /**
+   * Returns the list of registered checker runnables.
+   *
+   * @return The list of checker runnables.
+   */
+  public static List<Runnable> getRunnables() {
+    return RUNNABLES;
+  }
+
   /**
    * Formats the name of a spark with its CAN ID.
    *
@@ -42,7 +52,7 @@ public class SparkUtils {
    * @return The name of a spark.
    */
   public static String name(SparkBase spark) {
-    return "Spark " + Ports.idToName.get(spark.getDeviceId());
+    return "Spark " + Ports.ID_TO_NAME.get(spark.getDeviceId());
   }
 
   /** Represents a type of sensor that can be plugged into the spark */
@@ -112,10 +122,8 @@ public class SparkUtils {
       config = config.externalOrAltEncoderPosition(FRAME_STRATEGY_FAST); // status 4
     }
 
-    if (sensors.contains(Sensor.ABSOLUTE)) {
-      if (data.contains(Data.POSITION)) {
-        config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_LUDICROUS); // status 5
-      }
+    if (sensors.contains(Sensor.ABSOLUTE) && data.contains(Data.POSITION)) {
+      config = config.absoluteEncoderPositionPeriodMs(FRAME_STRATEGY_LUDICROUS); // status 5
     }
 
     return config;

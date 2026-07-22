@@ -7,7 +7,7 @@ import java.util.Map;
 public final class Ports {
   // TODO: Add and change all ports as needed.
 
-  public static final Map<Integer, String> idToName =
+  public static final Map<Integer, String> ID_TO_NAME =
       Map.ofEntries(
           entry(Drive.FRONT_LEFT_DRIVE, "FL drive"),
           entry(Drive.REAR_LEFT_DRIVE, "RL drive"),
@@ -29,7 +29,7 @@ public final class Ports {
   }
 
   public static final class Drive {
-    public static final int CANANDGYRO = 20;
+    public static final int GYRO = 20;
     public static final int FRONT_LEFT_DRIVE = 11;
     public static final int REAR_LEFT_DRIVE = 10;
     public static final int FRONT_RIGHT_DRIVE = 12;

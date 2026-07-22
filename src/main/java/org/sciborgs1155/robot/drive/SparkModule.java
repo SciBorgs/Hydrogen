@@ -5,17 +5,17 @@ import static org.sciborgs1155.lib.FaultLogger.*;
 import static org.sciborgs1155.lib.LoggingUtils.log;
 import static org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.COUPLING_RATIO;
 
+import com.revrobotics.PersistMode;
 import com.revrobotics.RelativeEncoder;
+import com.revrobotics.ResetMode;
 import com.revrobotics.spark.ClosedLoopSlot;
+import com.revrobotics.spark.FeedbackSensor;
 import com.revrobotics.spark.SparkAbsoluteEncoder;
 import com.revrobotics.spark.SparkBase.ControlType;
-import com.revrobotics.spark.SparkBase.PersistMode;
-import com.revrobotics.spark.SparkBase.ResetMode;
 import com.revrobotics.spark.SparkClosedLoopController;
 import com.revrobotics.spark.SparkFlex;
 import com.revrobotics.spark.SparkLowLevel.MotorType;
 import com.revrobotics.spark.SparkMax;
-import com.revrobotics.spark.config.ClosedLoopConfig;
 import com.revrobotics.spark.config.SparkBaseConfig.IdleMode;
 import com.revrobotics.spark.config.SparkFlexConfig;
 import com.revrobotics.spark.config.SparkMaxConfig;
@@ -33,6 +33,7 @@ import org.sciborgs1155.robot.drive.DriveConstants.ControlMode;
 import org.sciborgs1155.robot.drive.DriveConstants.FFConstants;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Driving;
 import org.sciborgs1155.robot.drive.DriveConstants.ModuleConstants.Turning;
+import org.sciborgs1155.robot.drive.DriveConstants.PIDConstants;
 
 public class SparkModule implements ModuleIO {
   private final SparkFlex driveMotor; // NEO Vortex
@@ -67,7 +68,9 @@ public class SparkModule implements ModuleIO {
       int drivePort,
       int turnPort,
       Rotation2d angularOffset,
-      FFConstants ff,
+      FFConstants driveFFConstants,
+      FFConstants turnFFConstants,
+      PIDConstants turnFBConstants,
       String name,
       boolean invert) {
     // Drive Motor
@@ -75,7 +78,9 @@ public class SparkModule implements ModuleIO {
     driveMotor = new SparkFlex(drivePort, MotorType.kBrushless);
     driveEncoder = driveMotor.getEncoder();
     drivePID = driveMotor.getClosedLoopController();
-    driveFF = new SimpleMotorFeedforward(ff.kS(), ff.kV(), ff.kA());
+    driveFF =
+        new SimpleMotorFeedforward(
+            driveFFConstants.kS(), driveFFConstants.kV(), driveFFConstants.kA());
     driveMotorConfig = new SparkFlexConfig();
 
     check(
@@ -87,7 +92,7 @@ public class SparkModule implements ModuleIO {
         driveMotorConfig
             .closedLoop
             .pid(Driving.PID.P, Driving.PID.I, Driving.PID.D)
-            .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
+            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder));
 
     driveMotorConfig.apply(
         driveMotorConfig
@@ -128,15 +133,15 @@ public class SparkModule implements ModuleIO {
     turnMotorConfig.apply(
         turnMotorConfig
             .closedLoop
-            .pid(Turning.PID.P, Turning.PID.I, Turning.PID.D)
+            .pid(turnFBConstants.kP(), turnFBConstants.kI(), turnFBConstants.kD())
             .positionWrappingEnabled(true)
             .positionWrappingInputRange(-Math.PI, Math.PI)
-            .feedbackSensor(ClosedLoopConfig.FeedbackSensor.kAbsoluteEncoder));
+            .feedbackSensor(FeedbackSensor.kAbsoluteEncoder));
 
     turnMotorConfig.apply(
         turnMotorConfig
             .idleMode(IdleMode.kBrake)
-            .smartCurrentLimit((int) Turning.CURRENT_LIMIT.in(Amps)));
+            .smartCurrentLimit((int) Turning.SUPPLY_LIMIT.in(Amps)));
 
     turnMotorConfig.apply(turnMotorConfig.absoluteEncoder.inverted(invert));
 
@@ -238,13 +243,13 @@ public class SparkModule implements ModuleIO {
 
   @Override
   public void setDriveSetpoint(double velocity) {
-    drivePID.setReference(
+    drivePID.setSetpoint(
         velocity, ControlType.kVelocity, ClosedLoopSlot.kSlot0, driveFF.calculate(velocity));
   }
 
   @Override
   public void setTurnSetpoint(Rotation2d angle) {
-    turnPID.setReference(angle.getRadians(), ControlType.kPosition);
+    turnPID.setSetpoint(angle.getRadians(), ControlType.kPosition);
   }
 
   @Override
@@ -266,15 +271,21 @@ public class SparkModule implements ModuleIO {
   }
 
   @Override
-  public void updateInputs(Rotation2d angle, double voltage) {
-    setpoint.angle = angle;
+  public void updateInputsDrive(Rotation2d angle, double voltage) {
     setDriveVoltage(voltage);
     setTurnSetpoint(angle);
+    this.setpoint.angle = angle;
+  }
+
+  @Override
+  public void updateInputsTurn(double voltage) {
+    setDriveVoltage(0.0);
+    setTurnVoltage(voltage);
   }
 
   @Override
   public double[][] moduleOdometryData() {
-    Drive.lock.lock();
+    Drive.LOCK.lock();
     try {
       double[][] data = {
         position.stream().mapToDouble((Double d) -> d).toArray(),
@@ -283,13 +294,13 @@ public class SparkModule implements ModuleIO {
       };
       return data;
     } finally {
-      Drive.lock.unlock();
+      Drive.LOCK.unlock();
     }
   }
 
   public SwerveModulePosition[] odometryData() {
     SwerveModulePosition[] positions = new SwerveModulePosition[20];
-    Drive.lock.lock();
+    Drive.LOCK.lock();
 
     var data = moduleOdometryData();
 
@@ -301,7 +312,7 @@ public class SparkModule implements ModuleIO {
     rotation.clear();
     timestamp.clear();
 
-    Drive.lock.unlock();
+    Drive.LOCK.unlock();
     return positions;
   }
 

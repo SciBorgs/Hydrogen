@@ -1,4 +1,4 @@
-package org.sciborgs1155.lib;
+package org.sciborgs1155.lib.pathfinding;
 
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
@@ -19,15 +19,50 @@ import org.sciborgs1155.robot.Constants;
 import org.sciborgs1155.robot.FieldConstants;
 
 /**
- * Reuplsor field planner
+ * Repulsor field planner
  *
  * <p>Taken directly from 6995's code. Big thanks! :D
  */
 public class RepulsorFieldPlanner {
-  abstract static class Obstacle {
-    double strength = 1.0;
-    boolean positive = true;
+  public static final double GOAL_STRENGTH = 0.65;
 
+  /** TODO: Update this yearly to define the physcial field for pathing! */
+  public static final List<Obstacle> FIELD_OBSTACLES =
+      List.of(
+          new CircleObstacle(
+              new Translation2d(4.49, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true),
+          new CircleObstacle(
+              new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true));
+
+  public static final List<Obstacle> WALLS =
+      List.of(
+          new HorizontalObstacle(0.0, 0.5, true),
+          new HorizontalObstacle(FieldConstants.WIDTH.in(Meters), 0.5, false),
+          new VerticalObstacle(0.0, 0.5, true),
+          new VerticalObstacle(FieldConstants.LENGTH.in(Meters), 0.5, false));
+
+  private final List<Obstacle> fixedObstacles = new ArrayList<>();
+  private Optional<Translation2d> goalOpt = Optional.empty();
+
+  private SwerveSample prevSample;
+
+  @NotLogged private boolean useGoalInArrows;
+  @NotLogged private boolean useObstaclesInArrows = true;
+
+  @NotLogged private boolean useWallsInArrows = true;
+
+  public double pathLength;
+
+  public abstract static class Obstacle {
+    double strength;
+    boolean positive;
+
+    /**
+     * Creates a new obstacle.
+     *
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public Obstacle(double strength, boolean positive) {
       this.strength = strength;
       this.positive = positive;
@@ -63,19 +98,28 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  static class PointObstacle extends Obstacle {
+  public static class PointObstacle extends Obstacle {
     Translation2d loc;
     double radius = 0.5;
+    static final int MAX_DIST = 4;
 
+    /**
+     * Creates a new point obstacle.
+     *
+     * @param loc The location of the obstacle.
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public PointObstacle(Translation2d loc, double strength, boolean positive) {
       super(strength, positive);
       this.loc = loc;
     }
 
+    @Override
     public Force getForceAtPosition(Translation2d position, Translation2d target) {
       // displacement from obstacle
       double dist = loc.getDistance(position);
-      if (dist > 4) {
+      if (dist > MAX_DIST) {
         return new Force();
       }
       // distance from the position to the outer radius of the target.
@@ -98,16 +142,25 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  static class CircleObstacle extends Obstacle {
+  public static class CircleObstacle extends Obstacle {
     Translation2d loc;
-    double radius = 0.5;
+    double radius;
 
+    /**
+     * Creates a new circular obstacle.
+     *
+     * @param loc The center location of the obstacle.
+     * @param strength The strength of the repulsor field.
+     * @param radius The radius of the obstacle.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public CircleObstacle(Translation2d loc, double strength, double radius, boolean positive) {
       super(strength, positive);
       this.loc = loc;
       this.radius = radius;
     }
 
+    @Override
     public Force getForceAtPosition(Translation2d position, Translation2d target) {
       // displacement from obstacle
       Translation2d targetToLoc = loc.minus(target);
@@ -145,52 +198,53 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  static class HorizontalObstacle extends Obstacle {
+  public static class HorizontalObstacle extends Obstacle {
     double y;
 
+    /**
+     * Creates a new horizontal line obstacle.
+     *
+     * @param y The y-coordinate of the horizontal line.
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public HorizontalObstacle(double y, double strength, boolean positive) {
       super(strength, positive);
       this.y = y;
     }
 
+    @Override
     public Force getForceAtPosition(Translation2d position, Translation2d target) {
       return new Force(0, distToForceMag(y - position.getY(), 1));
     }
   }
 
-  static class VerticalObstacle extends Obstacle {
+  public static class VerticalObstacle extends Obstacle {
     double x;
 
+    /**
+     * Creates a new vertical line obstacle.
+     *
+     * @param x The x-coordinate of the vertical line.
+     * @param strength The strength of the repulsor field.
+     * @param positive Whether the force is positive (repelling) or negative (attracting).
+     */
     public VerticalObstacle(double x, double strength, boolean positive) {
       super(strength, positive);
       this.x = x;
     }
 
+    @Override
     public Force getForceAtPosition(Translation2d position, Translation2d target) {
       return new Force(distToForceMag(x - position.getX(), 1), 0);
     }
   }
 
-  public static final double GOAL_STRENGTH = 0.65;
-
-  /** TODO: Update this yearly to define the physcial field for pathing! */
-  public static final List<Obstacle> FIELD_OBSTACLES =
-      List.of(
-          new CircleObstacle(
-              new Translation2d(4.49, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true),
-          new CircleObstacle(
-              new Translation2d(13.08, 4), 0.6, Units.inchesToMeters(65.5 / 2.0), true));
-
-  public static final List<Obstacle> WALLS =
-      List.of(
-          new HorizontalObstacle(0.0, 0.5, true),
-          new HorizontalObstacle(FieldConstants.WIDTH.in(Meters), 0.5, false),
-          new VerticalObstacle(0.0, 0.5, true),
-          new VerticalObstacle(FieldConstants.LENGTH.in(Meters), 0.5, false));
-
-  private List<Obstacle> fixedObstacles = new ArrayList<>();
-  private Optional<Translation2d> goalOpt = Optional.empty();
-
+  /**
+   * Returns the current goal position as a Pose2d.
+   *
+   * @return The goal position, or zero if no goal is set.
+   */
   @Logged
   public Pose2d goal() {
     return new Pose2d(goalOpt.orElse(Translation2d.kZero), Rotation2d.kZero);
@@ -202,8 +256,7 @@ public class RepulsorFieldPlanner {
   // private static final int ARROWS_SIZE = (ARROWS_X + 1) * (ARROWS_Y + 1);
   // private ArrayList<Pose2d> arrows = new ArrayList<>(ARROWS_SIZE);
 
-  private SwerveSample prevSample;
-
+  /** Creates a new RepulsorFieldPlanner with default field obstacles and walls. */
   public RepulsorFieldPlanner() {
     fixedObstacles.addAll(FIELD_OBSTACLES);
     fixedObstacles.addAll(WALLS);
@@ -213,13 +266,9 @@ public class RepulsorFieldPlanner {
     this.prevSample = sample(Translation2d.kZero, Rotation2d.kZero, 0, 0, 0);
   }
 
-  @NotLogged private boolean useGoalInArrows = false;
-  @NotLogged private boolean useObstaclesInArrows = true;
-  @NotLogged private boolean useWallsInArrows = true;
-
   // private Pose2d arrowBackstage = new Pose2d(-10, -10, Rotation2d.kZero);
 
-  /** Updates the grid of vectors // */
+  /* Updates the grid of vectors // */
   // void updateArrows() {
   //   for (int x = 0; x <= ARROWS_X; x++) {
   //     for (int y = 0; y <= ARROWS_Y; y++) {
@@ -300,11 +349,9 @@ public class RepulsorFieldPlanner {
    * @return The total resultant force from field elements.
    */
   Force getForce(Translation2d curLocation, Translation2d target) {
-    var goalForce =
-        getGoalForce(curLocation, target)
-            .plus(getObstacleForce(curLocation, target))
-            .plus(getWallForce(curLocation, target));
-    return goalForce;
+    return getGoalForce(curLocation, target)
+        .plus(getObstacleForce(curLocation, target))
+        .plus(getWallForce(curLocation, target));
   }
 
   /**
@@ -357,6 +404,16 @@ public class RepulsorFieldPlanner {
     return getCmd(pose, currentSpeeds, maxSpeed, useGoal, pose.getRotation());
   }
 
+  /**
+   * Gets the next command sample with a specified goal rotation.
+   *
+   * @param pose The current pose of the robot.
+   * @param currentSpeeds The current chassis speeds of the robot.
+   * @param maxSpeed The desired maximum speed of the robot.
+   * @param useGoal Whether or not to use the given goal.
+   * @param goalRotation The desired goal rotation.
+   * @return A SwerveSample representing the next desired robot swerve state.
+   */
   public SwerveSample getCmd(
       Pose2d pose,
       ChassisSpeeds currentSpeeds,
@@ -364,7 +421,7 @@ public class RepulsorFieldPlanner {
       boolean useGoal,
       Rotation2d goalRotation) {
     // Distance travelled in one period
-    double stepSize_m = maxSpeed * Constants.PERIOD.in(Seconds);
+    double stepSizeM = maxSpeed * Constants.PERIOD.in(Seconds);
 
     if (goalOpt.isEmpty()) {
       // Tells the robot to stop moving if there is no goal.
@@ -377,7 +434,7 @@ public class RepulsorFieldPlanner {
       Translation2d position = pose.getTranslation();
       Translation2d err = position.minus(goal);
 
-      if (useGoal && err.getNorm() < stepSize_m * 1.5) {
+      if (useGoal && err.getNorm() < stepSizeM * 1.5) {
         // Tells the robot to stop moving if it's already there.
         return sample(goal, goalRotation, 0, 0, 0);
       } else {
@@ -387,20 +444,20 @@ public class RepulsorFieldPlanner {
                 .plus(getWallForce(position, goal))
                 .plus(useGoal ? getGoalForce(position, goal) : Force.kZero);
 
-        // Change stepSize_m if we are using goal
-        stepSize_m =
+        // Change stepSizeM if we are using goal
+        stepSizeM =
             useGoal
                 ? Math.min(maxSpeed, maxSpeed * Math.min(err.getNorm() / 2, 1)) * 0.02
-                : stepSize_m;
+                : stepSizeM;
 
         // Next desired displacement from the max speed and angle of the net force
-        Translation2d step = new Translation2d(stepSize_m, netForce.getAngle());
+        Translation2d step = new Translation2d(stepSizeM, netForce.getAngle());
 
         // Next desired position
         var intermediateGoal = position.plus(step);
 
         var endTime = System.nanoTime();
-        log("/lib/repulsorTimeS", (endTime - startTime));
+        log("/lib/repulsorTimeS", endTime - startTime);
 
         // set the previous sample as the current sample
         prevSample =
@@ -410,17 +467,23 @@ public class RepulsorFieldPlanner {
     }
   }
 
-  public double pathLength = 0;
-
-  public ArrayList<Translation2d> getTrajectory(
-      Translation2d current, Translation2d goalTranslation, double stepSize_m) {
+  /**
+   * Generates a trajectory from the current position to the goal.
+   *
+   * @param current The current position.
+   * @param goalTranslation The goal position.
+   * @param stepSizeM The step size in meters.
+   * @return A list of Translation2d waypoints forming the trajectory.
+   */
+  public List<Translation2d> getTrajectory(
+      Translation2d current, Translation2d goalTranslation, double stepSizeM) {
     pathLength = 0;
     // goalTranslation = goalOpt.orElse(goalTranslation);
-    ArrayList<Translation2d> traj = new ArrayList<>();
+    List<Translation2d> traj = new ArrayList<>();
     Translation2d robot = current;
     for (int i = 0; i < 400; i++) {
       var err = robot.minus(goalTranslation);
-      if (err.getNorm() < stepSize_m * 1.5) {
+      if (err.getNorm() < stepSizeM * 1.5) {
         traj.add(goalTranslation);
         break;
       } else {
@@ -428,10 +491,10 @@ public class RepulsorFieldPlanner {
         if (netForce.getNorm() == 0) {
           break;
         }
-        var step = new Translation2d(stepSize_m, netForce.getAngle());
+        var step = new Translation2d(stepSizeM, netForce.getAngle());
         var intermediateGoal = robot.plus(step);
         traj.add(intermediateGoal);
-        pathLength += stepSize_m;
+        pathLength += stepSizeM;
         robot = intermediateGoal;
       }
     }

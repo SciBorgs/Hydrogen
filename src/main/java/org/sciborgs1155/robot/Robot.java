@@ -1,6 +1,7 @@
 package org.sciborgs1155.robot;
 
 import static edu.wpi.first.units.Units.MetersPerSecond;
+import static edu.wpi.first.units.Units.MetersPerSecondPerSecond;
 import static edu.wpi.first.units.Units.RadiansPerSecond;
 import static edu.wpi.first.units.Units.Second;
 import static edu.wpi.first.units.Units.Seconds;
@@ -33,7 +34,6 @@ import org.littletonrobotics.urcl.URCL;
 import org.sciborgs1155.lib.CommandRobot;
 import org.sciborgs1155.lib.FaultLogger;
 import org.sciborgs1155.lib.InputStream;
-import org.sciborgs1155.lib.Test;
 import org.sciborgs1155.lib.Tracer;
 import org.sciborgs1155.robot.Ports.OI;
 import org.sciborgs1155.robot.commands.Alignment;
@@ -73,7 +73,7 @@ public class Robot extends CommandRobot {
     configureBindings();
 
     // Warms up pathfinding commands, as the first run could have significant delays.
-    align.warmupCommand().schedule();
+    CommandScheduler.getInstance().schedule(align.warmupCommand());
   }
 
   @Override
@@ -118,7 +118,10 @@ public class Robot extends CommandRobot {
 
     // Configure pose estimation updates every tick
     addPeriodic(
-        () -> drive.updateEstimates(vision.estimatedGlobalPoses(drive.gyroHeading())), PERIOD);
+        () ->
+            drive.updateEstimates(
+                vision.estimatedGlobalPoses(drive.gyroHeading(), disabled().getAsBoolean())),
+        PERIOD);
 
     RobotController.setBrownoutVoltage(6.0);
 
@@ -147,7 +150,8 @@ public class Robot extends CommandRobot {
             .deadband(Constants.DEADBAND, 1.0)
             .signedPow(2.0)
             .log("/Robot/processed joystick")
-            .scale(MAX_SPEED.in(MetersPerSecond));
+            .scale(MAX_SPEED.in(MetersPerSecond))
+            .rateLimit(MAX_ACCEL.in(MetersPerSecondPerSecond));
 
     InputStream theta = InputStream.atan(raw_x, raw_y);
 
@@ -216,7 +220,7 @@ public class Robot extends CommandRobot {
   }
 
   public Command systemsCheck() {
-    return Test.toCommand(drive.systemsCheck()).withName("Test Mechanisms");
+    return Commands.sequence(drive.systemsCheck()).withName("Test Mechanisms");
   }
 
   @Override
