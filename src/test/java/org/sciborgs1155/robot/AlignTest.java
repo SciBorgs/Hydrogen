@@ -20,12 +20,12 @@ import org.sciborgs1155.robot.drive.Drive;
 import org.sciborgs1155.robot.drive.DriveConstants.Rotation;
 import org.sciborgs1155.robot.drive.DriveConstants.Translation;
 
-public class AlignTest {
-  Drive drive;
-  Alignment align;
+class AlignTest {
+  private Drive drive;
+  private Alignment align;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     setupTests();
     drive = Drive.create();
     drive.resetEncoders();
@@ -36,13 +36,13 @@ public class AlignTest {
   }
 
   @AfterEach
-  public void destroy() throws Exception {
+  void destroy() throws Exception {
     reset(drive);
   }
 
   /** Tests whether the obstacle-avoiding pathing works correctly. */
   @Test
-  public void pathfindTest() throws Exception {
+  void pathfindTest() throws Exception {
     Pose2d pose = new Pose2d(Meters.of(1), Meters.of(1), Rotation2d.kZero);
     // Make and run the pathfinding command
     runToCompletion(align.alignTo(() -> pose).withTimeout(Seconds.of(20)));

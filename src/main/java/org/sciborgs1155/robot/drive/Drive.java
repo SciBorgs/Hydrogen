@@ -1030,9 +1030,9 @@ public class Drive extends SubsystemBase implements AutoCloseable {
     simRotation =
         simRotation.rotateBy(
             Rotation2d.fromRadians(
-                !Double.isNaN(robotRelativeChassisSpeeds().omegaRadiansPerSecond)
-                    ? robotRelativeChassisSpeeds().omegaRadiansPerSecond * PERIOD.in(Seconds)
-                    : 0));
+                Double.isNaN(robotRelativeChassisSpeeds().omegaRadiansPerSecond)
+                    ? 0
+                    : robotRelativeChassisSpeeds().omegaRadiansPerSecond * PERIOD.in(Seconds)));
   }
 
   /** Stops the drivetrain. */

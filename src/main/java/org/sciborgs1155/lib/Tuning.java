@@ -53,6 +53,9 @@ public final class Tuning {
   private static final Map<String, String> PREV_STRING = new HashMap<>();
   private static final Map<String, Boolean> PREV_BOOLEAN = new HashMap<>();
 
+  // Prevents instantiation
+  private Tuning() {}
+
   /**
    * Creates a trigger that activates when a DoubleEntry has been changed recently.
    *
@@ -316,10 +319,11 @@ public final class Tuning {
   public static List<Long> recentChanges(IntegerTopic topic, int pastNIndexes) {
     List<Long> arrayList = recentChanges(topic);
     List<Long> croppedList = new ArrayList<>();
+    int pastNIndexesBounded = pastNIndexes;
     if (pastNIndexes >= arrayList.size() || pastNIndexes < 0) {
-      pastNIndexes = arrayList.size() - 1;
+      pastNIndexesBounded = arrayList.size() - 1;
     }
-    for (int i = arrayList.size() - 1; i > arrayList.size() - 1 - pastNIndexes; i--) {
+    for (int i = arrayList.size() - 1; i > arrayList.size() - 1 - pastNIndexesBounded; i--) {
       croppedList.add(arrayList.get(i));
     }
     return croppedList;
@@ -346,10 +350,11 @@ public final class Tuning {
   public static List<String> recentChanges(StringTopic topic, int pastNIndexes) {
     List<String> arrayList = recentChanges(topic);
     List<String> croppedList = new ArrayList<>();
+    int pastNIndexesBounded = pastNIndexes;
     if (pastNIndexes >= arrayList.size() || pastNIndexes < 0) {
-      pastNIndexes = arrayList.size() - 1;
+      pastNIndexesBounded = arrayList.size() - 1;
     }
-    for (int i = arrayList.size() - 1; i > arrayList.size() - 1 - pastNIndexes; i--) {
+    for (int i = arrayList.size() - 1; i > arrayList.size() - 1 - pastNIndexesBounded; i--) {
       croppedList.add(arrayList.get(i));
     }
     return croppedList;
@@ -376,10 +381,11 @@ public final class Tuning {
   public static List<Boolean> recentChanges(BooleanTopic topic, int pastNIndexes) {
     List<Boolean> arrayList = recentChanges(topic);
     List<Boolean> croppedList = new ArrayList<>();
+    int pastNIndexesBounded = pastNIndexes;
     if (pastNIndexes >= arrayList.size() || pastNIndexes < 0) {
-      pastNIndexes = arrayList.size() - 1;
+      pastNIndexesBounded = arrayList.size() - 1;
     }
-    for (int i = arrayList.size() - 1; i > arrayList.size() - 1 - pastNIndexes; i--) {
+    for (int i = arrayList.size() - 1; i > arrayList.size() - 1 - pastNIndexesBounded; i--) {
       croppedList.add(arrayList.get(i));
     }
     return croppedList;

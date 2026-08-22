@@ -2,6 +2,7 @@ plugins {
     id "java"
     id "edu.wpi.first.GradleRIO" version "2026.2.1"
     id 'com.diffplug.spotless' version '6.24.0'
+    id 'pmd' // Static analysis
 }
 
 java {
@@ -137,6 +138,14 @@ tasks.withType(JavaCompile) {
     options.compilerArgs.add '-XDstringConcat=inline'
 }
 
+// Static analysis
+
+pmd {
+    toolVersion = "7.22.0"
+    consoleOutput = true
+    ruleSetFiles = files("sciborgs1155-pmd-ruleset.xml")
+    ruleSets = [] // Explicitly set so we don't use the default ruleset
+}
 
 spotless {
     java {

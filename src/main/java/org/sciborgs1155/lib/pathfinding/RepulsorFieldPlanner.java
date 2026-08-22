@@ -44,12 +44,9 @@ public class RepulsorFieldPlanner {
   private final List<Obstacle> fixedObstacles = new ArrayList<>();
   private Optional<Translation2d> goalOpt = Optional.empty();
 
-  private SwerveSample prevSample;
-
   @NotLogged private boolean useGoalInArrows;
-  @NotLogged private boolean useObstaclesInArrows = true;
-
-  @NotLogged private boolean useWallsInArrows = true;
+  @NotLogged private static final boolean USE_OBSTACLES_IN_ARROWS = true;
+  @NotLogged private static final boolean USE_WALLS_IN_ARROWS = true;
 
   public double pathLength;
 
@@ -263,7 +260,6 @@ public class RepulsorFieldPlanner {
     // for (int i = 0; i < ARROWS_SIZE; i++) {
     //   // arrows.add(new Pose2d());
     // }
-    this.prevSample = sample(Translation2d.kZero, Rotation2d.kZero, 0, 0, 0);
   }
 
   // private Pose2d arrowBackstage = new Pose2d(-10, -10, Rotation2d.kZero);
@@ -319,7 +315,7 @@ public class RepulsorFieldPlanner {
    * @return The force from the walls.
    */
   Force getWallForce(Translation2d curLocation, Translation2d target) {
-    var force = Force.kZero;
+    var force = Force.K_ZERO;
     for (Obstacle obs : WALLS) {
       force = force.plus(obs.getForceAtPosition(curLocation, target));
     }
@@ -334,7 +330,7 @@ public class RepulsorFieldPlanner {
    * @return The force from the obstacles.
    */
   Force getObstacleForce(Translation2d curLocation, Translation2d target) {
-    var force = Force.kZero;
+    var force = Force.K_ZERO;
     for (Obstacle obs : FIELD_OBSTACLES) {
       force = force.plus(obs.getForceAtPosition(curLocation, target));
     }
@@ -442,7 +438,7 @@ public class RepulsorFieldPlanner {
         Force netForce =
             getObstacleForce(position, goal)
                 .plus(getWallForce(position, goal))
-                .plus(useGoal ? getGoalForce(position, goal) : Force.kZero);
+                .plus(useGoal ? getGoalForce(position, goal) : Force.K_ZERO);
 
         // Change stepSizeM if we are using goal
         stepSizeM =
@@ -459,10 +455,7 @@ public class RepulsorFieldPlanner {
         var endTime = System.nanoTime();
         log("/lib/repulsorTimeS", endTime - startTime);
 
-        // set the previous sample as the current sample
-        prevSample =
-            sample(intermediateGoal, goalRotation, step.getX() / 0.02, step.getY() / 0.02, 0);
-        return prevSample;
+        return sample(intermediateGoal, goalRotation, step.getX() / 0.02, step.getY() / 0.02, 0);
       }
     }
   }

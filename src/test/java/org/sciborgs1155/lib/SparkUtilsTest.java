@@ -15,10 +15,10 @@ import org.junit.jupiter.api.Test;
 import org.sciborgs1155.lib.SparkUtils.Data;
 import org.sciborgs1155.lib.SparkUtils.Sensor;
 
-public class SparkUtilsTest {
+final class SparkUtilsTest {
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     setupTests();
   }
 

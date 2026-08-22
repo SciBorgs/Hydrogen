@@ -41,6 +41,9 @@ public final class DriveCommands {
                   DriveConstants.MODULE_OFFSET[3].getMeasureX().in(Meters),
                   DriveConstants.MODULE_OFFSET[3].getMeasureY().in(Meters))));
 
+  // Prevents instantiation
+  private DriveCommands() {}
+
   /** Measures the robot's wheel radius by spinning in a circle. */
   public static Command wheelRadiusCharacterization(Drive drive) {
     SlewRateLimiter limiter = new SlewRateLimiter(WHEEL_RADIUS_RAMP_RATE);
@@ -110,6 +113,6 @@ public final class DriveCommands {
   private static final class WheelRadiusCharacterizationState {
     double[] positions = new double[4];
     Rotation2d lastAngle = Rotation2d.kZero;
-    double gyroDelta = 0.0;
+    double gyroDelta;
   }
 }

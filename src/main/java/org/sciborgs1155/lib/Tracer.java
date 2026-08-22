@@ -48,6 +48,9 @@ public final class Tracer {
   private static final ThreadLocal<TracerState> THREAD_LOCAL_STATE =
       ThreadLocal.withInitial(() -> new TracerState(Thread.currentThread().getName(), true));
 
+  // Prevent instantiation
+  private Tracer() {}
+
   private static final class TraceStartData {
     private double mStartTime;
     private double mStartGCTotalTime;
@@ -90,28 +93,28 @@ public final class Tracer {
      * If the cycle is poisoned, it will warn the user
      * and not publish any data.
      */
-    boolean mCyclePoisoned = false;
+    private boolean mCyclePoisoned;
 
     /** If the tracer is disabled, it will not publish any data or do any string manipulation. */
-    boolean mDisabled = false;
+    private boolean mDisabled;
 
     /**
      * If the tracer should be disabled next cycle and every cycle after that until this flag is set
      * to false. Disabling is done this way to prevent disabling/enabling.
      */
-    boolean mDisableNextCycle = false;
+    private boolean mDisableNextCycle;
 
     /**
      * Stack size is used to keep track of stack size even when disabled, calling `EndCycle` is
      * important when disabled or not to update the disabled state in a safe manner.
      */
-    int mStackSize = 0;
+    private int mStackSize;
 
     // the garbage collector beans
     private final List<GarbageCollectorMXBean> mGcs =
         new ArrayList<>(ManagementFactory.getGarbageCollectorMXBeans());
     private final DoublePublisher mGcTimeEntry;
-    private double mGcTimeThisCycle = 0.0;
+    private double mGcTimeThisCycle;
 
     private TracerState(String name, boolean threadLocalConstruction) {
       if (SINGLE_THREADED_MODE.get() && threadLocalConstruction) {
