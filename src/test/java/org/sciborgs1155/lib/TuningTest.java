@@ -1,6 +1,7 @@
 package org.sciborgs1155.lib;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.sciborgs1155.lib.UnitTestingUtil.setupTests;
 
 import edu.wpi.first.networktables.BooleanEntry;
@@ -8,32 +9,28 @@ import edu.wpi.first.networktables.DoubleEntry;
 import edu.wpi.first.networktables.IntegerEntry;
 import edu.wpi.first.networktables.StringEntry;
 import java.util.ArrayList;
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-public class TuningTest {
+final class TuningTest {
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     setupTests();
   }
 
   @Test
   void fullEntryTest() {
-    DoubleEntry dbleEnt;
-    IntegerEntry intEnt;
-    StringEntry strEnt;
-    BooleanEntry boolEnt;
-
     double dbleVal = 2.0;
     long intVal = 7823; // IntgerTopic.getEntry() accepts longs for default values
     String strVal = "Hello, World! <3";
     boolean boolVal = true;
 
-    dbleEnt = Tuning.entry("/Robot/a", dbleVal);
-    intEnt = Tuning.entry("/Robot/b", intVal);
-    strEnt = Tuning.entry("/Robot/c", strVal);
-    boolEnt = Tuning.entry("/Robot/d", boolVal);
+    DoubleEntry dbleEnt = Tuning.entry("/Robot/a", dbleVal);
+    IntegerEntry intEnt = Tuning.entry("/Robot/b", intVal);
+    StringEntry strEnt = Tuning.entry("/Robot/c", strVal);
+    BooleanEntry boolEnt = Tuning.entry("/Robot/d", boolVal);
 
     assertEquals(dbleVal, dbleEnt.get());
     assertEquals(intVal, intEnt.get());
@@ -48,21 +45,21 @@ public class TuningTest {
     assertEquals(1155.2265, dbleEnt.get());
     assertEquals(2612668, intEnt.get());
     assertEquals("como estas", strEnt.get());
-    assertEquals(false, boolEnt.get());
+    assertFalse(boolEnt.get());
 
-    ArrayList<Double> doubleList = new ArrayList<>();
+    List<Double> doubleList = new ArrayList<>();
     doubleList.add(dbleVal);
     doubleList.add(1155.2265);
 
-    ArrayList<Long> intList = new ArrayList<>();
+    List<Long> intList = new ArrayList<>();
     intList.add(intVal);
     intList.add((long) 2612668);
 
-    ArrayList<String> strList = new ArrayList<>();
+    List<String> strList = new ArrayList<>();
     strList.add(strVal);
     strList.add("como estas");
 
-    ArrayList<Boolean> boolList = new ArrayList<>();
+    List<Boolean> boolList = new ArrayList<>();
     boolList.add(boolVal);
     boolList.add(false);
 

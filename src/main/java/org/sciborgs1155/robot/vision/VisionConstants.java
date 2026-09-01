@@ -17,6 +17,7 @@ import org.sciborgs1155.robot.FieldConstants;
 import org.sciborgs1155.robot.vision.Vision.CameraConfig;
 
 public final class VisionConstants {
+
   public static final AprilTagFieldLayout TAG_LAYOUT = FieldConstants.FIELD_LAYOUT;
 
   // The PoseStrategy in multitag mode when only one tag is seen. Do NOT use MULTI_TAG_PNP varients.
@@ -63,6 +64,9 @@ public final class VisionConstants {
   };
 
   public static final Set<Integer> UNREPUTABLE_TAGS = Set.of();
+
+  // Prevents instantiation
+  private VisionConstants() {}
 
   /**
    * Returns a {@link Rotation3d} that represents a camera rotation, given the yaw, pitch, and roll.

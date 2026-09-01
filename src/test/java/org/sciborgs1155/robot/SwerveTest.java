@@ -3,7 +3,6 @@ package org.sciborgs1155.robot;
 import static edu.wpi.first.units.Units.Meters;
 import static edu.wpi.first.units.Units.Seconds;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 import static org.sciborgs1155.lib.UnitTestingUtil.*;
 
 import edu.wpi.first.math.geometry.Pose2d;
@@ -23,42 +22,38 @@ import org.sciborgs1155.robot.drive.NoGyro;
 import org.sciborgs1155.robot.drive.SimModule;
 
 /** Swerve test. Currently incomplete and does nothing. */
-public class SwerveTest {
-  SimModule frontLeft;
-  SimModule frontRight;
-  SimModule rearLeft;
-  SimModule rearRight;
-  NoGyro gyro;
-  Drive drive;
+class SwerveTest {
 
-  final double DELTA = 0.15;
+  private static final double DELTA = 0.15;
+
+  private Drive drive;
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     setupTests();
-    frontLeft = new SimModule("FL");
-    frontRight = new SimModule("FR");
-    rearLeft = new SimModule("RL");
-    rearRight = new SimModule("RR");
-    gyro = new NoGyro();
+    SimModule frontLeft = new SimModule("FL");
+    SimModule frontRight = new SimModule("FR");
+    SimModule rearLeft = new SimModule("RL");
+    SimModule rearRight = new SimModule("RR");
+    NoGyro gyro = new NoGyro();
     drive = new Drive(gyro, frontLeft, frontRight, rearLeft, rearRight);
   }
 
   @AfterEach
-  public void destroy() throws Exception {
+  void destroy() throws Exception {
     reset(drive);
   }
 
   @Disabled
   @Test
-  public void systemCheck() {
+  void systemCheck() {
     runToCompletion(drive.systemsCheck());
   }
 
   @RepeatedTest(5)
-  public void reachesRobotVelocity() {
-    double xVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
-    double yVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
+  void reachesRobotVelocity() {
+    double xVelocitySetpoint = Math.random() * 2 * 2.265 - 2.265;
+    double yVelocitySetpoint = Math.random() * 2 * 2.265 - 2.265;
 
     run(drive.drive(() -> xVelocitySetpoint, () -> yVelocitySetpoint, () -> Rotation2d.kZero));
     fastForward(500);
@@ -70,7 +65,7 @@ public class SwerveTest {
   }
 
   @RepeatedTest(5)
-  public void reachesAngularVelocity() {
+  void reachesAngularVelocity() {
     double omegaRadiansPerSecond = Math.random() * 2 - 1;
     run(
         drive.run(
@@ -85,12 +80,12 @@ public class SwerveTest {
   }
 
   @RepeatedTest(value = 5, failureThreshold = 1)
-  public void testModuleDistance() throws Exception {
+  void testModuleDistance() throws Exception {
     assertEquals(0, drive.pose().getX());
     assertEquals(0, drive.pose().getY());
     assertEquals(0, drive.pose().getRotation().getRadians());
-    double xVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
-    double yVelocitySetpoint = Math.random() * (2 * 2.265) - 2.265;
+    double xVelocitySetpoint = Math.random() * 2 * 2.265 - 2.265;
+    double yVelocitySetpoint = Math.random() * 2 * 2.265 - 2.265;
 
     double deltaT = 4;
     double deltaX = xVelocitySetpoint * deltaT;
@@ -122,7 +117,7 @@ public class SwerveTest {
 
   @Disabled
   @RepeatedTest(20)
-  public void assistedDrivingTest() {
+  void assistedDrivingTest() {
     Pose2d target =
         // new Pose2d(
         //     Math.random() * 10 + 2,
@@ -132,7 +127,7 @@ public class SwerveTest {
 
     Rotation2d offset = Rotation2d.fromRadians(/*Math.random() * 0.2 - 0.1*/ -0.05);
     Translation2d input =
-        (target.getTranslation().rotateBy(offset)).div(target.getTranslation().getNorm());
+        target.getTranslation().rotateBy(offset).div(target.getTranslation().getNorm());
 
     runToCompletion(
         drive
@@ -154,7 +149,7 @@ public class SwerveTest {
     System.out.println(velocities.getAngle());
     System.out.println(input.getAngle());
 
-    assertTrue(offset.getSin() > 0 == velocities.getAngle().minus(input.getAngle()).getSin() > 0);
+    assertEquals(offset.getSin() > 0, velocities.getAngle().minus(input.getAngle()).getSin() > 0);
 
     assertEquals(drive.pose().getRotation().getSin(), target.getRotation().getSin(), 0.05);
   }

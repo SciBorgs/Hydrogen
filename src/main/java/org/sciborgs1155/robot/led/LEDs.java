@@ -12,10 +12,12 @@ import java.util.function.DoubleSupplier;
 public class LEDs implements AutoCloseable {
   public final LEDStrip tempStrip;
 
+  /** Creates a new `LEDs` object with an `LEDStrip` */
   public LEDs(LEDStrip strip) {
     this.tempStrip = strip;
   }
 
+  /** Creates a new `LEDs` object with an `LEDStrip` */
   public static LEDs create() {
     LEDStrip tempLED = new LEDStrip(0, LED_LENGTH - 1, false);
     return new LEDs(tempLED);

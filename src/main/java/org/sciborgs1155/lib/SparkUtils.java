@@ -27,6 +27,9 @@ public final class SparkUtils {
 
   private static final List<Runnable> RUNNABLES = new ArrayList<>();
 
+  // Prevent instantiation
+  private SparkUtils() {}
+
   /**
    * Adds a checker runnable to the list of checkers.
    *
@@ -56,7 +59,7 @@ public final class SparkUtils {
   }
 
   /** Represents a type of sensor that can be plugged into the spark */
-  public static enum Sensor {
+  public enum Sensor {
     INTEGRATED,
     ANALOG,
     ALTERNATE,
@@ -64,7 +67,7 @@ public final class SparkUtils {
   }
 
   /** Represents a type of data that can be sent from the spark */
-  public static enum Data {
+  public enum Data {
     POSITION,
     VELOCITY,
     CURRENT,

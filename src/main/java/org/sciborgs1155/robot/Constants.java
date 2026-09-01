@@ -21,37 +21,13 @@ import org.sciborgs1155.robot.drive.DriveConstants;
  *
  * @see Units
  */
-public class Constants {
-  // TODO: Modify as needed.
-  /** Returns the robot's alliance. */
-  public static Alliance alliance() {
-    return DriverStation.getAlliance().orElse(Alliance.Blue);
-  }
-
-  /** Returns the rotation of the robot's alliance with respect to the origin. */
-  public static Rotation2d allianceRotation() {
-    return Rotation2d.fromRotations(alliance() == Alliance.Blue ? 0 : 0.5);
-  }
-
-  /** Defines the various types the robot can be. Useful for only using select subsystems. */
-  public static enum RobotType {
-    FULL,
-    CHASSIS,
-    NONE
-  }
+public final class Constants {
 
   /** The current robot state, as in the type. Remember to update! */
-  public static RobotType ROBOT_TYPE = RobotType.FULL;
+  public static final RobotType ROBOT_TYPE = RobotType.FULL;
 
   /** States if we are in tuning mode. Ideally, keep it at false when not used. */
-  public static boolean TUNING = false;
-
-  // TODO: UPDATE ALL OF THESE VALUES.
-  /** Describes physical properites of the robot. */
-  public static class Robot {
-    public static final Mass MASS = Kilograms.of(25);
-    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
-  }
+  public static final boolean TUNING = false;
 
   public static final Time PERIOD = Seconds.of(0.02); // roborio tickrate (s)
   public static final Time ODOMETRY_PERIOD = Seconds.of(1.0 / 100.0); // 10 ms (speedy!)
@@ -64,4 +40,32 @@ public class Constants {
 
   // The name of seperate canivore, set to rio if no seperate canivore
   public static final CANBus DRIVE_CANIVORE = new CANBus("drivetrain");
+
+  // Prevents instantiation
+  private Constants() {}
+
+  // TODO: Modify as needed.
+  /** Returns the robot's alliance. */
+  public static Alliance alliance() {
+    return DriverStation.getAlliance().orElse(Alliance.Blue);
+  }
+
+  /** Returns the rotation of the robot's alliance with respect to the origin. */
+  public static Rotation2d allianceRotation() {
+    return Rotation2d.fromRotations(alliance() == Alliance.Blue ? 0 : 0.5);
+  }
+
+  /** Defines the various types the robot can be. Useful for only using select subsystems. */
+  public enum RobotType {
+    FULL,
+    CHASSIS,
+    NONE
+  }
+
+  // TODO: UPDATE ALL OF THESE VALUES.
+  /** Describes physical properites of the robot. */
+  public static class Robot {
+    public static final Mass MASS = Kilograms.of(25);
+    public static final MomentOfInertia MOI = KilogramSquareMeters.of(0.2);
+  }
 }

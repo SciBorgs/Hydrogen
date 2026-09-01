@@ -64,6 +64,7 @@ public class SparkModule implements ModuleIO {
 
   private final String name;
 
+  /** Creates a new `SparkModule` */
   public SparkModule(
       int drivePort,
       int turnPort,
@@ -287,17 +288,17 @@ public class SparkModule implements ModuleIO {
   public double[][] moduleOdometryData() {
     Drive.LOCK.lock();
     try {
-      double[][] data = {
+      return new double[][] {
         position.stream().mapToDouble((Double d) -> d).toArray(),
         rotation.stream().mapToDouble((Double d) -> d).toArray(),
         timestamp.stream().mapToDouble((Double d) -> d).toArray()
       };
-      return data;
     } finally {
       Drive.LOCK.unlock();
     }
   }
 
+  @Override
   public SwerveModulePosition[] odometryData() {
     SwerveModulePosition[] positions = new SwerveModulePosition[20];
     Drive.LOCK.lock();
@@ -316,6 +317,7 @@ public class SparkModule implements ModuleIO {
     return positions;
   }
 
+  @Override
   public double[] timestamps() {
     return moduleOdometryData()[2];
   }

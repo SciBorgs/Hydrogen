@@ -17,7 +17,7 @@ import edu.wpi.first.math.util.Units;
 import edu.wpi.first.units.measure.Distance;
 import edu.wpi.first.wpilibj.DriverStation.Alliance;
 
-public class FieldConstants {
+public final class FieldConstants {
   // Origin at corner of blue alliance side of field
 
   // AprilTag related constants
@@ -30,12 +30,15 @@ public class FieldConstants {
   public static final Distance LENGTH = Meters.of(FIELD_LAYOUT.getFieldLength());
   public static final Distance WIDTH = Meters.of(FIELD_LAYOUT.getFieldWidth());
 
+  // Prevents instantiation
+  private FieldConstants() {}
+
   /** Returns whether the provided position is within the boundaries of the field. */
   public static boolean inField(Pose3d pose) {
-    return (pose.getX() > 0
+    return pose.getX() > 0
         && pose.getX() < LENGTH.in(Meters)
         && pose.getY() > 0
-        && pose.getY() < WIDTH.in(Meters));
+        && pose.getY() < WIDTH.in(Meters);
   }
 
   /**
@@ -59,14 +62,12 @@ public class FieldConstants {
    * @return The reflected pose.
    */
   public static Pose2d allianceReflect(Pose2d pose) {
-    return Constants.alliance() == Alliance.Blue
+    return alliance() == Alliance.Blue
         ? pose
         : new Pose2d(
             pose.getTranslation()
                 .rotateAround(
-                    new Translation2d(
-                        FieldConstants.LENGTH.in(Meters) / 2.0,
-                        FieldConstants.WIDTH.in(Meters) / 2.0),
+                    new Translation2d(LENGTH.in(Meters) / 2.0, WIDTH.in(Meters) / 2.0),
                     Rotation2d.k180deg),
             pose.getRotation().plus(Rotation2d.k180deg));
   }
@@ -82,6 +83,7 @@ public class FieldConstants {
     return alliance() == Alliance.Blue ? blueDist : WIDTH.minus(blueDist);
   }
 
+  /** Determines which alliance the robot is on based on its pose */
   public static Alliance allianceFromPose(Pose2d pose) {
     return pose.getX() > LENGTH.in(Meters) / 2.0 ? Alliance.Red : Alliance.Blue;
   }

@@ -13,16 +13,16 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 
-public class FaultLoggerTest {
+final class FaultLoggerTest {
 
   @BeforeAll
-  public static void reset() {
+  static void reset() {
     FaultLogger.clear();
     FaultLogger.unregisterAll();
   }
 
   @BeforeEach
-  public void setup() {
+  void setup() {
     setupTests();
   }
 

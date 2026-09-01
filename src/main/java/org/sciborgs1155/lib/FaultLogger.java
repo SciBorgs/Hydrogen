@@ -40,6 +40,7 @@ import org.sciborgs1155.robot.Ports;
  * </pre>
  */
 public final class FaultLogger {
+
   // DATA
   private static final List<Supplier<Optional<Fault>>> FAULT_REPORTERS = new ArrayList<>();
   private static final Set<Fault> ACTIVE_FAULTS = new HashSet<>();
@@ -49,9 +50,13 @@ public final class FaultLogger {
   private static final NetworkTable BASE = NetworkTableInstance.getDefault().getTable("Faults");
   private static final Alerts ACTIVE_ALERTS = new Alerts(BASE, "Active Faults");
   private static final Alerts TOTAL_ALERTS = new Alerts(BASE, "Total Faults");
+  private static final String DISCONNECTED_DESCRIPTION = "disconnected";
+
+  // Prevents instantiation
+  private FaultLogger() {}
 
   /** An individual fault, containing necessary information. */
-  public static record Fault(String name, String description, FaultType type) {
+  public record Fault(String name, String description, FaultType type) {
     @Override
     public String toString() {
       return name + ": " + description;
@@ -62,7 +67,7 @@ public final class FaultLogger {
    * The type of fault, used for detecting whether the fallible is in a failure state and displaying
    * to NetworkTables.
    */
-  public static enum FaultType {
+  public enum FaultType {
     INFO,
     WARNING,
     ERROR,
@@ -299,7 +304,7 @@ public final class FaultLogger {
     register(
         () -> !encoder.isConnected(),
         "Duty Cycle Encoder [" + encoder.getSourceChannel() + "]",
-        "disconnected",
+        DISCONNECTED_DESCRIPTION,
         FaultType.ERROR);
   }
 
@@ -309,7 +314,7 @@ public final class FaultLogger {
    * @param ahrs The NavX to manage.
    */
   public static void register(AHRS ahrs) {
-    register(() -> !ahrs.isConnected(), "NavX", "disconnected", FaultType.ERROR);
+    register(() -> !ahrs.isConnected(), "NavX", DISCONNECTED_DESCRIPTION, FaultType.ERROR);
   }
 
   /**
@@ -318,46 +323,42 @@ public final class FaultLogger {
    * @param canandgyro The Redux Boron CANandGyro to manage.
    */
   public static void register(Canandgyro canandgyro) {
-    register(() -> !canandgyro.isConnected(), "CANandGyro", "disconnected", FaultType.ERROR);
+    final String name = "CANandGyro";
+    register(() -> !canandgyro.isConnected(), name, DISCONNECTED_DESCRIPTION, FaultType.ERROR);
     register(
         () -> canandgyro.getActiveFaults().accelerationSaturation(),
-        "CANandGyro",
+        name,
         "acceleration saturated",
         FaultType.WARNING);
     register(
         () -> canandgyro.getActiveFaults().angularVelocitySaturation(),
-        "CANandGyro",
+        name,
         "angular velocity saturated",
         FaultType.WARNING);
     register(
-        () -> canandgyro.getActiveFaults().calibrating(),
-        "CANandGyro",
-        "calibrating",
-        FaultType.WARNING);
+        () -> canandgyro.getActiveFaults().calibrating(), name, "calibrating", FaultType.WARNING);
     register(
         () -> canandgyro.getActiveFaults().canGeneralError(),
-        "CANandGyro",
+        name,
         "general CAN error",
         FaultType.ERROR);
     register(
         () -> canandgyro.getActiveFaults().canIDConflict(),
-        "CANandGyro",
+        name,
         "CAN ID conflict",
         FaultType.ERROR);
     register(
         () -> canandgyro.getActiveFaults().outOfTemperatureRange(),
-        "CANandGyro",
+        name,
         "temperature error",
         FaultType.ERROR);
     register(
-        () -> canandgyro.getActiveFaults().powerCycle(),
-        "CANandGyro",
-        "power cycling",
-        FaultType.WARNING);
+        () -> canandgyro.getActiveFaults().powerCycle(), name, "power cycling", FaultType.WARNING);
   }
 
+  /** Register Pidgeon */
   public static void register(Pigeon2 pigeon2) {
-    register(() -> !pigeon2.isConnected(), "Pigeon2", "disconnected", FaultType.ERROR);
+    register(() -> !pigeon2.isConnected(), "Pigeon2", DISCONNECTED_DESCRIPTION, FaultType.ERROR);
     register(
         () -> pigeon2.getFault_Hardware().getValue(), "Pigeon2", "hardware fault", FaultType.ERROR);
   }
@@ -377,7 +378,7 @@ public final class FaultLogger {
                 return Optional.of(
                     new Fault("Power Distribution", fault.getName(), FaultType.ERROR));
               }
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
             return Optional.empty();
           });
@@ -393,7 +394,7 @@ public final class FaultLogger {
     register(
         () -> !camera.isConnected(),
         "Photon Camera [" + camera.getName() + "]",
-        "disconnected",
+        DISCONNECTED_DESCRIPTION,
         FaultType.ERROR);
   }
 
@@ -404,24 +405,25 @@ public final class FaultLogger {
    */
   public static void register(CANcoder cancoder) {
     String nickname = Ports.ID_TO_NAME.get(cancoder.getDeviceID());
+    String name = "CANcoder " + nickname;
     register(
         () -> cancoder.getFault_BadMagnet().getValue(),
-        "CANcoder " + nickname,
+        name,
         "The magnet distance is not correct or magnet is missing.",
         FaultType.ERROR);
     register(
         () -> cancoder.getFault_BootDuringEnable().getValue(),
-        "CANcoder " + nickname,
+        name,
         "Device boot while detecting the enable signal.",
         FaultType.WARNING);
     register(
         () -> cancoder.getFault_Hardware().getValue(),
-        "CANcoder " + nickname,
+        name,
         "Hardware fault occurred.",
         FaultType.WARNING);
     register(
         () -> cancoder.getFault_Undervoltage().getValue(),
-        "CANcoder " + nickname,
+        name,
         "Device supply voltage dropped to near brownout levels.",
         FaultType.WARNING);
   }
@@ -435,7 +437,7 @@ public final class FaultLogger {
     register(
         () -> !talon.isConnected(),
         "Talon " + Ports.ID_TO_NAME.get(talon.getDeviceID()),
-        "disconnected",
+        DISCONNECTED_DESCRIPTION,
         FaultType.ERROR);
 
     BiConsumer<StatusSignal<Boolean>, String> regFault =

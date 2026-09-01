@@ -23,6 +23,7 @@ public class PigeonGyro implements GyroIO {
   private double lastAngularVelocity;
   private double alpha;
 
+  /** Creates a new `PigeonGyro` */
   public PigeonGyro() {
     FaultLogger.register(gyro);
 

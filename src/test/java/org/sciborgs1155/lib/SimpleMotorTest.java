@@ -10,9 +10,9 @@ import edu.wpi.first.wpilibj.simulation.DCMotorSim;
 import edu.wpi.first.wpilibj2.command.Commands;
 import org.junit.jupiter.api.Test;
 
-public class SimpleMotorTest {
+final class SimpleMotorTest {
   @Test
-  public void test() throws Exception {
+  void test() throws Exception {
     setupTests();
     DCMotorSim motor =
         new DCMotorSim(LinearSystemId.createDCMotorSystem(1, 0.3), DCMotor.getKrakenX60(1));

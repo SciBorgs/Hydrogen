@@ -21,7 +21,7 @@ public interface InputStream extends DoubleSupplier {
    * @param base The base stream.
    * @return A new input stream.
    */
-  public static InputStream of(DoubleSupplier base) {
+  static InputStream of(DoubleSupplier base) {
     return base::getAsDouble;
   }
 
@@ -32,7 +32,7 @@ public interface InputStream extends DoubleSupplier {
    * @param y The y component stream.
    * @return A new input stream.
    */
-  public static InputStream hypot(InputStream x, InputStream y) {
+  static InputStream hypot(InputStream x, InputStream y) {
     return () -> Math.hypot(x.get(), y.get());
   }
 
@@ -43,7 +43,7 @@ public interface InputStream extends DoubleSupplier {
    * @param y The y component stream.
    * @return A new input stream.
    */
-  public static InputStream atan(InputStream x, InputStream y) {
+  static InputStream atan(InputStream x, InputStream y) {
     return () -> Math.atan2(y.get(), x.get());
   }
 
@@ -52,7 +52,7 @@ public interface InputStream extends DoubleSupplier {
    *
    * @return The value from {@link #getAsDouble()}.
    */
-  public default double get() {
+  default double get() {
     return getAsDouble();
   }
 
@@ -62,7 +62,7 @@ public interface InputStream extends DoubleSupplier {
    * @param operator A function that takes in a double input and returns a double output.
    * @return A mapped stream.
    */
-  public default InputStream map(DoubleUnaryOperator operator) {
+  default InputStream map(DoubleUnaryOperator operator) {
     return () -> operator.applyAsDouble(getAsDouble());
   }
 
@@ -72,7 +72,7 @@ public interface InputStream extends DoubleSupplier {
    * @param factor A supplier of scaling factors.
    * @return A scaled stream.
    */
-  public default InputStream scale(DoubleSupplier factor) {
+  default InputStream scale(DoubleSupplier factor) {
     return map(x -> x * factor.getAsDouble());
   }
 
@@ -82,7 +82,7 @@ public interface InputStream extends DoubleSupplier {
    * @param factor A scaling factor.
    * @return A scaled stream.
    */
-  public default InputStream scale(double factor) {
+  default InputStream scale(double factor) {
     return scale(() -> factor);
   }
 
@@ -91,7 +91,7 @@ public interface InputStream extends DoubleSupplier {
    *
    * @return A stream scaled by -1.
    */
-  public default InputStream negate() {
+  default InputStream negate() {
     return scale(-1);
   }
 
@@ -101,7 +101,7 @@ public interface InputStream extends DoubleSupplier {
    * @param offset A supplier of offset values.
    * @return An offset stream.
    */
-  public default InputStream add(DoubleSupplier offset) {
+  default InputStream add(DoubleSupplier offset) {
     return map(x -> x + offset.getAsDouble());
   }
 
@@ -111,7 +111,7 @@ public interface InputStream extends DoubleSupplier {
    * @param offset An offset.
    * @return An offset stream.
    */
-  public default InputStream add(double offset) {
+  default InputStream add(double offset) {
     return add(() -> offset);
   }
 
@@ -121,7 +121,7 @@ public interface InputStream extends DoubleSupplier {
    * @param exponent The exponent to raise them to.
    * @return An exponentiated stream.
    */
-  public default InputStream pow(double exponent) {
+  default InputStream pow(double exponent) {
     return map(x -> Math.pow(x, exponent));
   }
 
@@ -131,7 +131,7 @@ public interface InputStream extends DoubleSupplier {
    * @param exponent The exponent to raise them to.
    * @return An exponentiated stream.
    */
-  public default InputStream signedPow(double exponent) {
+  default InputStream signedPow(double exponent) {
     return map(x -> Math.copySign(Math.pow(x, exponent), x));
   }
 
@@ -141,7 +141,7 @@ public interface InputStream extends DoubleSupplier {
    * @param filter The linear filter to use.
    * @return A filtered stream.
    */
-  public default InputStream filter(LinearFilter filter) {
+  default InputStream filter(LinearFilter filter) {
     return map(filter::calculate);
   }
 
@@ -152,7 +152,7 @@ public interface InputStream extends DoubleSupplier {
    * @param max The maximum value to scale with.
    * @return A deadbanded stream.
    */
-  public default InputStream deadband(double deadband, double max) {
+  default InputStream deadband(double deadband, double max) {
     return map(x -> MathUtil.applyDeadband(x, deadband, max));
   }
 
@@ -162,7 +162,7 @@ public interface InputStream extends DoubleSupplier {
    * @param magnitude The upper bound to clamp with.
    * @return A clamped stream.
    */
-  public default InputStream clamp(double magnitude) {
+  default InputStream clamp(double magnitude) {
     return map(x -> MathUtil.clamp(x, -magnitude, magnitude));
   }
 
@@ -172,7 +172,7 @@ public interface InputStream extends DoubleSupplier {
    * @param rate The rate in units / s.
    * @return A rate limited stream.
    */
-  public default InputStream rateLimit(double rate) {
+  default InputStream rateLimit(double rate) {
     var limiter = new SlewRateLimiter(rate, -rate, get());
     return map(x -> limiter.calculate(x));
   }
@@ -186,7 +186,7 @@ public interface InputStream extends DoubleSupplier {
    * @param key The NetworkTables key to publish to.
    * @return A stream with the same output as this one.
    */
-  public default InputStream log(String key) {
+  default InputStream log(String key) {
     DoublePublisher pub = NetworkTableInstance.getDefault().getDoubleTopic(key).publish();
     return () -> {
       double val = this.get();
