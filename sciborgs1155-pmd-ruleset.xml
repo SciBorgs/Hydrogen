@@ -15,7 +15,6 @@
 
   <rule ref="category/java/bestpractices.xml">
     <exclude name="AvoidPrintStackTrace" /> <!-- Violated a lot. Should probably fix with better logging -->
-    <exclude name="JUnit5TestShouldBePackagePrivate" /> <!-- Violated a lot but this isn't a big deal -->
     <exclude name="SystemPrintln" /> <!-- We currently use print statements for logging instead of loggers. We
       should change this. -->
     <exclude name="UnitTestAssertionsShouldIncludeMessage" /> <!-- Not our current style, but maybe it should -->

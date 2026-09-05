@@ -19,19 +19,19 @@ import org.junit.jupiter.params.provider.ValueSource;
 import org.sciborgs1155.lib.FaultLogger.Fault;
 import org.sciborgs1155.lib.FaultLogger.FaultType;
 
-public class TestingUtilTest {
+class TestingUtilTest {
   int x;
 
   /** Sets up the test environment and initializes x to 0 before each test. */
   @BeforeEach
-  public void setup() {
+  void setup() {
     setupTests();
     x = 0;
   }
 
   /** Resets the test environment and x to 0 after each test. */
   @AfterEach
-  public void clear() throws Exception {
+  void clear() throws Exception {
     reset();
     x = 0;
   }
@@ -46,7 +46,7 @@ public class TestingUtilTest {
 
   /** Tests that the driver station is enabled during tests. */
   @org.junit.jupiter.api.Test
-  public void enabled() {
+  void enabled() {
     assertTrue(DriverStation.isEnabled());
   }
 
@@ -57,7 +57,7 @@ public class TestingUtilTest {
    */
   @ParameterizedTest
   @ValueSource(doubles = {0.4, 2, 3.2, 4.03})
-  public void runToCompletionTest(double timeout) {
+  void runToCompletionTest(double timeout) {
     Command c = Commands.run(() -> {}).withTimeout(timeout);
     double startTime = Timer.getFPGATimestamp();
     runToCompletion(c);
@@ -71,7 +71,7 @@ public class TestingUtilTest {
    * @param warningCount Expected number of warning faults.
    * @param errorCount Expected number of error faults.
    */
-  public void assertFaultCount(int infoCount, int warningCount, int errorCount) {
+  void assertFaultCount(int infoCount, int warningCount, int errorCount) {
     FaultLogger.update();
     Set<Fault> faults = FaultLogger.totalFaults();
     Set<Fault> infos =

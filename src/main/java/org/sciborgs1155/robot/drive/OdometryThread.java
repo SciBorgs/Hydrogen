@@ -20,7 +20,7 @@ import java.util.function.DoubleSupplier;
  *
  * <p>Inspired by 6328's PhoenixOdometryThread.
  */
-public class OdometryThread extends Thread {
+public class OdometryThread implements Runnable {
   private BaseStatusSignal[] talonSignals = new BaseStatusSignal[0];
   private final List<Queue<Double>> talonQueues = new ArrayList<>();
   private final List<DoubleSupplier> otherSignals = new ArrayList<>();
@@ -30,6 +30,8 @@ public class OdometryThread extends Thread {
   private static boolean isCANFD = DRIVE_CANIVORE.isNetworkFD();
   private static OdometryThread instance;
 
+  private Thread thread;
+
   public static synchronized OdometryThread getInstance() {
     if (instance == null) {
       instance = new OdometryThread();
@@ -37,10 +39,12 @@ public class OdometryThread extends Thread {
     return instance;
   }
 
-  @Override
+  /** Starts the odometry thread. */
   public synchronized void start() {
-    if (!timestampQueues.isEmpty()) {
-      super.start();
+    if (!timestampQueues.isEmpty() && thread == null) {
+      thread = new Thread(this, "OdometryThread");
+      thread.setDaemon(true);
+      thread.start();
     }
   }
 
@@ -106,7 +110,7 @@ public class OdometryThread extends Thread {
         if (isCANFD && talonSignals.length > 0) {
           BaseStatusSignal.waitForAll(2.0 * ODOMETRY_PERIOD.in(Seconds), talonSignals);
         } else {
-          sleep(Math.round(ODOMETRY_PERIOD.in(Milliseconds)));
+          Thread.sleep(Math.round(ODOMETRY_PERIOD.in(Milliseconds)));
           if (talonSignals.length > 0) BaseStatusSignal.refreshAll(talonSignals);
         }
       } catch (Exception e) {

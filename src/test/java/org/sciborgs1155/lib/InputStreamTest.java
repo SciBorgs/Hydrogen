@@ -7,7 +7,7 @@ import static org.sciborgs1155.lib.InputStream.*;
 import edu.wpi.first.math.MathSharedStore;
 import org.junit.jupiter.api.Test;
 
-public class InputStreamTest {
+class InputStreamTest {
 
   private InputStream stream(double n) {
     return of(() -> n);
