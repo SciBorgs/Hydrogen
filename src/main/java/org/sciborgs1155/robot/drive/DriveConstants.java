@@ -105,11 +105,15 @@ public final class DriveConstants {
     // The input of the joystick beyond which the assisted driving will not control the rotation of
     // the swerve.
     public static final double ROTATING_THRESHOLD = 0.02;
+
+    private Assisted() {}
   }
 
   public static final class Skid {
     // TODO: find a value (3 is currently random, should change)
     public static final LinearVelocity THRESHOLD = MetersPerSecond.of(3);
+
+    private Skid() {}
   }
 
   // TODO: Change ALL characterization constants for each unique robot as needed.
@@ -119,6 +123,8 @@ public final class DriveConstants {
     public static final double D = 0.05;
 
     public static final Distance TOLERANCE = Centimeters.of(1);
+
+    private Translation() {}
   }
 
   public static final class Rotation {
@@ -127,10 +133,14 @@ public final class DriveConstants {
     public static final double D = 0.05;
 
     public static final Angle TOLERANCE = Degrees.of(2);
+
+    private Rotation() {}
   }
 
   public static final class ModuleConstants {
     public static final double COUPLING_RATIO = 0;
+
+    private ModuleConstants() {}
 
     public static final class Driving {
       public static final Distance CIRCUMFERENCE = WHEEL_RADIUS.times(2 * PI);
@@ -158,7 +168,11 @@ public final class DriveConstants {
         public static final double P = 3.2;
         public static final double I = 0.0;
         public static final double D = 0.0;
+
+        private PID() {}
       }
+
+      private Driving() {}
     }
 
     public static final class Turning {
@@ -198,6 +212,10 @@ public final class DriveConstants {
           List.of(FRONT_LEFT_FF, FRONT_RIGHT_FF, REAR_LEFT_FF, REAR_RIGHT_FF);
 
       public static final FFConstants SIM = new FFConstants(0.30817, 0.55, 0.03);
+
+      private Turning() {}
     }
   }
+
+  private DriveConstants() {}
 }
