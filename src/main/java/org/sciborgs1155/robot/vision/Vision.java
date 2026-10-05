@@ -10,6 +10,7 @@ import edu.wpi.first.math.geometry.Pose2d;
 import edu.wpi.first.math.geometry.Pose3d;
 import edu.wpi.first.math.geometry.Rotation2d;
 import edu.wpi.first.math.geometry.Transform3d;
+import edu.wpi.first.math.geometry.Translation2d;
 import edu.wpi.first.math.numbers.N1;
 import edu.wpi.first.math.numbers.N3;
 import edu.wpi.first.wpilibj.Timer;
@@ -98,11 +99,11 @@ public class Vision {
 
       for (int i = 0; i < cameras.length; i++) {
         var prop = new SimCameraProperties();
-        prop.setCalibration(WIDTH, HEIGHT, Rotation2d.fromDegrees(configs[i].FOV));
-        prop.setCalibError(0.15, 0.05);
-        prop.setFPS(45);
-        prop.setAvgLatencyMs(12);
-        prop.setLatencyStdDevMs(3.5);
+        prop.setCalibration(WIDTH, HEIGHT, Rotation2d.fromDegrees(configs[i].FOV))
+          .setCalibError(0.15, 0.05)
+          .setFPS(45)
+          .setAvgLatencyMs(12)
+          .setLatencyStdDevMs(3.5);
 
         PhotonCameraSim cameraSim = new PhotonCameraSim(cameras[i], prop);
         cameraSim.setMaxSightRange(5);
@@ -122,13 +123,12 @@ public class Vision {
    * @return An array of camera enabled states.
    */
   @Logged
-  public boolean[] logCamEnabled() {
-    boolean[] booleanArray = new boolean[camerasEnabled.values().size()];
-    int i = 0;
+  public Object[] logCamEnabled() {    
+    ArrayList <Boolean> booleanArrayList = new ArrayList<Boolean>();
     for (Boolean value : camerasEnabled.values()) {
-      booleanArray[i] = value != null && value;
-      i++;
+      booleanArrayList.add(value != null);
     }
+    Object[] booleanArray = booleanArrayList.toArray();
     return booleanArray;
   }
 
@@ -168,7 +168,7 @@ public class Vision {
           if (Objects.equals(cameras[i].getName(), "example camera")) {
             change.targets.forEach(
                 t -> {
-                  t.pitch = -t.pitch;
+                  t.pitch *= -1;
                 });
             change.multitagResult =
                 change.multitagResult.filter(
@@ -195,12 +195,8 @@ public class Vision {
                             && Math.abs(f.estimatedPose.getZ()) < MAX_HEIGHT
                             && Math.abs(f.estimatedPose.getRotation().getX()) < MAX_ANGLE
                             && Math.abs(f.estimatedPose.getRotation().getY()) < MAX_ANGLE;
-                    if (valid) {
-                      log("Robot/vision/valid poses/ " + name, f.estimatedPose, Pose3d.struct);
-                    } else {
-                      filteredEstimates.add(f.estimatedPose);
-                      log("Robot/vision/filtered poses/ " + name, f.estimatedPose, Pose3d.struct);
-                    }
+                    if (!valid)filteredEstimates.add(f.estimatedPose);
+                    log("Robot/vision/" + (valid ? "valid poses" : "filtered poses") + name, f.estimatedPose, Pose3d.struct);
                     return valid;
                   })
               .ifPresent(
@@ -303,18 +299,24 @@ public class Vision {
    */
   public Matrix<N3, N1> estimationStdDevs(
       Pose2d estimatedPose, PhotonPipelineResult pipelineResult) {
+
     var estStdDevs = SINGLE_TAG_STD_DEVS;
     var targets = pipelineResult.getTargets();
+
+    Translation2d estPose = estimatedPose.getTranslation();
+    
     double avgDist = 0;
     double avgWeight = 0;
+
     for (var tgt : targets) {
       var tagPose = TAG_LAYOUT.getTagPose(tgt.getFiducialId());
-      if (tagPose.isEmpty()) continue;
-      avgDist +=
-          tagPose.get().toPose2d().getTranslation().getDistance(estimatedPose.getTranslation());
-      avgWeight += TAG_WEIGHTS[tgt.getFiducialId() - 1];
+      if (tagPose.isPresent()){
+        avgDist +=
+            tagPose.get().toPose2d().getTranslation().getDistance(estPose);
+        avgWeight += TAG_WEIGHTS[tgt.getFiducialId() - 1];
+      }
+      else return estStdDevs;
     }
-    if (targets.isEmpty()) return estStdDevs;
 
     avgDist /= targets.size();
     avgWeight /= targets.size();
