@@ -1,45 +1,51 @@
 plugins {
     id "java"
-    id "edu.wpi.first.GradleRIO" version "2026.2.1"
+    id "application"
+    id "org.wpilib.GradleRIO" version "2027.0.0-alpha-7"
     id 'com.diffplug.spotless' version '6.24.0'
     id 'pmd' // Static analysis
 }
 
 java {
-    sourceCompatibility = JavaVersion.VERSION_17
-    targetCompatibility = JavaVersion.VERSION_17
+    sourceCompatibility = JavaVersion.VERSION_25
+    targetCompatibility = JavaVersion.VERSION_25
 }
 
 def ROBOT_MAIN_CLASS = "org.sciborgs1155.robot.Main"
 
-// Define my targets (RoboRIO) and artifacts (deployable files)
+// Define my targets (SystemCore) and artifacts (deployable files)
 // This is added by GradleRIO's backing project DeployUtils.
 deploy {
     targets {
-        roborio(getTargetTypeClass('RoboRIO')) {
+        systemcore(getTargetTypeClass('SystemCore')) {
             // Team number is loaded either from the .wpilib/wpilib_preferences.json
             // or from command line. If not found an exception will be thrown.
             // You can use getTeamOrDefault(team) instead of getTeamNumber if you
             // want to store a team number in this file.
-            team = project.frc.getTeamNumber()
-            debug = project.frc.getDebugOrDefault(false)
+            team = project.wpilib.getTeamNumber()
+            // Use the default systemcore host name. This must be called after setting team
+            // as happens on the line above
+            useDefaultSystemcoreHostName()
+            debug = project.wpilib.getDebugOrDefault(false)
 
             artifacts {
                 // First part is artifact name, 2nd is artifact type
                 // getTargetTypeClass is a shortcut to get the class type using a string
 
-                frcJava(getArtifactTypeClass('FRCJavaArtifact')) {
-
-                    jvmArgs.add("-XX:+UnlockExperimentalVMOptions")
-                    jvmArgs.add("-XX:GCTimeRatio=5")
-                    jvmArgs.add("-XX:+UseSerialGC")
-                    jvmArgs.add("-XX:MaxGCPauseMillis=50")
+                wpilibJava(getArtifactTypeClass('WPILibJavaArtifact')) {
+                    // Set to true to use debug including JNI, which will drastically impact performance.
+                    debugJni = false
+                    
+                    // jvmArgs.add("-XX:+UnlockExperimentalVMOptions")
+                    // jvmArgs.add("-XX:GCTimeRatio=5")
+                    // jvmArgs.add("-XX:+UseSerialGC")
+                    // jvmArgs.add("-XX:MaxGCPauseMillis=50")
 
                     // RIO 2 only
-                    final MAX_JAVA_HEAP_SIZE_MB = 100;
-                    jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
-                    jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
-                    jvmArgs.add("-XX:+AlwaysPreTouch")
+                    // final MAX_JAVA_HEAP_SIZE_MB = 100;
+                    // jvmArgs.add("-Xmx" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    // jvmArgs.add("-Xms" + MAX_JAVA_HEAP_SIZE_MB + "M")
+                    // jvmArgs.add("-XX:+AlwaysPreTouch")
 
                     // Enable VisualVM connection
                     // jvmArgs.add("-Dcom.sun.management.jmxremote=true")
@@ -51,21 +57,23 @@ deploy {
                 }
 
                 // Static files artifact
-                frcStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
+                wpilibStaticFileDeploy(getArtifactTypeClass('FileTreeArtifact')) {
                     files = project.fileTree('src/main/deploy')
-                    directory = '/home/lvuser/deploy'
-                    deleteOldFiles = true // Change to true to delete files on roboRIO that no
+                    directory = '/home/systemcore/deploy'
+                    
+                    // Change to true to delete files on systemcore that no
                     // longer exist in deploy directory of this project
+                    deleteOldFiles = true
                 }
             }
         }
     }
 }
 
-def deployArtifact = deploy.targets.roborio.artifacts.frcJava
+def deployArtifact = deploy.targets.systemcore.artifacts.wpilibJava
 
-// Set to true to use debug for JNI.
-wpi.java.debugJni = false
+// Set to true to use debug for simulation including JNI
+wpi.java.runSimWithDebugJni = false
 
 // Set this to true to enable desktop support.
 def includeDesktopSupport = true
@@ -81,11 +89,11 @@ dependencies {
     implementation wpi.java.deps.wpilib()
     implementation wpi.java.vendor.java()
 
-    roborioDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.roborio)
-    roborioDebug wpi.java.vendor.jniDebug(wpi.platforms.roborio)
+    systemcoreDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.systemcore)
+    systemcoreDebug wpi.java.vendor.jniDebug(wpi.platforms.systemcore)
 
-    roborioRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.roborio)
-    roborioRelease wpi.java.vendor.jniRelease(wpi.platforms.roborio)
+    systemcoreRelease wpi.java.deps.wpilibJniRelease(wpi.platforms.systemcore)
+    systemcoreRelease wpi.java.vendor.jniRelease(wpi.platforms.systemcore)
 
     nativeDebug wpi.java.deps.wpilibJniDebug(wpi.platforms.desktop)
     nativeDebug wpi.java.vendor.jniDebug(wpi.platforms.desktop)
@@ -95,14 +103,18 @@ dependencies {
     nativeRelease wpi.java.vendor.jniRelease(wpi.platforms.desktop)
     simulationRelease wpi.sim.enableRelease()
 
-    // Junit testing
-    testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
-    testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
-    testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
+    // to check (commented below)
+    // // Junit testing
+    // testImplementation 'org.junit.jupiter:junit-jupiter-api:5.11.4'
+    // testImplementation 'org.junit.jupiter:junit-jupiter-params:5.11.4'
+    // testRuntimeOnly 'org.junit.jupiter:junit-jupiter-engine:5.11.4'
 
-    // Gson
-    // Remove this once choreolib changes get upstreamed
-    implementation 'com.google.code.gson:gson:2.10.1'
+    // // Gson
+    // // Remove this once choreolib changes get upstreamed
+    // implementation 'com.google.code.gson:gson:2.10.1'
+
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 test {
@@ -114,24 +126,17 @@ test {
 wpi.sim.addGui().defaultEnabled = true
 wpi.sim.addDriverstation()
 
-// Setting up my Jar File. In this case, adding all libraries into the main jar ('fat jar')
-// in order to make them all available at runtime. Also adding the manifest so WPILib
-// knows where to look for our Robot Class.
-jar {
-    from {
-        configurations.runtimeClasspath.collect {
-            it.isDirectory() ? it : zipTree(it)
-        }
-    }
-    from sourceSets.main.allSource
-    manifest edu.wpi.first.gradlerio.GradleRIOPlugin.javaManifest(ROBOT_MAIN_CLASS)
-    duplicatesStrategy = DuplicatesStrategy.INCLUDE
-}
+application.mainClass = ROBOT_MAIN_CLASS
 
-// Configure jar and deploy tasks
-deployArtifact.jarTask = jar
-wpi.java.configureExecutableTasks(jar)
+deployArtifact.configureApplication(application)
+wpi.java.configureApplication(application)
 wpi.java.configureTestTasks(test)
+
+jar {
+    from('src') { into 'backup/src' }
+    from('vendordeps') { into 'backup/vendordeps' }
+    from('build.gradle') { into 'backup' }
+}
 
 // Configure string concat to always inline compile
 tasks.withType(JavaCompile) {
@@ -285,3 +290,4 @@ tasks.register("fullPush") {
         println "Successfully committed and pushed!"
     }
 }
+
